@@ -1,7 +1,13 @@
 import requests
+import os
+from dotenv import load_dotenv
 
-TOKEN = "8574937481:AAG0GGV1e8Y-aok6wWSb3MlP4xoF60nRYYY"
-CHAT_ID = "7930054023"
+# Abre o cofre
+load_dotenv()
+
+# Puxa as informações escondidas
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 MENSAGEM = "Fala chefe! O Radar de Vagas tá online e pronto pro corre! 🚀"
 
 # Monta o link da API do Telegram
