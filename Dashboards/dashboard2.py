@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import logging 
-import DouglasAmaral  # Importa o módulo personalizado de Douglas Amaral
+#import DouglasAmaral  # Importa o módulo personalizado de Douglas Amaral
 
 #Config da Log
 
