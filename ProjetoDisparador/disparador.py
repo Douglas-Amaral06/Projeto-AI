@@ -4,7 +4,7 @@ import random
 import pyautogui
 
 # Leitor dos contatos
-with open('contatos.txt', 'r') as arquivo:
+with open('contatos_reais.txt', 'r') as arquivo:
     numeros = arquivo.readlines()
 
 saudacoes = ["Oi jovem, bom dia!", "Olá jovem, bom dia!", "E aí jovem, bom dia!", "Opa jovem, bom dia!", "Tudo bem jovem, bom dia?", "Bom dia jovem, tudo bem?!", "Opa jovem, tudo certo?", "E aí jovem, tudo bem?", "Olá jovem, tudo bem?", "Opa jovem, tudo bem?", "Bom dia jovem, tudo bem?", "Fala, jovem, tudo bem?", "Tudo bem, jovem?", "Saudações, jovem!" ]
@@ -35,7 +35,7 @@ for numero in numeros:
     contador += 1 
     msg = f"{random.choice(saudacoes)} {random.choice(corpos)}"
     
-    print(f"[{contador}/430] Tentando enviar para: {numero_limpo}")
+    print(f"[{contador}/145] Tentando enviar para: {numero_limpo}")
     
     try:
         # Envia a mensagem instantaneamente (sem agendamento)
@@ -51,7 +51,7 @@ for numero in numeros:
         time.sleep(2)
         pyautogui.hotkey('ctrl', 'w')
         
-        pausa = random.randint(50, 70)
+        pausa = random.randint(60, 120)
         print(f"✅ Comando enviado. Pausa de {pausa}s...")
         time.sleep(pausa)
 
