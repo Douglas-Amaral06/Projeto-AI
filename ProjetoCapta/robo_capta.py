@@ -13,5 +13,5 @@ navegador = webdriver.Chrome(service=servico) #lembrar de definir Chrome como pa
 link_login = "https://app.captamobilidade.com.br/" # (Link raiz para o site de login da Capta)
 navegador.get(link_login)
 
-# Pausa de 10 segundos para fazer o login manualmente (caso necessário)
+# Pausa de 10 segundos para fazer o login manualmente (caso necessário  )
 time.sleep(10)
