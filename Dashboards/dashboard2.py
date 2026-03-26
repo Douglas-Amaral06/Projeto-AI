@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import logging 
-import DouglasAmaral  # Importa o módulo personalizado de Douglas Amaral
+#import DouglasAmaral  # Importa o módulo personalizado de Douglas Amaral
 
 #Config da Log
 
@@ -51,7 +51,7 @@ st.markdown("---")
 col_table, col_graph = st.columns([1, 1])
 
 with col_table:
-    st.subheader("📝 Dados Detalhados (Rê é TOP)")
+    st.subheader("📝 Dados Detalhados ")
     st.caption("Gráfico Automatizado.")
     
     # Tabela Editável

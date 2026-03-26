@@ -1,5 +1,6 @@
 import requests
 import os 
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -8,8 +9,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-TOKEN = "8574937481:AAG0GGV1e8Y-aok6wWSb3MlP4xoF60nRYYY" 
-CHAT_ID = "7930054023"
+load_dotenv()
+
+TOKEN = os.getenv ("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 ARQUIVO_LOG = "vagas_enviadas.txt"
 
 def enviar_telegram(mensagem):
