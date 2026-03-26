@@ -9,8 +9,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-TOKEN = "8574937481:AAG0GGV1e8Y-aok6wWSb3MlP4xoF60nRYYY" 
-CHAT_ID = "7930054023"
+#carrega as variáveis da env
+load_dotenv()
+#Puxa a Variavel pelo token
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 ARQUIVO_LOG = "vagas_enviadas.txt"
 
 def enviar_telegram(mensagem):
