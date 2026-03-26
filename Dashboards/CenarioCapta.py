@@ -1,84 +1,61 @@
-import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-import os
+import pandas as pd
 
-# Dados fornecidos para o dashboard
-data = {
-    'Categoria': [
-        'Roteirizado total', 
-        'Roteirizado casa x curso', 
-        'Roteirizado casa x trabalho',
-        'Implantados total', 
-        'Implantados casa x curso', 
-        'Implantados casa x trabalho'
-    ],
-    'Valores': [163, 129, 101, 222, 30, 33]
+# 1. Dados e Configurações
+data_faltam = {
+    "TAM LINHAS AEREAS S/A": 75,
+    "CET": 108,
+    "PEPSICO": 37,
+    "COCA COLA": 14,
+    "Outros": 171
 }
-df = pd.DataFrame(data)
 
-# Configurando o estilo tecnológico (Dark Theme)
+confirmados = 32
+analises = 1
+
+# --- Lógica para o Gráfico Donut (Unificando tudo) ---
+dados_donut = data_faltam.copy()
+dados_donut["CONFIRMADOS"] = confirmados  # Adiciona confirmados
+dados_donut["EM ANÁLISE"] = analises      # Adiciona análises
+
+df_donut = pd.DataFrame(list(dados_donut.items()), columns=['Legenda', 'Valor'])
+df_barras = pd.DataFrame(list(data_faltam.items()), columns=['Empresa', 'Quantidade']).sort_values('Quantidade')
+
+# O total geral agora é a soma de tudo que está no dicionário do donut
+total_geral = sum(dados_donut.values())
+
+# 2. Configuração Visual (Tema Dark GitHub)
 plt.style.use('dark_background')
-fig = plt.figure(figsize=(15, 7))
-fig.patch.set_facecolor('#1a1a2e') # Fundo tech dark blue/gray
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
+fig.suptitle(f'STATUS OPERACIONAL - TOTAL: {total_geral}', fontsize=22, color="#ffffff", fontweight='bold')
 
-# Título Principal do Dashboard
-fig.suptitle('Cenario Capta ROTEIRIZADOS', fontsize=22, fontweight='bold', color='#ffffff', y=0.98)
+# --- GRÁFICO 1: DONUT ---
+# Cores: Tons de azul (empresas), Verde (Confirmados) e Amarelo/Laranja (Análises)
+cores_donut = ['#FFA600D6', '#FFA600D6', '#FFA600D6', '#FFA600D6', '#FFA600D6', '#238636', '#8b5cf6'] 
 
-# --- 1. Gráfico Donut (Esquerda/Centro) ---
-ax_donut = fig.add_subplot(1, 2, 1)
-ax_donut.set_facecolor('#1a1a2e')
+ax1.pie(df_donut['Valor'], labels=df_donut['Legenda'], autopct='%1.1f%%', 
+        startangle=140, colors=cores_donut, pctdistance=0.80, 
+        wedgeprops={'edgecolor': '#0d1117', 'linewidth': 2})
 
-# Pegando apenas os totais para a pizza calcular o 100% corretamente
-labels_donut = ['Roteirizados (Total)', 'Implantados (Total)']
-sizes_donut = [df['Valores'][0], df['Valores'][3]] # Puxando do DataFrame
-colors_donut = ['#f59e0b', '#10b981']
+# Buraco do Donut
+centro = plt.Circle((0,0), 0.65, fc='#0d1117')
+ax1.add_artist(centro)
+ax1.set_title("Visão Geral do Processo (%)", fontsize=15, pad=20)
 
-# Criando o Donut automatizado
-wedges, texts, autotexts = ax_donut.pie(
-    sizes_donut, 
-    labels=labels_donut, 
-    colors=colors_donut,
-    autopct='%1.1f%%', 
-    startangle=140, 
-    pctdistance=0.75,
-    textprops=dict(color="white", fontsize=12, fontweight='bold'),
-    wedgeprops=dict(width=0.4, edgecolor='#1a1a2e', linewidth=2) # Faz o "furo" no meio
-)
+# --- GRÁFICO 2: BARRAS (Pendências por Empresa) ---
+bars = ax2.barh(df_barras['Empresa'], df_barras['Quantidade'], color='#FFA600D6')
+ax2.set_title("Faltam Por Empresa", fontsize=15, pad=20)
+ax2.bar_label(bars, padding=5, color='white', fontweight='bold')
 
-ax_donut.set_title("Proporção de Totais", color='white', fontsize=14, pad=20)
-ax_donut.axis('equal')
+# Estética Barras
+ax2.spines['top'].set_visible(False)
+ax2.spines['right'].set_visible(False)
+ax2.set_xlabel("Quantidade de Casos")
 
-# --- 2. Gráfico de Barras (Direita) ---
-ax_bar = fig.add_subplot(1, 2, 2)
-ax_bar.set_facecolor('#1a1a2e')
+# 3. Rodapé com Informações Extras
+info_texto = f"Em Análise: {analises}  |  Total Pendentes: {sum(data_faltam.values())}  |  Total Confirmados: {confirmados}"
+plt.figtext(0.5, 0.05, info_texto, ha="center", fontsize=12, 
+            bbox={"facecolor":"#161b22", "alpha":0.8, "pad":8, "edgecolor":"#30363d"})
 
-# Invertendo a ordem para os totais ficarem no topo visualmente
-categorias = df['Categoria'][::-1]
-valores = df['Valores'][::-1]
-cores = ['#10b981', '#10b981', '#10b981', '#f59e0b', '#f59e0b', '#f59e0b']
-
-# Criando as barras horizontais
-bars = ax_bar.barh(categorias, valores, color=cores, height=0.6)
-
-# Adicionando os números de forma automática no final de cada barra
-ax_bar.bar_label(bars, padding=8, color='white', fontsize=11, fontweight='bold')
-
-# Estilizando as linhas e eixos
-ax_bar.set_title("Detalhamento por Categoria", color='white', fontsize=14, pad=20)
-ax_bar.spines['top'].set_visible(False)
-ax_bar.spines['right'].set_visible(False)
-ax_bar.spines['left'].set_color('#444444')
-ax_bar.spines['bottom'].set_color('#444444')
-ax_bar.tick_params(axis='x', colors='white')
-ax_bar.tick_params(axis='y', colors='white', labelsize=11)
-ax_bar.set_xlabel('Quantidade', color='white', fontsize=12)
-
-# Cria a pasta se ela não existir
-if not os.path.exists('Dashboards'):
-    os.makedirs('Dashboards')
-
-# Ajustando layout e salvando
-plt.tight_layout(pad=3.0)
-plt.savefig('Dashboards/meu_dashboard.png', dpi=300, bbox_inches='tight', facecolor=fig.get_facecolor())
-print("Dashboard gerado com sucesso!")
+plt.tight_layout(rect=[0, 0.08, 1, 0.95])
+plt.show()
