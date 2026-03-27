@@ -41,3 +41,24 @@ time.sleep(10)
 
 navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/aside/nav/div[3]/div/h2/button/div').click()
 time.sleep(2)
+
+#Clicando em Pesquisar Consulta
+
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/aside/nav/div[3]/div/div/div/a[3]/div').click()
+time.sleep(2)
+
+#Clicando em "POR CPF"
+
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/div[3]/button[1]').click()
+time.sleep(2)
+
+navegador.find_element(By.XPATH,'/html/body/div[4]/div/div/div/div[2]/div/div/input').click()
+time.sleep(2)
+
+#Insere o CPF
+navegador.find_element(By.XPATH,'/html/body/div[4]/div/div/div/div[2]/div/div/input').send_keys("49742274835")
+time.sleep(2)
+
+#Clica em "Pesquisar"
+navegador.find_element(By.XPATH, '/html/body/div[4]/div/div/div/div[3]/button[2]').click()
+time.sleep(5)
