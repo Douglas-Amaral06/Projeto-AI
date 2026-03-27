@@ -13,5 +13,12 @@ navegador = webdriver.Chrome(service=servico) #lembrar de definir Chrome como pa
 link_login = "https://app.captamobilidade.com.br/" # (Link raiz para o site de login da Capta)
 navegador.get(link_login)
 
+navegador.maxime_window() # F11 no google
+
 # Pausa de 10 segundos para fazer o login manualmente (caso necessário  )
 time.sleep(10)
+
+#Implementar o CPF
+
+navegador.find_element(by.XPATH, '//*[@id="root"]/div[2]/div[2]/div[4]/div[1]/div/div/div/input').send_keys("49742274835")
+time.sleep(2)
