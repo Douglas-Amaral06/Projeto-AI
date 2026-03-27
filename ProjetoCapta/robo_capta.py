@@ -37,3 +37,7 @@ print("✅ Login realizado com sucesso! Logando na Capta...")
 # Pausa de 10 segundos para o processo de login ser concluído
 time.sleep(10)
 
+#Acessar a roteirização
+
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/aside/nav/div[3]/div/h2/button/div').click()
+time.sleep(2)
