@@ -62,3 +62,11 @@ time.sleep(2)
 #Clica em "Pesquisar"
 navegador.find_element(By.XPATH, '/html/body/div[4]/div/div/div/div[3]/button[2]').click()
 time.sleep(5)
+
+#CLicar no OLHO e abrir a rota
+
+navegador.execute_script("window.scrollBy(0, 500);") # Scroll para baixo para encontrar o "Olho"
+time.sleep(2)
+
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/div[3]/div[6]/div/div/div/div/div/div[2]/a/img').click()
+time.sleep(5)
