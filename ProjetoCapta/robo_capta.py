@@ -32,7 +32,7 @@ time.sleep(2)
 navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[5]/div[1]/button').click()
 
 #Retornar mensagem de sucesso
-print("✅ Login realizado com sucesso! Logando na Capta...")
+print("✅ Login realizado com sucesso! Acessando a Capta...")
 
 # Pausa de 10 segundos para o processo de login ser concluído
 time.sleep(10)
@@ -56,7 +56,7 @@ navegador.find_element(By.XPATH,'/html/body/div[4]/div/div/div/div[2]/div/div/in
 time.sleep(2)
 
 #Insere o CPF
-navegador.find_element(By.XPATH,'/html/body/div[4]/div/div/div/div[2]/div/div/input').send_keys("49742274835")
+navegador.find_element(By.XPATH,'/html/body/div[4]/div/div/div/div[2]/div/div/input').send_keys("50180680862")
 time.sleep(2)
 
 #Clica em "Pesquisar"
@@ -70,3 +70,23 @@ time.sleep(2)
 
 navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/div[3]/div[6]/div/div/div/div/div/div[2]/a/img').click()
 time.sleep(5)
+
+#Roteirizando e Enviando o E-MAIL
+navegador.execute_script("window.scrollBy(0, 300);") # Scroll para baixo para encontrar o "Olho"
+time.sleep(2)
+
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[1]').click()
+time.sleep(55)
+time.sleep(2)
+print("✅ Roteirização realizada, próximo passo, enviar o e-mail")
+
+#Clicar no MyLink e envia o e-mail
+
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]').click()
+time.sleep(3) # clica no MyLink
+
+navegador.find_element(By.XPATH, '/html/body/div[4]/div/div/div/div[3]/button[2]').click()
+time.sleep(3) # clica em "Enviar Link"
+
+print("✅ E-mail enviado com sucesso! Processo concluído.")
+
