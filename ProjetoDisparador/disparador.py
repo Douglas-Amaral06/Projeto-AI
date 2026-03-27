@@ -21,6 +21,7 @@ corpos = [
     "*Douglas RH Jovem Renapsi*. Para garantir que seu benefício de transporte seja processado corretamente no próximo mês, precisamos que finalize sua roteirização. Os links para validação estão no seu e-mail, é só acessar e confirmar. Depois disso, nos envie uma foto dos seus cartões de transporte para que possamos concluir o processo. Contamos com sua colaboração, obrigado! (Desconsidere a mensagem caso já tenha validado e nos enviado o cartão, ok?)",
     "*Douglas RH Jovem Renapsi*. Enviamos um e-mail para você com os detalhes da sua roteirização de VT, mas ainda não recebemos a confirmação. Para garantir que seu benefício do próximo mês seja processado sem problemas, por favor, acesse seu e-mail e valide as rotas o quanto antes. Além disso, precisamos que nos envie uma foto dos seus cartões de transporte para finalizar o cadastro. Agradecemos a atenção! (Desconsidere a mensagem caso já tenha validado e nos enviado o cartão, ok?)",
     "*Douglas RH Jovem Renapsi*. Para garantir que seu benefício de transporte seja processado corretamente no próximo mês, precisamos que finalize sua roteirização. Os links para validação estão no seu e-mail, é só acessar e confirmar. Depois disso, nos envie uma foto dos seus cartões de transporte para que possamos concluir o processo. Contamos com sua colaboração, obrigado! (Desconsidere a mensagem caso já tenha validado e nos enviado o cartão, ok?)",
+    "*Douglas RH Jovem Renapsi*. Para garantir que seu benefício de transporte seja processado corretamente no próximo mês, precisamos que nos envie uma foto dos seus cartões de transporte e finalize sua roteirização. Os links para validação estão no seu e-mail, é só acessar e confirmar. Contamos com sua colaboração, obrigado! (Desconsidere a mensagem caso já tenha validado e nos enviado o cartão, ok?)",
 ]
 
 print(f"🚀 Iniciando disparo em massa: {len(numeros)} contatos.")
@@ -35,11 +36,11 @@ for numero in numeros:
     contador += 1 
     msg = f"{random.choice(saudacoes)} {random.choice(corpos)}"
     
-    print(f"[{contador}/145] Tentando enviar para: {numero_limpo}")
+    print(f"[{contador}/12] Tentando enviar para: {numero_limpo}")
     
     try:
         # Envia a mensagem instantaneamente (sem agendamento)
-        kit.sendwhatmsg_instantly(numero_limpo, msg, wait_time=35, tab_close=False)
+        kit.sendwhatmsg_instantly(numero_limpo, msg, wait_time=20, tab_close=False)
         
         time.sleep(2)
         pyautogui.press('enter')
@@ -51,7 +52,7 @@ for numero in numeros:
         time.sleep(2)
         pyautogui.hotkey('ctrl', 'w')
         
-        pausa = random.randint(60, 120)
+        pausa = random.randint(20, 25)
         print(f"✅ Comando enviado. Pausa de {pausa}s...")
         time.sleep(pausa)
 
@@ -59,7 +60,7 @@ for numero in numeros:
         print(f"❌ Erro ao processar {numero_limpo}: {e}")
         continue
 
-    if contador % 35 == 0:
+    if contador % 25 == 0:
         print("☕ Pausa remunerada obrigatória de 15 min pro café (Anti-Ban).")
         time.sleep(900) # 15 minutos de pausa para evitar bloqueios
 
