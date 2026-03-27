@@ -1,5 +1,6 @@
 import requests
 import os 
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -8,6 +9,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
+#carrega as variáveis da env
+load_dotenv()
+#Puxa a Variavel pelo token
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 ARQUIVO_LOG = "vagas_enviadas.txt"

@@ -51,7 +51,7 @@ st.markdown("---")
 col_table, col_graph = st.columns([1, 1])
 
 with col_table:
-    st.subheader("📝 Dados Detalhados (Rê é TOP)")
+    st.subheader("📝 Dados Detalhados ")
     st.caption("Gráfico Automatizado.")
     
     # Tabela Editável

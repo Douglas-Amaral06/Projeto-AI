@@ -1,0 +1,7 @@
+# Ignorar variáveis de ambiente (Meus tokens)
+.env
+
+# Ignorar banco de dados local e contatos reais
+vagas_enviadas.txt
+contatos_jovens.txt
+*.csv

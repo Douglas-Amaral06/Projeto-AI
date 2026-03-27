@@ -4,48 +4,47 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+from datetime import datetime # <-- NOVA IMPORTAÇÃO PARA A LOG
 
-#Leitor da lista de CPFS
-
+# Leitor da lista de CPFS
 with open('cpfs_reais.txt', 'r') as arquivo:
-	cpfs = arquivo.readlines()
-    
-print(f"🚀 Iniciando o Robôzinho da Roteirização {len(cpfs)} CaptaVT ")
+    cpfs = arquivo.readlines()
 
-#Config para o sistema não cair (DENOVO)
+total_cpfs = len(cpfs) # Guardando o total para a matemática do contador
+print(f"🚀 Iniciando o Robôzinho da Roteirização: {total_cpfs} CPFs na fila.")
+
+# Config para o sistema não cair 
 opcoes = Options()
-opcoes.add_argument("--disable-dev-shm-usage") #Não corta a memória do navegador
-opcoes.add_argument("--no-sandbox") #Windows não bloqueia com a segurança
+opcoes.add_argument("--disable-dev-shm-usage")
+opcoes.add_argument("--no-sandbox")
 
-# Configuração do Selenium para abrir o navegador (Chrome)
+# Configuração do Selenium para abrir o navegador
 servico = Service(ChromeDriverManager().install())
-navegador = webdriver.Chrome(service=servico) #lembrar de definir Chrome como padrão
+navegador = webdriver.Chrome(service=servico) 
 
 # Sobe no site
-link_login = "https://app.captamobilidade.com.br/" # (Link raiz para o site de login da Capta)
+link_login = "https://app.captamobilidade.com.br/" 
 navegador.get(link_login)
-navegador.maximize_window() # F11 no google
+navegador.maximize_window()
 
 # Pausa para carregar o Login
 time.sleep(5)
 
-#Implementar o CPF
-
+# Implementar o CPF
 navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[4]/div[1]/div/div/div/input').send_keys("41350968838")
 time.sleep(2)
 
-#Implementar a senha
+# Implementar a senha
 navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[4]/div[2]/div/div/input').send_keys("47824729")
 time.sleep(2)
 
-#Clicar no botão de login
+# Clicar no botão de login
 navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[5]/div[1]/button').click()
 
-#Retornar mensagem de sucesso
 print("✅ Login realizado com sucesso! Acessando a Capta...")
 time.sleep(10)
 
-#Loop e contador
+# Loop e contador
 contador = 0
 for cpf in cpfs:
     cpf_reais = cpf.strip() 
@@ -53,14 +52,17 @@ for cpf in cpfs:
         continue 
     
     contador += 1 
-    print(f"\n[{contador}/{len(cpfs)}] Processando CPF: {cpf_reais}")
+    faltam = total_cpfs - contador # A matemática de quantos faltam
+    hora_atual = datetime.now().strftime("%d/%m/%Y %H:%M:%S") # Pega a hora do PC
+    
+    print(f"\n[{contador}/{total_cpfs}] Processando CPF: {cpf_reais} | Faltam: {faltam}")
     
     try:
         # 1. O Pulo do Gato: Vai direto para a página limpa de pesquisa
         navegador.get("https://app.captamobilidade.com.br/consults/search")
         time.sleep(5)
 
-        # 2. Clicando em "POR CPF"
+        # 2. Clicando em "POR CPF" 
         navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/div[3]/button[1]').click()
         time.sleep(2)
 
@@ -77,13 +79,13 @@ for cpf in cpfs:
         time.sleep(5)
 
         # 6. CLicar no OLHO e abrir a rota
-        navegador.execute_script("window.scrollBy(0, 500);") # Scroll para baixo
+        navegador.execute_script("window.scrollBy(0, 500);")
         time.sleep(2)
         navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/div[3]/div[6]/div/div/div/div/div/div[2]/a/img').click()
         time.sleep(5)
 
         # 7. Roteirizando e Enviando o E-MAIL
-        navegador.execute_script("window.scrollBy(0, 300);") # Scroll para baixo
+        navegador.execute_script("window.scrollBy(0, 300);") 
         time.sleep(2)
         navegador.find_element(By.XPATH, '//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[1]').click()
         print("⏳ Roteirizando... aguardando 55s.")
@@ -101,11 +103,18 @@ for cpf in cpfs:
         
         print(f"✅ E-mail do CPF {cpf_reais} enviado com sucesso!")
         
+        # --- SALVANDO A LOG DE SUCESSO ---
+        with open('log_roteirizacao.txt', 'a', encoding='utf-8') as log:
+            log.write(f"[{hora_atual}] SUCESSO - CPF {cpf_reais} roteirizado e enviado.\n")
+        
     except Exception as e:
-        # Repare que o except agora está na mesma reta do try!
         print(f"❌ Ocorreu um erro no CPF {cpf_reais}. Pulando para o próximo...")
+        
+        # --- SALVANDO A LOG DE ERRO ---
+        with open('log_roteirizacao.txt', 'a', encoding='utf-8') as log:
+            log.write(f"[{hora_atual}] ERRO - Falha no CPF {cpf_reais}. Detalhe: {e}\n")
         continue
 
-# FORA DO LOOP: Estas linhas estão totalmente encostadas na esquerda
-print("\n🎉 Trabalho concluido! Todos os CPF foram roteirizados e enviados") 
+# FORA DO LOOP
+print("\n🎉 Trabalho concluido! Todos os CPF da lista foram processados.") 
 navegador.quit()
