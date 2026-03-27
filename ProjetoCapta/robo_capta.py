@@ -21,5 +21,19 @@ time.sleep(10)
 
 #Implementar o CPF
 
-navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[4]/div[1]/div/div/div/input').send_keys("49742274835")
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[4]/div[1]/div/div/div/input').send_keys("41350968838")
 time.sleep(2)
+
+#Implementar a senha
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[4]/div[2]/div/div/input').send_keys("47824729")
+time.sleep(2)
+
+#Clicar no botão de login
+navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[5]/div[1]/button').click()
+
+#Retornar mensagem de sucesso
+print("✅ Login realizado com sucesso! Logando na Capta...")
+
+# Pausa de 10 segundos para o processo de login ser concluído
+time.sleep(10)
+
