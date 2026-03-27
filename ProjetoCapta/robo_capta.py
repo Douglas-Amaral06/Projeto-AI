@@ -4,12 +4,14 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+from datetime import datetime
 
 #Leitor da lista de CPFS
 
 with open('cpfs_reais.txt', 'r') as arquivo:
 	cpfs = arquivo.readlines()
-    
+     
+total_cpfs = len(cpfs) #Armazenar o total de CPFs para o contador
 print(f"🚀 Iniciando o Robôzinho da Roteirização {len(cpfs)} CaptaVT ")
 
 #Config para o sistema não cair (DENOVO)
@@ -27,7 +29,7 @@ navegador.get(link_login)
 navegador.maximize_window() # F11 no google
 
 # Pausa para carregar o Login
-time.sleep(5)
+time.sleep(2)
 
 #Implementar o CPF
 
@@ -43,9 +45,8 @@ navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[5]/div[1]/bu
 
 #Retornar mensagem de sucesso
 print("✅ Login realizado com sucesso! Acessando a Capta...")
-time.sleep(10)
+time.sleep(5)
 
-#Loop e contador
 #Loop e contador
 contador = 0
 for cpf in cpfs:
@@ -54,10 +55,11 @@ for cpf in cpfs:
         continue 
     
     contador += 1 
+    faltam = total_cpfs - contador #  Contador para saber quantos CPFs faltam
     print(f"\n[{contador}/{len(cpfs)}] Processando CPF: {cpf_reais}")
     
     try:
-        # 1. O Pulo do Gato: Vai direto para a página limpa de pesquisa
+        # 1. (Volta para a página de busca e roda o loop)
         navegador.get("https://app.captamobilidade.com.br/consults/search")
         time.sleep(5)
 
@@ -101,12 +103,17 @@ for cpf in cpfs:
         time.sleep(3)
         
         print(f"✅ E-mail do CPF {cpf_reais} enviado com sucesso!")
+
+        with open('log_robo.txt', 'a')as log:
+            log.write(f"{datetime.now()} - CPF {cpf_reais} roteirizado e e-mail enviado com sucesso.\n")
         
     except Exception as e:
         # Repare que o except agora está na mesma reta do try!
         print(f"❌ Ocorreu um erro no CPF {cpf_reais}. Pulando para o próximo...")
+        with open('log_robo.txt', 'a')as log:
+            log.write(f"{datetime.now()} - Erro no CPF {cpf_reais}: {str(e)}\n")
         continue
 
-# FORA DO LOOP: Estas linhas estão totalmente encostadas na esquerda
-print("\n🎉 Trabalho concluido! Todos os CPF foram roteirizados e enviados") 
+# Envios concluidos 
+print("\n🎉 Concluido, todos os CPFS foram roteirizados.") 
 navegador.quit()
