@@ -19,7 +19,7 @@ for jovem in jovens:
     
     print(f"Buscando endereço do(a) {nome} (CEP: {cep})...")
     
-    # Montando a URL para a API (O pedido pro garçom)
+    # Montando a URL para a API (Consulta o CEP no VIACEP)
     url = f"https://viacep.com.br/ws/{cep}/json/"
     
     try:
