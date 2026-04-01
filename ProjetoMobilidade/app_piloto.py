@@ -77,6 +77,32 @@ if menu == "🚌 Painel de Roteirização":
     kpi3.metric(label="💰 Custo Médio Projetado", value="R$ 9,40", delta="-12% vs Rota Manual", delta_color="inverse")
 
     st.markdown("---")
+    st.subheader("📈 Analise da mobilidade (Visão Estratégica.) ")
+
+    #Coluna para colocar gráfico lado a lado
+
+    col_graf1, col_graf2 = st.columns(2)
+
+    #Gráfico 1: Pizza (Distruibuição de Modais Sugeridos)
+    with col_graf1:
+        dados_modais = pd.DataFrame({
+            "Modal": ["Só Ônibus", "Integração (Ônibus + Metrô)", "Só Metrô"],
+            "Quantidade": [int(total_jovens * 0.5), int(total_jovens * 0.3), int(total_jovens * 0.2)]
+        })
+        fig_pizza = px.pie(dados_modais, values = "Quantidade", names="Modal", title="Distribuição de Modais", hole=0.4)
+        st.plotly_chart(fig_pizza, use_container_width=True)
+
+        # Gráfico 2: Barras (Custo por região)
+        with col_graf2:
+            dados_polos = pd.DataFrame({
+                "Polo": ["Centro", "Zona Leste", "Zona Sul", "Zona Norte", "Zona Oeste"],
+                "Custo Médio (R$)": [8.80, 11.50, 10.00, 9.40, 10.50]
+            })
+            fig_barras = px.bar(dados_polos, x="Polo", y="Custo Médio (R$)", title="Custo Médio por Região")
+            st.plotly_chart(fig_barras, use_container_width=True)
+
+
+    st.markdown("---")
     st.subheader("📋 Base de Jovens (Aguardando Roteirização)")
     
     # Trava de segurança
