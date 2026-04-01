@@ -1,361 +1,492 @@
-27/03/2026 11:26:12 - Erro no CPF 443770338-32: 'WebElement' object has no attribute 'sendkey'
-27/03/2026 11:26:19 - Erro no CPF 542055548-42: 'WebElement' object has no attribute 'sendkey'
-27/03/2026 11:26:26 - Erro no CPF 494743668-96: 'WebElement' object has no attribute 'sendkey'
-27/03/2026 11:26:34 - Erro no CPF 451331568-71: 'WebElement' object has no attribute 'sendkey'
-27/03/2026 11:26:41 - Erro no CPF 470654328-23: 'WebElement' object has no attribute 'sendkey'
-27/03/2026 11:37:09 - Erro no CPF 443770338-32: Message: element not interactable
-  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
-Stacktrace:
-	chromedriver!GetHandleVerifier [0x124cdf3+10b03]
-	chromedriver!GetHandleVerifier [0x124cf24+10c34]
-	chromedriver!(No symbol) [0x1031f5e]
-	chromedriver!(No symbol) [0x1076ccf]
-	chromedriver!(No symbol) [0x1075a20]
-	chromedriver!(No symbol) [0x109db0c]
-	chromedriver!(No symbol) [0x10716e4]
-	chromedriver!(No symbol) [0x109dcd4]
-	chromedriver!(No symbol) [0x10ba9a5]
-	chromedriver!(No symbol) [0x109d8a6]
-	chromedriver!(No symbol) [0x1070229]
-	chromedriver!(No symbol) [0x1070fe4]
-	chromedriver!GetHandleVerifier [0x14b48b9+2785c9]
-	chromedriver!GetHandleVerifier [0x14afeb5+273bc5]
-	chromedriver!GetHandleVerifier [0x14ce06b+291d7b]
-	chromedriver!GetHandleVerifier [0x1265cc8+299d8]
-	chromedriver!GetHandleVerifier [0x126d9fd+3170d]
-	chromedriver!GetHandleVerifier [0x12558c8+195d8]
-	chromedriver!GetHandleVerifier [0x1255a92+197a2]
-	chromedriver!GetHandleVerifier [0x123ee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
-
-27/03/2026 11:37:16 - Erro no CPF 542055548-42: Message: element not interactable
-  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
-Stacktrace:
-	chromedriver!GetHandleVerifier [0x124cdf3+10b03]
-	chromedriver!GetHandleVerifier [0x124cf24+10c34]
-	chromedriver!(No symbol) [0x1031f5e]
-	chromedriver!(No symbol) [0x1076ccf]
-	chromedriver!(No symbol) [0x1075a20]
-	chromedriver!(No symbol) [0x109db0c]
-	chromedriver!(No symbol) [0x10716e4]
-	chromedriver!(No symbol) [0x109dcd4]
-	chromedriver!(No symbol) [0x10ba9a5]
-	chromedriver!(No symbol) [0x109d8a6]
-	chromedriver!(No symbol) [0x1070229]
-	chromedriver!(No symbol) [0x1070fe4]
-	chromedriver!GetHandleVerifier [0x14b48b9+2785c9]
-	chromedriver!GetHandleVerifier [0x14afeb5+273bc5]
-	chromedriver!GetHandleVerifier [0x14ce06b+291d7b]
-	chromedriver!GetHandleVerifier [0x1265cc8+299d8]
-	chromedriver!GetHandleVerifier [0x126d9fd+3170d]
-	chromedriver!GetHandleVerifier [0x12558c8+195d8]
-	chromedriver!GetHandleVerifier [0x1255a92+197a2]
-	chromedriver!GetHandleVerifier [0x123ee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
-
-27/03/2026 11:37:23 - Erro no CPF 494743668-96: Message: element not interactable
-  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
-Stacktrace:
-	chromedriver!GetHandleVerifier [0x124cdf3+10b03]
-	chromedriver!GetHandleVerifier [0x124cf24+10c34]
-	chromedriver!(No symbol) [0x1031f5e]
-	chromedriver!(No symbol) [0x1076ccf]
-	chromedriver!(No symbol) [0x1075a20]
-	chromedriver!(No symbol) [0x109db0c]
-	chromedriver!(No symbol) [0x10716e4]
-	chromedriver!(No symbol) [0x109dcd4]
-	chromedriver!(No symbol) [0x10ba9a5]
-	chromedriver!(No symbol) [0x109d8a6]
-	chromedriver!(No symbol) [0x1070229]
-	chromedriver!(No symbol) [0x1070fe4]
-	chromedriver!GetHandleVerifier [0x14b48b9+2785c9]
-	chromedriver!GetHandleVerifier [0x14afeb5+273bc5]
-	chromedriver!GetHandleVerifier [0x14ce06b+291d7b]
-	chromedriver!GetHandleVerifier [0x1265cc8+299d8]
-	chromedriver!GetHandleVerifier [0x126d9fd+3170d]
-	chromedriver!GetHandleVerifier [0x12558c8+195d8]
-	chromedriver!GetHandleVerifier [0x1255a92+197a2]
-	chromedriver!GetHandleVerifier [0x123ee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
-
-27/03/2026 11:37:31 - Erro no CPF 451331568-71: Message: element not interactable
-  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
-Stacktrace:
-	chromedriver!GetHandleVerifier [0x124cdf3+10b03]
-	chromedriver!GetHandleVerifier [0x124cf24+10c34]
-	chromedriver!(No symbol) [0x1031f5e]
-	chromedriver!(No symbol) [0x1076ccf]
-	chromedriver!(No symbol) [0x1075a20]
-	chromedriver!(No symbol) [0x109db0c]
-	chromedriver!(No symbol) [0x10716e4]
-	chromedriver!(No symbol) [0x109dcd4]
-	chromedriver!(No symbol) [0x10ba9a5]
-	chromedriver!(No symbol) [0x109d8a6]
-	chromedriver!(No symbol) [0x1070229]
-	chromedriver!(No symbol) [0x1070fe4]
-	chromedriver!GetHandleVerifier [0x14b48b9+2785c9]
-	chromedriver!GetHandleVerifier [0x14afeb5+273bc5]
-	chromedriver!GetHandleVerifier [0x14ce06b+291d7b]
-	chromedriver!GetHandleVerifier [0x1265cc8+299d8]
-	chromedriver!GetHandleVerifier [0x126d9fd+3170d]
-	chromedriver!GetHandleVerifier [0x12558c8+195d8]
-	chromedriver!GetHandleVerifier [0x1255a92+197a2]
-	chromedriver!GetHandleVerifier [0x123ee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
-
-27/03/2026 11:43:29 - Erro no CPF 443770338-32: Message: element not interactable
-  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
-Stacktrace:
-	chromedriver!GetHandleVerifier [0x4dcdf3+10b03]
-	chromedriver!GetHandleVerifier [0x4dcf24+10c34]
-	chromedriver!(No symbol) [0x2c1f5e]
-	chromedriver!(No symbol) [0x306ccf]
-	chromedriver!(No symbol) [0x305a20]
-	chromedriver!(No symbol) [0x32db0c]
-	chromedriver!(No symbol) [0x3016e4]
-	chromedriver!(No symbol) [0x32dcd4]
-	chromedriver!(No symbol) [0x34a9a5]
-	chromedriver!(No symbol) [0x32d8a6]
-	chromedriver!(No symbol) [0x300229]
-	chromedriver!(No symbol) [0x300fe4]
-	chromedriver!GetHandleVerifier [0x7448b9+2785c9]
-	chromedriver!GetHandleVerifier [0x73feb5+273bc5]
-	chromedriver!GetHandleVerifier [0x75e06b+291d7b]
-	chromedriver!GetHandleVerifier [0x4f5cc8+299d8]
-	chromedriver!GetHandleVerifier [0x4fd9fd+3170d]
-	chromedriver!GetHandleVerifier [0x4e58c8+195d8]
-	chromedriver!GetHandleVerifier [0x4e5a92+197a2]
-	chromedriver!GetHandleVerifier [0x4cee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
-
-27/03/2026 11:43:36 - Erro no CPF 542055548-42: Message: element not interactable
-  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
-Stacktrace:
-	chromedriver!GetHandleVerifier [0x4dcdf3+10b03]
-	chromedriver!GetHandleVerifier [0x4dcf24+10c34]
-	chromedriver!(No symbol) [0x2c1f5e]
-	chromedriver!(No symbol) [0x306ccf]
-	chromedriver!(No symbol) [0x305a20]
-	chromedriver!(No symbol) [0x32db0c]
-	chromedriver!(No symbol) [0x3016e4]
-	chromedriver!(No symbol) [0x32dcd4]
-	chromedriver!(No symbol) [0x34a9a5]
-	chromedriver!(No symbol) [0x32d8a6]
-	chromedriver!(No symbol) [0x300229]
-	chromedriver!(No symbol) [0x300fe4]
-	chromedriver!GetHandleVerifier [0x7448b9+2785c9]
-	chromedriver!GetHandleVerifier [0x73feb5+273bc5]
-	chromedriver!GetHandleVerifier [0x75e06b+291d7b]
-	chromedriver!GetHandleVerifier [0x4f5cc8+299d8]
-	chromedriver!GetHandleVerifier [0x4fd9fd+3170d]
-	chromedriver!GetHandleVerifier [0x4e58c8+195d8]
-	chromedriver!GetHandleVerifier [0x4e5a92+197a2]
-	chromedriver!GetHandleVerifier [0x4cee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
-
-27/03/2026 11:48:28 - Erro no CPF 443770338-32: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[contains(text(), '45291 - RENAPSI - SÃO PAULO - C-C | 47.312.245/0001-18')]"}
+31/03/2026 09:58:46 - CPF 455349168-00 roteirizado e enviado com sucesso.
+31/03/2026 10:00:39 - Erro no CPF 555238698-13: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
   (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
 Stacktrace:
-	chromedriver!GetHandleVerifier [0x4dcdf3+10b03]
-	chromedriver!GetHandleVerifier [0x4dcf24+10c34]
-	chromedriver!(No symbol) [0x2c2120]
-	chromedriver!(No symbol) [0x30abca]
-	chromedriver!(No symbol) [0x30ae6b]
-	chromedriver!(No symbol) [0x34d0b2]
-	chromedriver!(No symbol) [0x32db54]
-	chromedriver!(No symbol) [0x34a9a5]
-	chromedriver!(No symbol) [0x32d8a6]
-	chromedriver!(No symbol) [0x300229]
-	chromedriver!(No symbol) [0x300fe4]
-	chromedriver!GetHandleVerifier [0x7448b9+2785c9]
-	chromedriver!GetHandleVerifier [0x73feb5+273bc5]
-	chromedriver!GetHandleVerifier [0x75e06b+291d7b]
-	chromedriver!GetHandleVerifier [0x4f5cc8+299d8]
-	chromedriver!GetHandleVerifier [0x4fd9fd+3170d]
-	chromedriver!GetHandleVerifier [0x4e58c8+195d8]
-	chromedriver!GetHandleVerifier [0x4e5a92+197a2]
-	chromedriver!GetHandleVerifier [0x4cee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
+	undetected_chromedriver!GetHandleVerifier [0xc2cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0xc2cf24+10c34]
+	undetected_chromedriver!(No symbol) [0xa12120]
+	undetected_chromedriver!(No symbol) [0xa5abca]
+	undetected_chromedriver!(No symbol) [0xa5ae6b]
+	undetected_chromedriver!(No symbol) [0xa9d0b2]
+	undetected_chromedriver!(No symbol) [0xa7db54]
+	undetected_chromedriver!(No symbol) [0xa9a9a5]
+	undetected_chromedriver!(No symbol) [0xa7d8a6]
+	undetected_chromedriver!(No symbol) [0xa50229]
+	undetected_chromedriver!(No symbol) [0xa50fe4]
+	undetected_chromedriver!GetHandleVerifier [0xe948b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0xe8feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0xeae06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0xc45cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0xc4d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0xc358c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0xc35a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0xc1ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
 
-27/03/2026 11:48:35 - Erro no CPF 542055548-42: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[contains(text(), '45291 - RENAPSI - SÃO PAULO - C-C | 47.312.245/0001-18')]"}
+31/03/2026 10:02:47 - CPF 555238698-13 roteirizado e enviado com sucesso.
+31/03/2026 10:04:39 - CPF 541070928-44 roteirizado e enviado com sucesso.
+31/03/2026 10:05:24 - CPF 135816739-75 já estava IMPLANTADO.
+31/03/2026 10:07:10 - Erro no CPF 521867698-59: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
   (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
 Stacktrace:
-	chromedriver!GetHandleVerifier [0x4dcdf3+10b03]
-	chromedriver!GetHandleVerifier [0x4dcf24+10c34]
-	chromedriver!(No symbol) [0x2c2120]
-	chromedriver!(No symbol) [0x30abca]
-	chromedriver!(No symbol) [0x30ae6b]
-	chromedriver!(No symbol) [0x34d0b2]
-	chromedriver!(No symbol) [0x32db54]
-	chromedriver!(No symbol) [0x34a9a5]
-	chromedriver!(No symbol) [0x32d8a6]
-	chromedriver!(No symbol) [0x300229]
-	chromedriver!(No symbol) [0x300fe4]
-	chromedriver!GetHandleVerifier [0x7448b9+2785c9]
-	chromedriver!GetHandleVerifier [0x73feb5+273bc5]
-	chromedriver!GetHandleVerifier [0x75e06b+291d7b]
-	chromedriver!GetHandleVerifier [0x4f5cc8+299d8]
-	chromedriver!GetHandleVerifier [0x4fd9fd+3170d]
-	chromedriver!GetHandleVerifier [0x4e58c8+195d8]
-	chromedriver!GetHandleVerifier [0x4e5a92+197a2]
-	chromedriver!GetHandleVerifier [0x4cee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
+	undetected_chromedriver!GetHandleVerifier [0x44cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x44cf24+10c34]
+	undetected_chromedriver!(No symbol) [0x232120]
+	undetected_chromedriver!(No symbol) [0x27abca]
+	undetected_chromedriver!(No symbol) [0x27ae6b]
+	undetected_chromedriver!(No symbol) [0x2bd0b2]
+	undetected_chromedriver!(No symbol) [0x29db54]
+	undetected_chromedriver!(No symbol) [0x2ba9a5]
+	undetected_chromedriver!(No symbol) [0x29d8a6]
+	undetected_chromedriver!(No symbol) [0x270229]
+	undetected_chromedriver!(No symbol) [0x270fe4]
+	undetected_chromedriver!GetHandleVerifier [0x6b48b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x6afeb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x6ce06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x465cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x46d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x4558c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x455a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x43ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
 
-27/03/2026 11:48:41 - Erro no CPF 494743668-96: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[contains(text(), '45291 - RENAPSI - SÃO PAULO - C-C | 47.312.245/0001-18')]"}
+31/03/2026 10:09:03 - CPF 429706828-18 roteirizado e enviado com sucesso.
+31/03/2026 10:11:00 - CPF 432748318-40 roteirizado e enviado com sucesso.
+31/03/2026 10:12:53 - CPF 058794338-62 roteirizado e enviado com sucesso.
+31/03/2026 10:14:45 - CPF 586334348-65 roteirizado e enviado com sucesso.
+31/03/2026 10:16:39 - CPF 459908118-37 roteirizado e enviado com sucesso.
+31/03/2026 10:18:32 - CPF 448163238-05 roteirizado e enviado com sucesso.
+31/03/2026 10:20:24 - CPF 458507078-83 roteirizado e enviado com sucesso.
+31/03/2026 10:22:16 - CPF 430051988-98 roteirizado e enviado com sucesso.
+31/03/2026 10:24:09 - CPF 531750878-92 roteirizado e enviado com sucesso.
+31/03/2026 10:26:02 - CPF 498509058-16 roteirizado e enviado com sucesso.
+31/03/2026 10:27:59 - CPF 480493168-66 roteirizado e enviado com sucesso.
+31/03/2026 10:29:52 - CPF 239878168-21 roteirizado e enviado com sucesso.
+31/03/2026 10:31:38 - Erro no CPF 493024998-80: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
   (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
 Stacktrace:
-	chromedriver!GetHandleVerifier [0x4dcdf3+10b03]
-	chromedriver!GetHandleVerifier [0x4dcf24+10c34]
-	chromedriver!(No symbol) [0x2c2120]
-	chromedriver!(No symbol) [0x30abca]
-	chromedriver!(No symbol) [0x30ae6b]
-	chromedriver!(No symbol) [0x34d0b2]
-	chromedriver!(No symbol) [0x32db54]
-	chromedriver!(No symbol) [0x34a9a5]
-	chromedriver!(No symbol) [0x32d8a6]
-	chromedriver!(No symbol) [0x300229]
-	chromedriver!(No symbol) [0x300fe4]
-	chromedriver!GetHandleVerifier [0x7448b9+2785c9]
-	chromedriver!GetHandleVerifier [0x73feb5+273bc5]
-	chromedriver!GetHandleVerifier [0x75e06b+291d7b]
-	chromedriver!GetHandleVerifier [0x4f5cc8+299d8]
-	chromedriver!GetHandleVerifier [0x4fd9fd+3170d]
-	chromedriver!GetHandleVerifier [0x4e58c8+195d8]
-	chromedriver!GetHandleVerifier [0x4e5a92+197a2]
-	chromedriver!GetHandleVerifier [0x4cee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
+	undetected_chromedriver!GetHandleVerifier [0x12ccdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x12ccf24+10c34]
+	undetected_chromedriver!(No symbol) [0x10b2120]
+	undetected_chromedriver!(No symbol) [0x10fabca]
+	undetected_chromedriver!(No symbol) [0x10fae6b]
+	undetected_chromedriver!(No symbol) [0x113d0b2]
+	undetected_chromedriver!(No symbol) [0x111db54]
+	undetected_chromedriver!(No symbol) [0x113a9a5]
+	undetected_chromedriver!(No symbol) [0x111d8a6]
+	undetected_chromedriver!(No symbol) [0x10f0229]
+	undetected_chromedriver!(No symbol) [0x10f0fe4]
+	undetected_chromedriver!GetHandleVerifier [0x15348b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x152feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x154e06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x12e5cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x12ed9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x12d58c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x12d5a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x12bee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
 
-27/03/2026 11:48:47 - Erro no CPF 451331568-71: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[contains(text(), '45291 - RENAPSI - SÃO PAULO - C-C | 47.312.245/0001-18')]"}
+31/03/2026 10:32:19 - CPF 436710378-14 já estava IMPLANTADO.
+31/03/2026 10:35:41 - CPF 031879732-13 roteirizado e enviado com sucesso.
+31/03/2026 10:39:05 - CPF 478184558-41 roteirizado e enviado com sucesso.
+31/03/2026 10:39:25 - Erro no CPF 238408758-46: Message: element click intercepted: Element <button type="button" disabled="" class="sc-koXPp iZaZqg">...</button> is not clickable at point (1041, 489). Other element would receive the click: <div class="sc-aXZVg eAjQKK">...</div>
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0xcfcdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0xcfcf24+10c34]
+	undetected_chromedriver!(No symbol) [0xae2120]
+	undetected_chromedriver!(No symbol) [0xb312b8]
+	undetected_chromedriver!(No symbol) [0xb2f4c9]
+	undetected_chromedriver!(No symbol) [0xb2ce82]
+	undetected_chromedriver!(No symbol) [0xb2c094]
+	undetected_chromedriver!(No symbol) [0xb21ca8]
+	undetected_chromedriver!(No symbol) [0xb4db0c]
+	undetected_chromedriver!(No symbol) [0xb216e4]
+	undetected_chromedriver!(No symbol) [0xb4dcd4]
+	undetected_chromedriver!(No symbol) [0xb6a9a5]
+	undetected_chromedriver!(No symbol) [0xb4d8a6]
+	undetected_chromedriver!(No symbol) [0xb20229]
+	undetected_chromedriver!(No symbol) [0xb20fe4]
+	undetected_chromedriver!GetHandleVerifier [0xf648b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0xf5feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0xf7e06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0xd15cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0xd1d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0xd058c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0xd05a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0xceee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 10:40:24 - Erro no CPF 458047838-07: Message: element click intercepted: Element <button type="button" disabled="" class="btn btn-primary">...</button> is not clickable at point (1273, 637). Other element would receive the click: <div class="modal-footer">...</div>
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x44cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x44cf24+10c34]
+	undetected_chromedriver!(No symbol) [0x232120]
+	undetected_chromedriver!(No symbol) [0x2812b8]
+	undetected_chromedriver!(No symbol) [0x27f4c9]
+	undetected_chromedriver!(No symbol) [0x27ce82]
+	undetected_chromedriver!(No symbol) [0x27c094]
+	undetected_chromedriver!(No symbol) [0x271ca8]
+	undetected_chromedriver!(No symbol) [0x29db0c]
+	undetected_chromedriver!(No symbol) [0x2716e4]
+	undetected_chromedriver!(No symbol) [0x29dcd4]
+	undetected_chromedriver!(No symbol) [0x2ba9a5]
+	undetected_chromedriver!(No symbol) [0x29d8a6]
+	undetected_chromedriver!(No symbol) [0x270229]
+	undetected_chromedriver!(No symbol) [0x270fe4]
+	undetected_chromedriver!GetHandleVerifier [0x6b48b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x6afeb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x6ce06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x465cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x46d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x4558c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x455a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x43ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 10:42:25 - CPF 478184558-41 roteirizado e enviado com sucesso.
+31/03/2026 10:43:08 - CPF 238408758-46 já estava IMPLANTADO.
+31/03/2026 10:44:08 - Erro no CPF 458047838-07: Message: element click intercepted: Element <button type="button" disabled="" class="btn btn-primary">...</button> is not clickable at point (1273, 637). Other element would receive the click: <div class="modal-footer">...</div>
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0xd5cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0xd5cf24+10c34]
+	undetected_chromedriver!(No symbol) [0xb42120]
+	undetected_chromedriver!(No symbol) [0xb912b8]
+	undetected_chromedriver!(No symbol) [0xb8f4c9]
+	undetected_chromedriver!(No symbol) [0xb8ce82]
+	undetected_chromedriver!(No symbol) [0xb8c094]
+	undetected_chromedriver!(No symbol) [0xb81ca8]
+	undetected_chromedriver!(No symbol) [0xbadb0c]
+	undetected_chromedriver!(No symbol) [0xb816e4]
+	undetected_chromedriver!(No symbol) [0xbadcd4]
+	undetected_chromedriver!(No symbol) [0xbca9a5]
+	undetected_chromedriver!(No symbol) [0xbad8a6]
+	undetected_chromedriver!(No symbol) [0xb80229]
+	undetected_chromedriver!(No symbol) [0xb80fe4]
+	undetected_chromedriver!GetHandleVerifier [0xfc48b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0xfbfeb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0xfde06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0xd75cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0xd7d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0xd658c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0xd65a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0xd4ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 10:47:20 - CPF 546580918-36 roteirizado e enviado com sucesso.
+31/03/2026 10:49:13 - CPF 500809138-73 roteirizado e enviado com sucesso.
+31/03/2026 10:51:05 - CPF 568388518-30 roteirizado e enviado com sucesso.
+31/03/2026 10:52:57 - CPF 597234928-06 roteirizado e enviado com sucesso.
+31/03/2026 10:54:44 - Erro no CPF 469879378-50: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
   (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
 Stacktrace:
-	chromedriver!GetHandleVerifier [0x4dcdf3+10b03]
-	chromedriver!GetHandleVerifier [0x4dcf24+10c34]
-	chromedriver!(No symbol) [0x2c2120]
-	chromedriver!(No symbol) [0x30abca]
-	chromedriver!(No symbol) [0x30ae6b]
-	chromedriver!(No symbol) [0x34d0b2]
-	chromedriver!(No symbol) [0x32db54]
-	chromedriver!(No symbol) [0x34a9a5]
-	chromedriver!(No symbol) [0x32d8a6]
-	chromedriver!(No symbol) [0x300229]
-	chromedriver!(No symbol) [0x300fe4]
-	chromedriver!GetHandleVerifier [0x7448b9+2785c9]
-	chromedriver!GetHandleVerifier [0x73feb5+273bc5]
-	chromedriver!GetHandleVerifier [0x75e06b+291d7b]
-	chromedriver!GetHandleVerifier [0x4f5cc8+299d8]
-	chromedriver!GetHandleVerifier [0x4fd9fd+3170d]
-	chromedriver!GetHandleVerifier [0x4e58c8+195d8]
-	chromedriver!GetHandleVerifier [0x4e5a92+197a2]
-	chromedriver!GetHandleVerifier [0x4cee9a+2baa]
-	KERNEL32!BaseThreadInitThunk [0x75cd5d49+19]
-	ntdll!RtlInitializeExceptionChain [0x772cd81b+6b]
-	ntdll!RtlGetAppContainerNamedObjectPath [0x772cd7a1+231]
+	undetected_chromedriver!GetHandleVerifier [0x37cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x37cf24+10c34]
+	undetected_chromedriver!(No symbol) [0x162120]
+	undetected_chromedriver!(No symbol) [0x1aabca]
+	undetected_chromedriver!(No symbol) [0x1aae6b]
+	undetected_chromedriver!(No symbol) [0x1ed0b2]
+	undetected_chromedriver!(No symbol) [0x1cdb54]
+	undetected_chromedriver!(No symbol) [0x1ea9a5]
+	undetected_chromedriver!(No symbol) [0x1cd8a6]
+	undetected_chromedriver!(No symbol) [0x1a0229]
+	undetected_chromedriver!(No symbol) [0x1a0fe4]
+	undetected_chromedriver!GetHandleVerifier [0x5e48b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x5dfeb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x5fe06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x395cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x39d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x3858c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x385a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x36ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+	(No symbol) [(nil)]
 
-27/03/2026 11:49:29 - Erro no CPF 443770338-32: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 542055548-42: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 494743668-96: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 451331568-71: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 470654328-23: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 455349168-00: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 555238698-13: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 541070928-44: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 135816739-75: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 521867698-59: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 429706828-18: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:29 - Erro no CPF 555146548-93: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 432748318-40: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 472157358-85: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 058794338-62: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 586334348-65: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 459908118-37: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 448163238-05: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 458507078-83: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 430051988-98: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 531750878-92: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:30 - Erro no CPF 498509058-16: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 480493168-66: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 239878168-21: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 493024998-80: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 436710378-14: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 031879732-13: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 478184558-41: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 569502298-36: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 238408758-46: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 535659938-20: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:31 - Erro no CPF 458047838-07: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 508014998-10: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 534821568-67: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 462332608-09: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 546274688-14: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 546580918-36: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 500809138-73: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 489610398-06: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 568388518-30: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 597234928-06: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:32 - Erro no CPF 469879378-50: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 423138378-23: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 564657448-05: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 518125068-80: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 572885248-33: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 526137908-30: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 586294338-25: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 454537928-17: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 452695498-59: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 900574078-78: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:33 - Erro no CPF 468819838-83: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 561564158-40: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 241965058-13: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 547724808-46: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 432635818-13: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 473339038-69: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 566876828-73: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 515211268-01: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 596124158-03: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 508110068-40: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 460462238-81: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:34 - Erro no CPF 559795078-92: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 529134048-71: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 545887648-29: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 540780308-90: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 474781468-05: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 442200828-59: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 477692908-21: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 469246028-86: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 149392214-90: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 479127378-80: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 590043938-03: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:35 - Erro no CPF 501806808-62: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 402348658-22: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 546267928-98: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 426598668-48: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 439433548-57: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 474201518-57: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 475032348-90: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 476119818-46: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 513560918-06: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 530823228-83: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:36 - Erro no CPF 576291598-03: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:37 - Erro no CPF 471132628-64: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:37 - Erro no CPF 525675748-24: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:37 - Erro no CPF 582649998-24: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:37 - Erro no CPF 511310888-08: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:37 - Erro no CPF 445365398-08: 'NoneType' object has no attribute 'click'
-27/03/2026 11:49:37 - Erro no CPF 595743958-47: 'NoneType' object has no attribute 'click'
+31/03/2026 10:56:36 - CPF 586294338-25 roteirizado e enviado com sucesso.
+31/03/2026 10:58:29 - CPF 452695498-59 roteirizado e enviado com sucesso.
+31/03/2026 10:58:46 - Erro no CPF 468819838-83: Message: element click intercepted: Element <button type="button" disabled="" class="sc-koXPp iZaZqg">...</button> is not clickable at point (1041, 489). Other element would receive the click: <div class="sc-aXZVg eAjQKK">...</div>
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0xfecdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0xfecf24+10c34]
+	undetected_chromedriver!(No symbol) [0xdd2120]
+	undetected_chromedriver!(No symbol) [0xe212b8]
+	undetected_chromedriver!(No symbol) [0xe1f4c9]
+	undetected_chromedriver!(No symbol) [0xe1ce82]
+	undetected_chromedriver!(No symbol) [0xe1c094]
+	undetected_chromedriver!(No symbol) [0xe11ca8]
+	undetected_chromedriver!(No symbol) [0xe3db0c]
+	undetected_chromedriver!(No symbol) [0xe116e4]
+	undetected_chromedriver!(No symbol) [0xe3dcd4]
+	undetected_chromedriver!(No symbol) [0xe5a9a5]
+	undetected_chromedriver!(No symbol) [0xe3d8a6]
+	undetected_chromedriver!(No symbol) [0xe10229]
+	undetected_chromedriver!(No symbol) [0xe10fe4]
+	undetected_chromedriver!GetHandleVerifier [0x12548b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x124feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x126e06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x1005cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x100d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0xff58c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0xff5a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0xfdee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 11:00:38 - CPF 561564158-40 roteirizado e enviado com sucesso.
+31/03/2026 11:02:30 - CPF 241965058-13 roteirizado e enviado com sucesso.
+31/03/2026 11:04:22 - CPF 547724808-46 roteirizado e enviado com sucesso.
+31/03/2026 11:06:09 - Erro no CPF 432635818-13: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x9ecdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x9ecf24+10c34]
+	undetected_chromedriver!(No symbol) [0x7d2120]
+	undetected_chromedriver!(No symbol) [0x81abca]
+	undetected_chromedriver!(No symbol) [0x81ae6b]
+	undetected_chromedriver!(No symbol) [0x85d0b2]
+	undetected_chromedriver!(No symbol) [0x83db54]
+	undetected_chromedriver!(No symbol) [0x85a9a5]
+	undetected_chromedriver!(No symbol) [0x83d8a6]
+	undetected_chromedriver!(No symbol) [0x810229]
+	undetected_chromedriver!(No symbol) [0x810fe4]
+	undetected_chromedriver!GetHandleVerifier [0xc548b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0xc4feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0xc6e06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0xa05cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0xa0d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x9f58c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x9f5a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x9dee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 11:08:01 - CPF 566876828-73 roteirizado e enviado com sucesso.
+31/03/2026 11:09:53 - CPF 515211268-01 roteirizado e enviado com sucesso.
+31/03/2026 11:11:45 - CPF 596124158-03 roteirizado e enviado com sucesso.
+31/03/2026 11:13:31 - Erro no CPF 508110068-40: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x37cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x37cf24+10c34]
+	undetected_chromedriver!(No symbol) [0x162120]
+	undetected_chromedriver!(No symbol) [0x1aabca]
+	undetected_chromedriver!(No symbol) [0x1aae6b]
+	undetected_chromedriver!(No symbol) [0x1ed0b2]
+	undetected_chromedriver!(No symbol) [0x1cdb54]
+	undetected_chromedriver!(No symbol) [0x1ea9a5]
+	undetected_chromedriver!(No symbol) [0x1cd8a6]
+	undetected_chromedriver!(No symbol) [0x1a0229]
+	undetected_chromedriver!(No symbol) [0x1a0fe4]
+	undetected_chromedriver!GetHandleVerifier [0x5e48b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x5dfeb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x5fe06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x395cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x39d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x3858c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x385a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x36ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+	(No symbol) [(nil)]
+
+31/03/2026 11:15:24 - CPF 460462238-81 roteirizado e enviado com sucesso.
+31/03/2026 11:17:16 - CPF 559795078-92 roteirizado e enviado com sucesso.
+31/03/2026 11:19:09 - CPF 529134048-71 roteirizado e enviado com sucesso.
+31/03/2026 11:21:00 - CPF 545887648-29 roteirizado e enviado com sucesso.
+31/03/2026 11:22:45 - Erro no CPF 540780308-90: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x127cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x127cf24+10c34]
+	undetected_chromedriver!(No symbol) [0x1062120]
+	undetected_chromedriver!(No symbol) [0x10aabca]
+	undetected_chromedriver!(No symbol) [0x10aae6b]
+	undetected_chromedriver!(No symbol) [0x10ed0b2]
+	undetected_chromedriver!(No symbol) [0x10cdb54]
+	undetected_chromedriver!(No symbol) [0x10ea9a5]
+	undetected_chromedriver!(No symbol) [0x10cd8a6]
+	undetected_chromedriver!(No symbol) [0x10a0229]
+	undetected_chromedriver!(No symbol) [0x10a0fe4]
+	undetected_chromedriver!GetHandleVerifier [0x14e48b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x14dfeb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x14fe06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x1295cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x129d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x12858c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x1285a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x126ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 11:24:37 - CPF 474781468-05 roteirizado e enviado com sucesso.
+31/03/2026 11:26:23 - Erro no CPF 442200828-59: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x77cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x77cf24+10c34]
+	undetected_chromedriver!(No symbol) [0x562120]
+	undetected_chromedriver!(No symbol) [0x5aabca]
+	undetected_chromedriver!(No symbol) [0x5aae6b]
+	undetected_chromedriver!(No symbol) [0x5ed0b2]
+	undetected_chromedriver!(No symbol) [0x5cdb54]
+	undetected_chromedriver!(No symbol) [0x5ea9a5]
+	undetected_chromedriver!(No symbol) [0x5cd8a6]
+	undetected_chromedriver!(No symbol) [0x5a0229]
+	undetected_chromedriver!(No symbol) [0x5a0fe4]
+	undetected_chromedriver!GetHandleVerifier [0x9e48b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x9dfeb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x9fe06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x795cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x79d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x7858c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x785a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x76ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 11:28:14 - CPF 477692908-21 roteirizado e enviado com sucesso.
+31/03/2026 11:30:06 - CPF 469246028-86 roteirizado e enviado com sucesso.
+31/03/2026 11:31:59 - CPF 149392214-90 roteirizado e enviado com sucesso.
+31/03/2026 11:33:45 - Erro no CPF 479127378-80: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0xfacdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0xfacf24+10c34]
+	undetected_chromedriver!(No symbol) [0xd92120]
+	undetected_chromedriver!(No symbol) [0xddabca]
+	undetected_chromedriver!(No symbol) [0xddae6b]
+	undetected_chromedriver!(No symbol) [0xe1d0b2]
+	undetected_chromedriver!(No symbol) [0xdfdb54]
+	undetected_chromedriver!(No symbol) [0xe1a9a5]
+	undetected_chromedriver!(No symbol) [0xdfd8a6]
+	undetected_chromedriver!(No symbol) [0xdd0229]
+	undetected_chromedriver!(No symbol) [0xdd0fe4]
+	undetected_chromedriver!GetHandleVerifier [0x12148b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x120feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x122e06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0xfc5cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0xfcd9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0xfb58c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0xfb5a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0xf9ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 11:35:39 - CPF 590043938-03 roteirizado e enviado com sucesso.
+31/03/2026 11:37:32 - CPF 501806808-62 roteirizado e enviado com sucesso.
+31/03/2026 11:39:24 - CPF 402348658-22 roteirizado e enviado com sucesso.
+31/03/2026 11:41:16 - CPF 546267928-98 roteirizado e enviado com sucesso.
+31/03/2026 11:43:07 - CPF 426598668-48 roteirizado e enviado com sucesso.
+31/03/2026 11:45:00 - CPF 439433548-57 roteirizado e enviado com sucesso.
+31/03/2026 11:46:52 - CPF 474201518-57 roteirizado e enviado com sucesso.
+31/03/2026 11:48:44 - CPF 475032348-90 roteirizado e enviado com sucesso.
+31/03/2026 11:50:29 - Erro no CPF 476119818-46: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x11fcdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x11fcf24+10c34]
+	undetected_chromedriver!(No symbol) [0xfe2120]
+	undetected_chromedriver!(No symbol) [0x102abca]
+	undetected_chromedriver!(No symbol) [0x102ae6b]
+	undetected_chromedriver!(No symbol) [0x106d0b2]
+	undetected_chromedriver!(No symbol) [0x104db54]
+	undetected_chromedriver!(No symbol) [0x106a9a5]
+	undetected_chromedriver!(No symbol) [0x104d8a6]
+	undetected_chromedriver!(No symbol) [0x1020229]
+	undetected_chromedriver!(No symbol) [0x1020fe4]
+	undetected_chromedriver!GetHandleVerifier [0x14648b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x145feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x147e06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x1215cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x121d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x12058c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x1205a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x11eee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 11:52:22 - CPF 513560918-06 roteirizado e enviado com sucesso.
+31/03/2026 11:53:20 - Erro no CPF 530823228-83: Message: element click intercepted: Element <button type="button" disabled="" class="btn btn-primary">...</button> is not clickable at point (1273, 637). Other element would receive the click: <div class="modal-footer">...</div>
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x42cdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0x42cf24+10c34]
+	undetected_chromedriver!(No symbol) [0x212120]
+	undetected_chromedriver!(No symbol) [0x2612b8]
+	undetected_chromedriver!(No symbol) [0x25f4c9]
+	undetected_chromedriver!(No symbol) [0x25ce82]
+	undetected_chromedriver!(No symbol) [0x25c094]
+	undetected_chromedriver!(No symbol) [0x251ca8]
+	undetected_chromedriver!(No symbol) [0x27db0c]
+	undetected_chromedriver!(No symbol) [0x2516e4]
+	undetected_chromedriver!(No symbol) [0x27dcd4]
+	undetected_chromedriver!(No symbol) [0x29a9a5]
+	undetected_chromedriver!(No symbol) [0x27d8a6]
+	undetected_chromedriver!(No symbol) [0x250229]
+	undetected_chromedriver!(No symbol) [0x250fe4]
+	undetected_chromedriver!GetHandleVerifier [0x6948b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x68feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x6ae06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0x445cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0x44d9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0x4358c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0x435a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0x41ee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 11:55:12 - CPF 576291598-03 roteirizado e enviado com sucesso.
+31/03/2026 11:56:58 - Erro no CPF 471132628-64: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@id="root"]/div[1]/div/div/div[2]/header[2]/div[2]/button[5]"}
+  (Session info: chrome=146.0.7680.165); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0xdbcdf3+10b03]
+	undetected_chromedriver!GetHandleVerifier [0xdbcf24+10c34]
+	undetected_chromedriver!(No symbol) [0xba2120]
+	undetected_chromedriver!(No symbol) [0xbeabca]
+	undetected_chromedriver!(No symbol) [0xbeae6b]
+	undetected_chromedriver!(No symbol) [0xc2d0b2]
+	undetected_chromedriver!(No symbol) [0xc0db54]
+	undetected_chromedriver!(No symbol) [0xc2a9a5]
+	undetected_chromedriver!(No symbol) [0xc0d8a6]
+	undetected_chromedriver!(No symbol) [0xbe0229]
+	undetected_chromedriver!(No symbol) [0xbe0fe4]
+	undetected_chromedriver!GetHandleVerifier [0x10248b9+2785c9]
+	undetected_chromedriver!GetHandleVerifier [0x101feb5+273bc5]
+	undetected_chromedriver!GetHandleVerifier [0x103e06b+291d7b]
+	undetected_chromedriver!GetHandleVerifier [0xdd5cc8+299d8]
+	undetected_chromedriver!GetHandleVerifier [0xddd9fd+3170d]
+	undetected_chromedriver!GetHandleVerifier [0xdc58c8+195d8]
+	undetected_chromedriver!GetHandleVerifier [0xdc5a92+197a2]
+	undetected_chromedriver!GetHandleVerifier [0xdaee9a+2baa]
+	KERNEL32!BaseThreadInitThunk [0x75a65d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77d6d81b+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77d6d7a1+231]
+
+31/03/2026 11:58:50 - CPF 525675748-24 roteirizado e enviado com sucesso.
+31/03/2026 12:00:40 - CPF 511310888-08 roteirizado e enviado com sucesso.
+31/03/2026 12:02:28 - CPF 445365398-08 roteirizado e enviado com sucesso.

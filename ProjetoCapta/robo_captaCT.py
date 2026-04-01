@@ -1,12 +1,40 @@
+<<<<<<< HEAD
+import undetected_chromedriver as uc # Bypass anti-bot
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+=======
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options 
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+>>>>>>> bef8fb52658d19e7bda1d4fba05c1c98341ed52c
 import time
 from datetime import datetime
 
 # Leitor da lista de CPFS
+<<<<<<< HEAD
+with open('cpfs_reaiscc.txt', 'r') as arquivo:
+    cpfs = arquivo.readlines()
+     
+total_cpfs = len(cpfs) 
+print(f"🚀 Iniciando o Robôzinho Ninja da Roteirização: {total_cpfs} CPFs na fila.")
+
+# --- CONFIGURAÇÃO INDETECTÁVEL --- (eu espero)
+# camuflagem uc para evitar bloqueios e parecer um usuário normal
+opcoes = uc.ChromeOptions()
+navegador = uc.Chrome(options=opcoes)
+navegador.maximize_window()
+
+# Sobe no site
+link_login = "https://app.captamobilidade.com.br/" 
+navegador.get(link_login)
+
+# Pausa para carregar o Login
+time.sleep(3)
+
+# Implementar o CPF no campo de login
+=======
 with open('cpfs_reais.txt', 'r') as arquivo:
     cpfs = arquivo.readlines()
      
@@ -31,6 +59,7 @@ navegador.maximize_window() # F11 no google
 time.sleep(2)
 
 # Implementar o CPF
+>>>>>>> bef8fb52658d19e7bda1d4fba05c1c98341ed52c
 navegador.find_element(By.XPATH, '//*[@id="root"]/div[2]/div[2]/div[4]/div[1]/div/div/div/input').send_keys("41350968838")
 time.sleep(2)
 
