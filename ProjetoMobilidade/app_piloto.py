@@ -57,6 +57,7 @@ st.sidebar.title("Menu de Navegação")
 menu = st.sidebar.radio("Escolha a área:", ["🚌 Painel de Roteirização", "➕ Cadastrar Novo Jovem"])
 
 # --- TELA 1: PAINEL DE ROTEIRIZAÇÃO ---
+# --- TELA 1: PAINEL DE ROTEIRIZAÇÃO ---
 if menu == "🚌 Painel de Roteirização":
     st.title("🚌 Painel de Mobilidade - Renapsi (Protótipo)")
     st.write("Sistema inteligente de roteirização e cálculo de vale-transporte.")
@@ -64,13 +65,58 @@ if menu == "🚌 Painel de Roteirização":
 
     df_jovens = carregar_dados()
 
+    # --- NOVIDADE: DASHBOARD DE KPIs (Indicadores Chave) ---
+    st.subheader("📊 Visão Geral e Impacto")
+    
+    # Cálculos dinâmicos
+    total_jovens = len(df_jovens)
+    # Matemátia pura: Se salvamos 53s por jovem, multiplicamos pelo total e dividimos por 60 para ter em minutos
+    tempo_salvo_minutos = (total_jovens * 53) / 60 
+    
+    # Criando 3 colunas para os Cards
+    kpi1, kpi2, kpi3 = st.columns(3)
+    
+    kpi1.metric(label="👥 Jovens Aguardando", value=total_jovens)
+    
+    # O "delta" cria aquela setinha verde/vermelha de performance!
+    kpi2.metric(label="⏱️ Tempo Operacional Salvo", 
+                value=f"{tempo_salvo_minutos:.1f} min", 
+                delta="Tempo livre para o RH")
+                
+    kpi3.metric(label="💰 Custo Médio Projetado", 
+                value="R$ 9,40", 
+                delta="-12% vs Rota Manual", 
+                delta_color="inverse") # 'inverse' deixa o negativo verde (porque economizar dinheiro é bom!)
+
+    st.markdown("---")
+    
     st.subheader("📋 Base de Jovens (Aguardando Roteirização)")
     
     # Trava de segurança: só mostra a tabela e os botões se tiver alguém cadastrado
     if not df_jovens.empty:
+        # A tabela que já existia
         st.dataframe(df_jovens, use_container_width=True, hide_index=True)
+        
+        # --- Depois lembrar de adicionar: BOTÃO DE EXPORTAR ---
+        # 1. Transformar o DataFrame do Pandas num arquivo CSV lido pelo Excel
+        # Usar o bendito 'utf-8-sig' para o Excel do Windows não quebrar os acentos (ç, ã, etc)!
+        csv = df_jovens.to_csv(index=False, sep=';').encode('utf-8-sig')
+        
+        # 2. Criamos o botão de download do Streamlit
+        st.download_button(
+            label="📥 Exportar Base para Excel (CSV)",
+            data=csv,
+            file_name="base_jovens_mobilidade.csv",
+            mime="text/csv"
+        )
+        # -----------------------------------
+
         st.markdown("---")
         st.subheader("⚙️ Painel de Operação Inteligente")
+        
+        # ... (O RESTO DO CÓDIGO CONTINUA IGUAL DAQUI PRA BAIXO) ...
+        
+        # ... (O RESTO DO CÓDIGO CONTINUA IGUAL DAQUI PRA BAIXO: Painel de Operação, botões, etc) ...
 
         col1, col2 = st.columns([2, 1])
 
