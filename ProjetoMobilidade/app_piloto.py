@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import requests
+import plotly.express as px
 import random
 import time
 
