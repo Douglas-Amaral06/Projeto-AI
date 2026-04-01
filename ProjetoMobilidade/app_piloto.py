@@ -164,27 +164,69 @@ if menu == "🚌 Painel de Roteirização":
     else:
         st.warning("A base de dados está vazia! Vá no menu lateral e cadastre um jovem para começar.")
 
-# ---  CADASTRO DE JOVENS ---
+
+# --- TELA 2: CADASTRO DE JOVENS (COM ABAS) ---
 elif menu == "➕ Cadastrar Novo Jovem":
     st.title("➕ Cadastrar Novo Jovem")
-    st.write("Insira os dados do aprendiz para adicioná-lo à base de roteirização.")
+    st.write("Adicione novos aprendizes à base de dados manualmente ou enviando uma planilha Excel.")
     st.markdown("---")
 
-    with st.form(key="form_novo_jovem"):
-        col_nome, col_cpf = st.columns(2)
-        nome_input = col_nome.text_input("Nome Completo do Jovem:")
-        cpf_input = col_cpf.text_input("CPF (Apenas números):", max_chars=11)
-        
-        col_cep1, col_cep2 = st.columns(2)
-        cep_casa_input = col_cep1.text_input("CEP da Residência (Apenas números):", max_chars=8)
-        cep_trab_input = col_cep2.text_input("CEP do Trabalho/Polo (Apenas números):", max_chars=8)
-        
-        botao_salvar = st.form_submit_button("💾 Salvar Jovem na Base de Dados")
+    # Criando as Abas (Tabs)
+    tab_manual, tab_massa = st.tabs(["✍️ Cadastro Manual", "📂 Importação em Massa (Excel/CSV)"])
 
-    if botao_salvar:
-        if nome_input and cpf_input and cep_casa_input and cep_trab_input:
-            inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input)
-            st.success(f"✅ O jovem {nome_input} foi cadastrado com sucesso no sistema!")
-            st.info("Você pode voltar ao 'Painel de Roteirização' no menu lateral para calcular a rota dele.")
-        else:
-            st.error("⚠️ Por favor, preencha todos os campos antes de salvar.")
+    # === ABA 1: CADASTRO MANUAL ===
+    with tab_manual:
+        with st.form(key="form_novo_jovem"):
+            col_nome, col_cpf = st.columns(2)
+            nome_input = col_nome.text_input("Nome Completo do Jovem:")
+            cpf_input = col_cpf.text_input("CPF (Apenas números):", max_chars=11)
+            
+            col_cep1, col_cep2 = st.columns(2)
+            cep_casa_input = col_cep1.text_input("CEP da Residência (Apenas números):", max_chars=8)
+            cep_trab_input = col_cep2.text_input("CEP do Trabalho/Polo (Apenas números):", max_chars=8)
+            
+            botao_salvar = st.form_submit_button("💾 Salvar Jovem na Base de Dados")
+
+        if botao_salvar:
+            if nome_input and cpf_input and cep_casa_input and cep_trab_input:
+                inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input)
+                st.success(f"✅ O jovem {nome_input} foi cadastrado com sucesso no sistema!")
+            else:
+                st.error("⚠️ Por favor, preencha todos os campos antes de salvar.")
+
+    # === ABA 2: IMPORTAÇÃO EM MASSA ===
+    with tab_massa:
+        st.info("💡 A sua planilha Excel ou CSV deve conter exatamente as colunas na primeira linha: **nome, cpf, cep_casa, cep_trabalho**")
+        
+        # O componente que permite arrastar e largar arquivos!
+        arquivo_upload = st.file_uploader("Arraste o seu arquivo Excel (.xlsx) ou CSV para cá", type=["xlsx", "csv"])
+        
+        if arquivo_upload is not None:
+            try:
+                # O Python lê o arquivo inteiro de uma vez (dtype=str garante que os zeros à esquerda dos CEPs não sumam)
+                if arquivo_upload.name.endswith('.csv'):
+                    df_upload = pd.read_csv(arquivo_upload, sep=';', dtype=str)
+                else:
+                    df_upload = pd.read_excel(arquivo_upload, dtype=str)
+                
+                st.write("🔍 Pré-visualização dos dados encontrados:")
+                st.dataframe(df_upload.head(), use_container_width=True)
+                
+                botao_salvar_massa = st.button("🚀 Importar Todos para a Base de Dados", type="primary")
+                
+                if botao_salvar_massa:
+                    with st.spinner("Enviando dados para a base..."):
+                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        # Filtra apenas as colunas exatas para evitar erros caso o Excel tenha colunas a mais
+                        df_limpo = df_upload[['nome', 'cpf', 'cep_casa', 'cep_trabalho']]
+                        
+                        # O método to_sql  insere milhares de linhas de uma só vez
+                        df_limpo.to_sql('jovens_rotas', conexao, if_exists='append', index=False)
+                        conexao.close()
+                        
+                        st.success(f"✅ Sucesso! {len(df_limpo)} jovens foram importados para o sistema num piscar de olhos.")
+                        time.sleep(2)
+                        st.rerun()
+                        
+            except Exception as e:
+                st.error(f"❌ Erro ao ler o arquivo. Confirme se o nome das colunas está correto (em letras minúsculas). Detalhe técnico: {e}")
