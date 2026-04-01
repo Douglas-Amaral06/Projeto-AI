@@ -2,31 +2,31 @@ import sqlite3
 import requests
 import time
 
-# Conecta no banco de dados
+# 1. Conectando no seu banco de dados
 conexao = sqlite3.connect('mobilidade_renapsi.db')
 cursor = conexao.cursor()
 
-# Puxa as informações do banco
+# 2. Puxando as informações do Porta-Malas
 cursor.execute("SELECT nome, cep_casa FROM jovens_rotas")
 jovens = cursor.fetchall() # Isso traz uma lista com todos os jovens
 
 print("🔎 Iniciando consulta de CEPs via API (ViaCEP)...\n")
 
-# 3. O Loop da API - Para cada jovem, pega o nome e o CEP, consulta a API e imprime o resultado
+# 3. O Loop da API (O Garçom trabalhando)
 for jovem in jovens:
     nome = jovem[0]
     cep = jovem[1]
     
     print(f"Buscando endereço do(a) {nome} (CEP: {cep})...")
     
-    # Monta a URL para a API 
+    # Montando a URL para a API (O pedido pro garçom)
     url = f"https://viacep.com.br/ws/{cep}/json/"
     
     try:
         # Fazendo a requisição GET (O Python chamando a API)
         resposta = requests.get(url)
         
-        # Transforma a resposta em um dicionário (JSON -> Dicionário Python)
+        # Lendo a bandeja que o garçom trouxe (Vem no formato JSON)
         dados = resposta.json()
         
         # Checando se a API retornou erro (CEP inválido)
