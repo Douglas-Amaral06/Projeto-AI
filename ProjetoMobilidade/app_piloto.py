@@ -27,6 +27,14 @@ def inserir_novo_jovem(nome, cpf, cep_casa, cep_trabalho):
     conexao.commit()
     conexao.close()
 
+def cpf_ja_existe(cpf):
+    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    cursor = conexao.cursor()
+    cursor.execute("SELECT COUNT(*) FROM jovens_rotas WHERE cpf = ?", (cpf,))
+    resultado = cursor.fetchone()[0]
+    conexao.close()
+    return resultado is not None
+
 def excluir_jovem(id_jovem):
     conexao = sqlite3.connect('mobilidade_renapsi.db')
     cursor = conexao.cursor()
@@ -214,12 +222,28 @@ elif menu == "➕ Cadastrar Novo Jovem":
             
             botao_salvar = st.form_submit_button("💾 Salvar Jovem na Base de Dados")
 
-        if botao_salvar:
-            if nome_input and cpf_input and cep_casa_input and cep_trab_input:
-                inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input)
-                st.success(f"✅ O jovem {nome_input} foi cadastrado com sucesso no sistema!")
-            else:
+    if botao_salvar:
+            # Trava 1: Campos Vazios
+            if not (nome_input and cpf_input and cep_casa_input and cep_trab_input):
                 st.error("⚠️ Por favor, preencha todos os campos antes de salvar.")
+            
+            # Trava 2: CPF Duplicado (Chama a função nova que criamos)
+            elif cpf_ja_existe(cpf_input):
+                st.error(f"❌ Operação bloqueada: O CPF {cpf_input} já está cadastrado para outro jovem no sistema!")
+            
+            else:
+                with st.spinner("Validando CEPs nos Correios..."):
+                    # Trava 3: Validação de CEP no ViaCEP antes de salvar
+                    validacao_casa = buscar_endereco_viacep(cep_casa_input)
+                    validacao_trab = buscar_endereco_viacep(cep_trab_input)
+                    
+                    if "inválido" in validacao_casa or "inválido" in validacao_trab:
+                        st.error("❌ Operação bloqueada: Um dos CEPs informados é inválido ou não existe no mapa.")
+                        st.info(f"Retorno Casa: {validacao_casa} | Retorno Trabalho: {validacao_trab}")
+                    else:
+                        # Se passou pelas 3 travas, o sistema salva no banco!
+                        inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input)
+                        st.success(f"✅ Sucesso! O jovem {nome_input} foi cadastrado e os CEPs foram validados.")
 
     # === ABA 2: IMPORTAÇÃO EM MASSA ===
     with tab_massa:
