@@ -203,12 +203,16 @@ elif menu == "➕ Cadastrar Novo Jovem":
         
         if arquivo_upload is not None:
             try:
-                # O Python lê o arquivo inteiro de uma vez (dtype=str garante que os zeros à esquerda dos CEPs não sumam)
+                # 1. O Python lê o arquivo
                 if arquivo_upload.name.endswith('.csv'):
                     df_upload = pd.read_csv(arquivo_upload, sep=';', dtype=str)
                 else:
                     df_upload = pd.read_excel(arquivo_upload, dtype=str)
                 
+                #Limpa os nomes das colunas para evitar erros de digitação (ex: "Nome " com espaço)
+                df_upload.columns = df_upload.columns.str.lower().str.strip()
+                
+                # 3. Só DEPOIS da limpeza que o Streamlit exibe a pré-visualização dos dados
                 st.write("🔍 Pré-visualização dos dados encontrados:")
                 st.dataframe(df_upload.head(), use_container_width=True)
                 
