@@ -57,7 +57,6 @@ st.sidebar.title("Menu de Navegação")
 menu = st.sidebar.radio("Escolha a área:", ["🚌 Painel de Roteirização", "➕ Cadastrar Novo Jovem"])
 
 # --- TELA 1: PAINEL DE ROTEIRIZAÇÃO ---
-# --- TELA 1: PAINEL DE ROTEIRIZAÇÃO ---
 if menu == "🚌 Painel de Roteirização":
     st.title("🚌 Painel de Mobilidade - Renapsi (Protótipo)")
     st.write("Sistema inteligente de roteirização e cálculo de vale-transporte.")
@@ -65,65 +64,35 @@ if menu == "🚌 Painel de Roteirização":
 
     df_jovens = carregar_dados()
 
-    # --- NOVIDADE: DASHBOARD DE KPIs (Indicadores Chave) ---
+    # --- DASHBOARD DE KPIs ---
     st.subheader("📊 Visão Geral e Impacto")
     
-    # Cálculos dinâmicos
     total_jovens = len(df_jovens)
-    # Matemátia pura: Se salvamos 53s por jovem, multiplicamos pelo total e dividimos por 60 para ter em minutos
     tempo_salvo_minutos = (total_jovens * 53) / 60 
     
-    # Criando 3 colunas para os Cards
     kpi1, kpi2, kpi3 = st.columns(3)
-    
     kpi1.metric(label="👥 Jovens Aguardando", value=total_jovens)
-    
-    # O "delta" cria aquela setinha verde/vermelha de performance!
-    kpi2.metric(label="⏱️ Tempo Operacional Salvo", 
-                value=f"{tempo_salvo_minutos:.1f} min", 
-                delta="Tempo livre para o RH")
-                
-    kpi3.metric(label="💰 Custo Médio Projetado", 
-                value="R$ 9,40", 
-                delta="-12% vs Rota Manual", 
-                delta_color="inverse") # 'inverse' deixa o negativo verde (porque economizar dinheiro é bom!)
+    kpi2.metric(label="⏱️ Tempo Operacional Salvo", value=f"{tempo_salvo_minutos:.1f} min", delta="Tempo livre para o RH")
+    kpi3.metric(label="💰 Custo Médio Projetado", value="R$ 9,40", delta="-12% vs Rota Manual", delta_color="inverse")
 
     st.markdown("---")
-    
     st.subheader("📋 Base de Jovens (Aguardando Roteirização)")
     
-    # Trava de segurança: só mostra a tabela e os botões se tiver alguém cadastrado
+    # Trava de segurança
     if not df_jovens.empty:
-        # A tabela que já existia
         st.dataframe(df_jovens, use_container_width=True, hide_index=True)
         
-        # --- Depois lembrar de adicionar: BOTÃO DE EXPORTAR ---
-        # 1. Transformar o DataFrame do Pandas num arquivo CSV lido pelo Excel
-        # Usar o bendito 'utf-8-sig' para o Excel do Windows não quebrar os acentos (ç, ã, etc)!
+        # --- BOTÃO DE EXPORTAR ---
         csv = df_jovens.to_csv(index=False, sep=';').encode('utf-8-sig')
+        st.download_button(label="📥 Exportar Base para Excel (CSV)", data=csv, file_name="base_jovens_mobilidade.csv", mime="text/csv")
         
-        # 2. Criamos o botão de download do Streamlit
-        st.download_button(
-            label="📥 Exportar Base para Excel (CSV)",
-            data=csv,
-            file_name="base_jovens_mobilidade.csv",
-            mime="text/csv"
-        )
-        # -----------------------------------
-
         st.markdown("---")
         st.subheader("⚙️ Painel de Operação Inteligente")
-        
-        # ... (O RESTO DO CÓDIGO CONTINUA IGUAL DAQUI PRA BAIXO) ...
-        
-        # ... (O RESTO DO CÓDIGO CONTINUA IGUAL DAQUI PRA BAIXO: Painel de Operação, botões, etc) ...
 
         col1, col2 = st.columns([2, 1])
-
         with col1:
             jovem_selecionado = st.selectbox("Selecione um jovem na fila:", df_jovens['nome'])
 
-        # Pegando os dados e o ID do jovem selecionado
         dados_jovem = df_jovens[df_jovens['nome'] == jovem_selecionado].iloc[0]
         id_selecionado = int(dados_jovem['id'])
 
@@ -133,24 +102,20 @@ if menu == "🚌 Painel de Roteirização":
             botao_roteirizar = st.button("🚀 Iniciar Roteirização", type="primary", use_container_width=True)
             botao_excluir = st.button("🗑️ Excluir Jovem da Base", use_container_width=True)
 
-        # Lógica do Botão Excluir
         if botao_excluir:
             excluir_jovem(id_selecionado)
             st.warning(f"🗑️ O jovem **{jovem_selecionado}** foi removido da base de dados!")
-            time.sleep(1.5) # Dá um tempinho pra ler a mensagem
-            st.rerun() # Recarrega a página automaticamente
+            time.sleep(1.5)
+            st.rerun()
 
-        # Lógica do Botão Roteirizar
         if botao_roteirizar:
             with st.spinner('Consultando APIs de geolocalização e cruzando malha viária...'):
                 time.sleep(1.5)
-                
                 endereco_casa = buscar_endereco_viacep(dados_jovem['cep_casa'])
                 endereco_trab = buscar_endereco_viacep(dados_jovem['cep_trabalho'])
                 resultado = roteirizar_simulado()
                 
                 st.success(f"✅ Análise concluída para **{jovem_selecionado}** (Processado em 1.5s - Economia de 53s).")
-                
                 st.markdown("#### 📍 Dados Geográficos (Via API)")
                 st.info(f"🏠 **Origem (Casa):** {endereco_casa} *(CEP: {dados_jovem['cep_casa']})*")
                 st.info(f"🏢 **Destino (Trabalho/Polo):** {endereco_trab} *(CEP: {dados_jovem['cep_trabalho']})*")
@@ -160,11 +125,46 @@ if menu == "🚌 Painel de Roteirização":
                 c1.metric(label="Trajeto Sugerido", value=resultado["trajeto"])
                 c2.metric(label="Tempo Estimado", value=resultado["tempo"])
                 c3.metric(label="Custo Diário", value=f"R$ {resultado['valor_diario']:.2f}")
-    
+
+        # --- ROTEIRIZAÇÃO EM LOTE! ---
+        st.markdown("---")
+        st.subheader("⚡ Roteirização em Lote (Em Massa)")
+        st.write("Calcula rotas, integrações e custos para toda a base simultaneamente.")
+        
+        botao_lote = st.button("🚀 Iniciar Processamento em Lote (Todos os Jovens)", type="secondary", use_container_width=True)
+        
+        if botao_lote:
+            st.info("Iniciando a varredura da base de dados...")
+            barra_progresso = st.progress(0)
+            texto_status = st.empty()
+            
+            total_jovens_lote = len(df_jovens)
+            resultados_lote = []
+            
+            for index, row in df_jovens.iterrows():
+                nome_atual = row['nome']
+                texto_status.text(f"🔄 Consultando APIs para: {nome_atual} ({index + 1}/{total_jovens_lote})...")
+                time.sleep(0.5) 
+                
+                resultado_rota = roteirizar_simulado()
+                resultados_lote.append({
+                    "Jovem": nome_atual,
+                    "Trajeto": resultado_rota["trajeto"],
+                    "Tempo": resultado_rota["tempo"],
+                    "Custo (R$)": f"R$ {resultado_rota['valor_diario']:.2f}"
+                })
+                
+                porcentagem = (index + 1) / total_jovens_lote
+                barra_progresso.progress(porcentagem)
+                
+            texto_status.success(f"✅ Processamento em lote concluído com sucesso! {total_jovens_lote} rotas calculadas.")
+            df_resultados = pd.DataFrame(resultados_lote)
+            st.dataframe(df_resultados, use_container_width=True)
+            
     else:
         st.warning("A base de dados está vazia! Vá no menu lateral e cadastre um jovem para começar.")
 
-# --- TELA 2: CADASTRO DE JOVENS ---
+# ---  CADASTRO DE JOVENS ---
 elif menu == "➕ Cadastrar Novo Jovem":
     st.title("➕ Cadastrar Novo Jovem")
     st.write("Insira os dados do aprendiz para adicioná-lo à base de roteirização.")
