@@ -44,10 +44,12 @@ def inserir_novo_jovem(nome, cpf, cep_casa, cep_trabalho):
     cursor = conexao.cursor()
     # Gera uma matrícula aleatória de 6 dígitos
     matricula = str(random.randint(100000, 999999))
+    status_rota = "Otimizado" # Padrão exigido
+    
     cursor.execute('''
-        INSERT INTO jovens_rotas (nome, cpf, cep_casa, cep_trabalho, matricula)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (nome, cpf, cep_casa, cep_trabalho, matricula))
+        INSERT INTO jovens_rotas (nome, cpf, cep_casa, cep_trabalho, matricula, status_rota)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (nome, cpf, cep_casa, cep_trabalho, matricula, status_rota))
     conexao.commit()
     conexao.close()
 
@@ -84,19 +86,27 @@ def roteirizar_simulado():
     ]
     return random.choice(opcoes_rota)
 
-def atualizar_banco_para_kpis_e_novos_campos():
+# Atualização geral do banco de dados (Cria as colunas de Status e Matrícula caso não existam)
+def atualizar_banco_geral():
     conexao = sqlite3.connect('mobilidade_renapsi.db')
     cursor = conexao.cursor()
-    # Tenta adicionar as colunas novas caso o banco seja antigo
-    try:
-        cursor.execute("ALTER TABLE jovens_rotas ADD COLUMN data_consulta TEXT")
-        cursor.execute("ALTER TABLE jovens_rotas ADD COLUMN sla_segundos REAL")
-    except sqlite3.OperationalError:
-        pass
-    try:
-        cursor.execute("ALTER TABLE jovens_rotas ADD COLUMN matricula TEXT")
-    except sqlite3.OperationalError:
-        pass
+    
+    colunas_novas = [
+        ("data_consulta", "TEXT"),
+        ("sla_segundos", "REAL"),
+        ("matricula", "TEXT"),
+        ("status_rota", "TEXT DEFAULT 'Otimizado'")
+    ]
+    
+    for coluna, tipo in colunas_novas:
+        try:
+            cursor.execute(f"ALTER TABLE jovens_rotas ADD COLUMN {coluna} {tipo}")
+        except sqlite3.OperationalError:
+            pass
+            
+    # Trava de segurança: Se algum jovem antigo estiver com o status vazio, ele vira 'Otimizado'
+    cursor.execute("UPDATE jovens_rotas SET status_rota = 'Otimizado' WHERE status_rota IS NULL")
+    
     conexao.commit()
     conexao.close()
 
@@ -145,8 +155,8 @@ def registrar_contestacao(nome, cid_res, cid_trab, motivo):
     conexao.commit()
     conexao.close()
 
-# Chamadas iniciais para garantir que o banco está pronto
-atualizar_banco_para_kpis_e_novos_campos()
+# Dispara as atualizações do banco assim que o sistema roda
+atualizar_banco_geral()
 atualizar_banco_para_contestacoes()
 
 
@@ -154,8 +164,6 @@ atualizar_banco_para_contestacoes()
 st.sidebar.image("logo_renapsi.png", use_container_width=True)
 st.sidebar.title("Menu de Navegação")
 
-# Dica de UX: Ao invés de fazer o botão aparecer só se clicar no dashboard, 
-# deixamos ele fixo no menu. É o padrão de sistemas enterprise e evita bugs de navegação.
 menu = st.sidebar.radio("Escolha a área:", [
     "📊 Dashboard Principal", 
     "🔍 Pesquisar Consultas", 
@@ -265,13 +273,19 @@ if menu == "📊 Dashboard Principal":
 # ==========================================
 elif menu == "🔍 Pesquisar Consultas":
     st.title("🔍 Pesquisar Consultas")
-    st.write("Encontre aprendizes na base para visualizar rotas ou registrar contestações.")
+    
+    # 1. SEPARAÇÃO CLARA: Casa x Curso vs Casa x Trabalho
+    st.markdown("### Contexto da Pesquisa")
+    modalidade_pesquisa = st.radio(
+        "Selecione o tipo de rota que você está avaliando agora:",
+        ["Casa x Trabalho", "Casa x Curso"],
+        horizontal=True
+    )
+    st.info(f"📍 **Modo Ativo:** Você está pesquisando e alterando rotas no contexto **{modalidade_pesquisa}**.")
     st.markdown("---")
 
-    # Isso cria os botões horizontais idênticos aos do Print 1
     tab_cpf, tab_nome, tab_matricula = st.tabs(["Por CPF", "Por Nome", "Por Matrícula"])
 
-    # Função interna para não repetir o layout do resultado 3 vezes
     def renderizar_resultado_busca(df_resultado):
         if df_resultado.empty:
             st.warning("⚠️ Nenhum aprendiz encontrado com o dado informado.")
@@ -279,19 +293,22 @@ elif menu == "🔍 Pesquisar Consultas":
             dados_jovem = df_resultado.iloc[0]
             id_selecionado = dados_jovem['id']
             nome_jovem = dados_jovem['nome']
-            matricula_exib = dados_jovem.get('matricula', 'N/A')
+            
+            # Puxando os novos dados do banco
+            matricula_exib = dados_jovem.get('matricula', 'Não Gerada')
+            status_exib = dados_jovem.get('status_rota', 'Otimizado')
 
-            st.success(f"✅ Jovem encontrado: **{nome_jovem}** (Matrícula: {matricula_exib})")
+            st.success(f"✅ Jovem encontrado: **{nome_jovem}** | Matrícula: {matricula_exib} | Status: **{status_exib}**")
             
             with st.spinner("Carregando rota atual..."):
-                time.sleep(1) # Efeito visual
+                time.sleep(1) 
                 endereco_casa = buscar_endereco_viacep(dados_jovem['cep_casa'])
                 endereco_trab = buscar_endereco_viacep(dados_jovem['cep_trabalho'])
                 resultado = roteirizar_simulado()
 
                 st.markdown("#### 📍 Dados Geográficos (Via API)")
                 st.info(f"🏠 **Origem (Casa):** {endereco_casa} *(CEP: {dados_jovem['cep_casa']})*")
-                st.info(f"🏢 **Destino (Trabalho/Polo):** {endereco_trab} *(CEP: {dados_jovem['cep_trabalho']})*")
+                st.info(f"🏢 **Destino ({modalidade_pesquisa}):** {endereco_trab} *(CEP: {dados_jovem['cep_trabalho']})*")
                 
                 st.markdown("#### 🚌 Trajeto e Custos Atuais")
                 c1, c2, c3 = st.columns(3)
@@ -299,7 +316,6 @@ elif menu == "🔍 Pesquisar Consultas":
                 c2.metric(label="Tempo Estimado", value=resultado["tempo"])
                 c3.metric(label="Custo Diário", value=f"R$ {resultado['valor_diario']:.2f}")
 
-                # --- Módulo de Contestação direto na pesquisa ---
                 st.markdown("---")
                 st.markdown("#### ⚠️ Ações Pós-Consulta (Contestar)")
                 with st.form(key=f"form_contest_busca_{id_selecionado}"):
@@ -313,31 +329,27 @@ elif menu == "🔍 Pesquisar Consultas":
                             registrar_contestacao(nome_jovem=nome_jovem, cid_res="São Paulo", cid_trab="São Paulo", motivo=motivo_input)
                             st.success("✅ Contestação registrada com sucesso! Já está visível no Dashboard Principal.")
 
-    # 1. Pesquisa por CPF
     with tab_cpf:
         st.write("Digite o CPF")
-        cpf_busca = st.text_input("XXX.XXX.XXX-XX", key="input_cpf", max_chars=11)
+        cpf_busca = st.text_input("Apenas números", key="input_cpf", max_chars=11)
         if st.button("Pesquisar", type="primary", key="btn_cpf"):
             conexao = sqlite3.connect('mobilidade_renapsi.db')
             df_busca = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE cpf = ?", conexao, params=(cpf_busca,))
             conexao.close()
             renderizar_resultado_busca(df_busca)
 
-    # 2. Pesquisa por Nome
     with tab_nome:
         st.write("Digite o Nome do Jovem")
         nome_busca = st.text_input("Nome completo", key="input_nome")
         if st.button("Pesquisar", type="primary", key="btn_nome"):
             conexao = sqlite3.connect('mobilidade_renapsi.db')
-            # Busca aproximada por nome usando LIKE
             df_busca = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE nome LIKE ?", conexao, params=(f"%{nome_busca}%",))
             conexao.close()
             renderizar_resultado_busca(df_busca)
 
-    # 3. Pesquisa por Matrícula
     with tab_matricula:
         st.write("Digite o Código de Matrícula")
-        mat_busca = st.text_input("Apenas números", key="input_mat")
+        mat_busca = st.text_input("Apenas números (Ex: 123456)", key="input_mat")
         if st.button("Pesquisar", type="primary", key="btn_mat"):
             conexao = sqlite3.connect('mobilidade_renapsi.db')
             df_busca = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE matricula = ?", conexao, params=(mat_busca,))
@@ -467,22 +479,6 @@ elif menu == "🚌 Painel de Roteirização":
                 c2.metric(label="Tempo Estimado", value=resultado["tempo"])
                 c3.metric(label="Custo Diário", value=f"R$ {resultado['valor_diario']:.2f}")
 
-                # --- REGISTRO DE CONTESTAÇÃO ---
-                st.markdown("---")
-                st.markdown("#### ⚠️ Ações Pós-Consulta")
-                
-                with st.form(key=f"form_contestacao_{id_selecionado}"):
-                    motivo_input = st.text_area("O jovem discordou da rota? Informe o motivo da contestação abaixo:")
-                    btn_enviar_contestacao = st.form_submit_button("Registrar Contestação")
-                    
-                    if btn_enviar_contestacao:
-                        if motivo_input == "":
-                            st.error("Por favor, descreva o motivo da contestação.")
-                        else:
-                            registrar_contestacao(nome_jovem=jovem_selecionado, cid_res="São Paulo", cid_trab="São Paulo", motivo=motivo_input)
-                            st.success("✅ Contestação registrada com sucesso! Já está visível no Dashboard.")
-
-        # --- ROTEIRIZAÇÃO EM LOTE ---
         st.markdown("---")
         st.subheader("⚡ Roteirização em Lote (Em Massa)")
         st.write("Calcula rotas, integrações e custos para toda a base simultaneamente.")
@@ -557,7 +553,7 @@ elif menu == "➕ Cadastrar Novo Jovem":
                         st.info(f"Retorno Casa: {validacao_casa} | Retorno Trabalho: {validacao_trab}")
                     else:
                         inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input)
-                        st.success(f"✅ Sucesso! O jovem {nome_input} foi cadastrado e os CEPs foram validados.")
+                        st.success(f"✅ Sucesso! O jovem {nome_input} foi cadastrado com Status 'Otimizado' e os CEPs foram validados.")
 
     with tab_massa:
         st.info("💡 A sua planilha Excel ou CSV deve conter exatamente as colunas na primeira linha: **nome, cpf, cep_casa, cep_trabalho**")
@@ -572,8 +568,9 @@ elif menu == "➕ Cadastrar Novo Jovem":
                 
                 df_upload.columns = df_upload.columns.str.lower().str.strip()
                 
-                # Gera matrículas aleatórias para a importação em massa
+                # Gera matrículas aleatórias para a importação em massa e seta o Status padrão
                 df_upload['matricula'] = [str(random.randint(100000, 999999)) for _ in range(len(df_upload))]
+                df_upload['status_rota'] = "Otimizado"
                 
                 st.write("🔍 Pré-visualização dos dados encontrados:")
                 st.dataframe(df_upload.head(), use_container_width=True)
@@ -583,7 +580,7 @@ elif menu == "➕ Cadastrar Novo Jovem":
                 if botao_salvar_massa:
                     with st.spinner("Enviando dados para a base..."):
                         conexao = sqlite3.connect('mobilidade_renapsi.db')
-                        df_limpo = df_upload[['nome', 'cpf', 'cep_casa', 'cep_trabalho', 'matricula']]
+                        df_limpo = df_upload[['nome', 'cpf', 'cep_casa', 'cep_trabalho', 'matricula', 'status_rota']]
                         
                         df_limpo.to_sql('jovens_rotas', conexao, if_exists='append', index=False)
                         conexao.close()
