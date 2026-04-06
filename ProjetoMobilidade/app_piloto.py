@@ -60,6 +60,11 @@ def roteirizar_simulado():
     ]
     return random.choice(opcoes_rota)
 
+def buscar_coordenadas(endereco):
+    url = f"https://nominatim.openstreetmap.org/search?q={endereco}&format=json&limit=1"
+    header = {'User-Agent': 'AppMobilidadeRenapsi/1.0'}
+
+
 # --- MENU LATERAL (SIDEBAR) ---
 st.sidebar.image("https://cdn-icons-png.flaticon.com/512/3204/3204993.png", width=100)
 st.sidebar.title("Menu de Navegação")
