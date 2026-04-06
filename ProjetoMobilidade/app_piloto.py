@@ -4,10 +4,36 @@ import pandas as pd
 import requests
 import plotly.express as px
 import random
+import datetime
 import time
 
 # Configuração da página
 st.set_page_config(page_title="Nova Capta - Piloto", page_icon="🚌", layout="wide")
+
+#inserir CSS
+
+st.markdown("""
+    <style>
+    /* Esconder o menu padrão e o rodapé do Streamlit pra ficar com cara de site próprio */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Estilizando as caixinhas de KPI (Metrics) para ficarem igual da Capta */
+    div[data-testid="metric-container"] {
+        background-color: #FFFFFF;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.05);
+        border-left: 5px solid #0068C9; /* Aquela bordinha azul charmosa */
+    }
+    
+    /* Melhorando a fonte dos títulos */
+    h1, h2, h3 {
+        color: #1E3A8A; /* Azul mais escuro pros títulos */
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- FUNÇÕES DE BANCO DE DADOS E API ---
 
@@ -70,17 +96,118 @@ def buscar_coordenadas(endereco):
     except Exception:
         pass
     return -23.550520, -46.633308  
-        
+
+def atualizar_banco_para_kpis():
+    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    cursor = conexao.cursor()
+    try:
+        cursor.execute("ALTER TABLE jovens_rotas ADD COLUMN data_consulta TEXT")
+        cursor.execute("ALTER TABLE jovens_rotas ADD COLUMN sla_segundos REAL")
+    except sqlite3.OperationalError:
+        pass
+    conexao.commit()
+    conexao.close()
+def obter_dados_dashboard():
+    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    cursor = conexao.cursor()
+    
+    # Pega o mês e ano atual no formato YYYY-MM (ex: 2026-04)
+    mes_ano_atual = datetime.datetime.now().strftime("%Y-%m")
+    
+    # Busca o total de consultas únicas e a média de tempo apenas deste mês
+    cursor.execute("""
+        SELECT COUNT(DISTINCT id), AVG(sla_segundos) 
+        FROM jovens_rotas 
+        WHERE data_consulta LIKE ?
+    """, (f"{mes_ano_atual}%",))
+    
+    resultado = cursor.fetchone()
+    conexao.close()
+    
+    total_consultas = resultado[0] if resultado[0] else 0
+    sla_medio = resultado[1] if resultado[1] else 0.0
+    
+    return total_consultas, sla_medio
+
+atualizar_banco_para_kpis()  # Chama a função para garantir que as colunas existem
 
 
 # --- MENU LATERAL (SIDEBAR) ---
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/3204/3204993.png", width=100)
+st.sidebar.image("logo_renapsi.png", use_container_width=True)
 st.sidebar.title("Menu de Navegação")
-menu = st.sidebar.radio("Escolha a área:", ["🚌 Painel de Roteirização", "➕ Cadastrar Novo Jovem"])
 
+# CORREÇÃO 1: Colocando as 3 opções no menu
+menu = st.sidebar.radio("Escolha a área:", ["📊 Dashboard Principal", "🚌 Painel de Roteirização", "➕ Cadastrar Novo Jovem"])
+
+# ==========================================
+# --- TELA 0: DASHBOARD PRINCIPAL (ABA 1) ---
+# ==========================================
+if menu == "📊 Dashboard Principal":
+    
+    
+    tipo_rota = st.radio(
+        "Selecione a modalidade de análise:",
+        ["Casa x Trabalho", "Casa x Curso", "Gestão de Base"],
+        horizontal=True
+    )
+    st.write("São as roteirizações realizadas para os aprendizes selecionados.")
+    st.markdown("<br>", unsafe_allow_html=True) 
+    
+    meses_pt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+    mes_atual = meses_pt[datetime.datetime.now().month - 1]
+    ano_atual = datetime.datetime.now().year
+    
+    col_titulo, col_btn1, col_btn2 = st.columns([2, 1, 1])
+    with col_titulo:
+        st.markdown(f"<h2 style='color: #1E3A8A; margin-top: 0px;'>Dashboard {mes_atual} de {ano_atual}</h2>", unsafe_allow_html=True)
+    with col_btn1:
+        st.button("📅 Alterar Período", use_container_width=True)
+    with col_btn2:
+        st.button("📥 Download Relatório", use_container_width=True)
+        
+    col_kpi1, col_kpi2 = st.columns(2)
+    with col_kpi1:
+        st.metric(label="Total de Consultas", value="1", delta="Consulta", delta_color="off")
+    with col_kpi2:
+        st.metric(label="SLA Médio - Tempo de Resposta", value="19", delta="Minutos", delta_color="off")
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    col_g1, col_g2, col_g3, col_g4 = st.columns(4)
+    
+    with col_g1:
+        st.markdown("**Implantações (0 / 1)**")
+        st.info("📦 Não foi realizada nenhuma implantação no período selecionado.")
+        
+    with col_g2:
+        st.markdown("**Contestações (2 / 1)**")
+        fig_contest = px.pie(values=[2, 1], names=['Aprovadas', 'Contestadas'], hole=0.75)
+        fig_contest.update_traces(textinfo='none', marker=dict(colors=['#43b596', '#FFFFFF']), hoverinfo="skip")
+        fig_contest.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=180, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig_contest, use_container_width=True, key="graf_contest")
+
+    with col_g3:
+        st.markdown("**Consultas por Local de Trabalho**")
+        fig_local = px.pie(values=[10, 0], names=['SP', 'Outros'], hole=0.75)
+        fig_local.update_traces(textinfo='none', marker=dict(colors=['#2a4b5d', '#FFFFFF']), hoverinfo="skip")
+        fig_local.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=180, paper_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig_local, use_container_width=True, key="graf_local")
+
+    with col_g4:
+        st.markdown("**Consultas por UF**")
+        fig_uf = px.pie(values=[10, 0], names=['SP', 'Outros'], hole=0.75)
+        fig_uf.update_traces(textinfo='none', marker=dict(colors=['#2a4b5d', '#FFFFFF']), hoverinfo="skip")
+        fig_uf.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=180, paper_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig_uf, use_container_width=True, key="graf_uf")
+
+
+# ==========================================
 # --- TELA 1: PAINEL DE ROTEIRIZAÇÃO ---
-if menu == "🚌 Painel de Roteirização":
+# ==========================================
+elif menu == "🚌 Painel de Roteirização":
     st.title("🚌 Painel de Mobilidade - Renapsi (Protótipo)")
+    
+    # ... A PARTIR DAQUI O SEU CÓDIGO CONTINUA NORMALMENTE COM A TELA DE ROTEIRIZAÇÃO ...
     st.write("Sistema inteligente de roteirização e cálculo de vale-transporte.")
     st.markdown("---")
 
@@ -185,11 +312,30 @@ if menu == "🚌 Painel de Roteirização":
             st.rerun()
 
         if botao_roteirizar:
+            # 1. DISPARA O CRONÔMETRO
+            inicio_cronometro = time.time()
+            
             with st.spinner('Consultando APIs de geolocalização e cruzando malha viária...'):
-                time.sleep(1.5)
+                time.sleep(1.5) # Simula o tempo de rede
                 endereco_casa = buscar_endereco_viacep(dados_jovem['cep_casa'])
                 endereco_trab = buscar_endereco_viacep(dados_jovem['cep_trabalho'])
                 resultado = roteirizar_simulado()
+                
+                # 2. PARA O CRONÔMETRO E CALCULA O SLA
+                fim_cronometro = time.time()
+                tempo_gasto = fim_cronometro - inicio_cronometro
+                data_atual = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                # 3. SALVA A CONSULTA NO BANCO DE DADOS
+                conexao = sqlite3.connect('mobilidade_renapsi.db')
+                cursor = conexao.cursor()
+                cursor.execute("""
+                    UPDATE jovens_rotas 
+                    SET data_consulta = ?, sla_segundos = ? 
+                    WHERE id = ?
+                """, (data_atual, tempo_gasto, id_selecionado))
+                conexao.commit()
+                conexao.close()
                 
                 st.success(f"✅ Análise concluída para **{jovem_selecionado}** (Processado em 1.5s - Economia de 53s).")
                 st.markdown("#### 📍 Dados Geográficos (Via API)")

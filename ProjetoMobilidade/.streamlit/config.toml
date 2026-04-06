@@ -1,1 +1,10 @@
-[there]
+[theme]
+#Azul Principal
+primaryColor="#444c9b"
+#Fundo do site
+backgroundColor="#F4F6F9"
+#Fundo do Menu Lateral
+secondaryBackgroundColor="#FFFFFF"
+#Cor do Texto
+textColor="#262730"
+font="sans serif"
