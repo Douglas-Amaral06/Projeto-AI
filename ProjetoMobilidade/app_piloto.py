@@ -63,6 +63,14 @@ def roteirizar_simulado():
 def buscar_coordenadas(endereco):
     url = f"https://nominatim.openstreetmap.org/search?q={endereco}&format=json&limit=1"
     header = {'User-Agent': 'AppMobilidadeRenapsi/1.0'}
+    try:
+        resposta = requests.get(url, headers=header).json()
+        if resposta:
+            return float(resposta[0]['lat']), float(resposta[0]['lon'])
+    except Exception:
+        pass
+    return -23.550520, -46.633308  
+        
 
 
 # --- MENU LATERAL (SIDEBAR) ---
