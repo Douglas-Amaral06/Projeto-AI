@@ -122,6 +122,34 @@ if menu == "🚌 Painel de Roteirização":
             fig_barras = px.bar(dados_polos, x="Polo", y="Custo Médio (R$)", title="Custo Médio por Região")
             st.plotly_chart(fig_barras, use_container_width=True)
 
+    st.markdown("---")
+    st.subheader("🗺️ Mapa de Calor: Origem e Destino")
+
+    st.info("Mapa de calor simulado com base em dados fictícios para ilustrar a concentração de jovens por região. Os pontos vermelhos indicam maior concentração de residências, enquanto os azuis indicam polos de trabalho.")
+    dados_mapa = pd.DataFrame({
+        "lat":[-23.5505, -23.5824, -23.5201, -23.6123, -23.5412],
+         "lon":[-46.6333, -46.6417, -46.6000, -46.7000, -46.6200],
+         "nome": ["Centro", "Polo Faria Lima", "Zona Norte", "Zona Sul", "Residência"],
+         "tipo": ["Trabalho", "Trabalho", "Casa", "Casa", "Casa"]
+    })
+
+    fig_mapa = px.scatter_mapbox(
+        dados_mapa, 
+        lat="lat", 
+        lon="lon", 
+        hover_name="nome", 
+        color="tipo", 
+        color_discrete_sequence=["#FF4B4B", "#0068C9"], # <--- SÓ TROCAR O NOME AQUI!
+        zoom=10, 
+        height=400
+    )
+    
+    fig_mapa.update_layout(mapbox_style="open-street-map")
+    fig_mapa.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    st.plotly_chart(fig_mapa, use_container_width=True)
+
+
+
 
     st.markdown("---")
     st.subheader("📋 Base de Jovens (Aguardando Roteirização)")
