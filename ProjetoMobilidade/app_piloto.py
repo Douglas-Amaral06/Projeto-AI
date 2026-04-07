@@ -203,7 +203,7 @@ atualizar_banco_geral()
 atualizar_banco_para_contestacoes()
 
 # --- MENU LATERAL (SIDEBAR) ---
-st.sidebar.image("https://via.placeholder.com/150", use_container_width=True) 
+st.sidebar.image("logo_renapsi.png", use_container_width=True)
 st.sidebar.title("Menu de Navegação")
 
 menu = st.sidebar.radio("Escolha a área:", [
@@ -534,7 +534,8 @@ elif menu == "Pesquisar Consultas":
                     desc_label = "Total Bilhetes"
 
                 # Tudo em uma linha só para não confundir o sistema!
-                html_painel = f"<div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); height: 440px; display: flex; flex-direction: column; justify-content: space-between;'><div style='display: flex; align-items: flex-start; gap: 15px; margin-top: 15px;'><div style='background-color: #e2e8f0; border-radius: 50%; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 16px;'>SP</div><div><p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 16px;'>{label_trajeto}</p><p style='margin: 4px 0; font-size: 14px; color: #718096;'>Integração</p><p style='margin: 10px 0 0 0; font-size: 16px; color: #4a5568; font-weight: bold;'>{desc_label}: R$ {valor_exibir:.2f}</p></div></div><div style='background-color: #0068C9; color: white; text-align: center; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>VT Total por dia R$ {valor_total:.2f}</div></div>"
+                # Tudo em uma linha só para não confundir o sistema e com o tamanho automático!
+                html_painel = f"<div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1);'><div style='display: flex; align-items: flex-start; gap: 15px; margin-top: 15px; margin-bottom: 20px;'><div style='background-color: #e2e8f0; border-radius: 50%; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 16px;'>SP</div><div><p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 16px;'>{label_trajeto}</p><p style='margin: 4px 0; font-size: 14px; color: #718096;'>Integração</p><p style='margin: 10px 0 0 0; font-size: 16px; color: #4a5568; font-weight: bold;'>{desc_label}: R$ {valor_exibir:.2f}</p></div></div><div style='background-color: #0068C9; color: white; text-align: center; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>VT Total por dia R$ {valor_total:.2f}</div></div>"
                 st.markdown(html_painel, unsafe_allow_html=True)
             
             with col_mapa:
