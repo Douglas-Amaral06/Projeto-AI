@@ -160,6 +160,13 @@ def resolver_contestacao(id_contestacao, tratativa):
     conexao.commit()
     conexao.close()
 
+def resolver_contestacao(id_contestacao, tratativa):
+    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    cursor = conexao.cursor()
+    cursor.execute("UPDATE contestacoes SET status = 'Resolvido', tratativa = ? WHERE id = ?", (tratativa, id_contestacao))
+    conexao.commit()
+    conexao.close()
+
 def registrar_contestacao(nome, cid_res, cid_trab, motivo):
     conexao = sqlite3.connect('mobilidade_renapsi.db')
     cursor = conexao.cursor()
