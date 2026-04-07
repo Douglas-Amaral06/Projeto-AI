@@ -506,7 +506,6 @@ elif menu == "Pesquisar Consultas":
             col_painel, col_mapa = st.columns([1, 2.8])
             
             with col_painel:
-                # 4- Criando os botões de controle de forma interativa com o st.radio
                 aba_selecionada = st.radio(
                     "Selecione:",
                     ["Ida", "Volta", "Bilhetes"],
@@ -514,7 +513,6 @@ elif menu == "Pesquisar Consultas":
                     label_visibility="collapsed"
                 )
                 
-                # Pegando as informações dinâmicas caso o usuário tenha clicado em 'Roteirizar'
                 if st.session_state.rota_gerada:
                     nome_trajeto = st.session_state.rota_gerada["trajeto"]
                     valor_total = st.session_state.rota_gerada["valor_diario"]
@@ -522,7 +520,6 @@ elif menu == "Pesquisar Consultas":
                     nome_trajeto = "2x SPTRANS"
                     valor_total = 22.64
                     
-                # Lógica matemática (Dividindo pela metade para Ida ou Volta)
                 if aba_selecionada == "Ida":
                     valor_exibir = valor_total / 2
                     label_trajeto = nome_trajeto.replace("2x", "1x") if "2x" in nome_trajeto else nome_trajeto
@@ -536,25 +533,8 @@ elif menu == "Pesquisar Consultas":
                     label_trajeto = nome_trajeto
                     desc_label = "Total Bilhetes"
 
-                # 3- HTML limpo, sem itens duplicados e alinhado com a altura do mapa
-                html_painel = f"""
-                <div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); height: 440px; display: flex; flex-direction: column; justify-content: space-between;'>
-                    <div style='display: flex; align-items: flex-start; gap: 15px; margin-top: 15px;'>
-                        <div style='background-color: #e2e8f0; border-radius: 50%; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 16px;'>
-                            SP
-                        </div>
-                        <div>
-                            <p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 16px;'>{label_trajeto}</p>
-                            <p style='margin: 4px 0; font-size: 14px; color: #718096;'>Integração</p>
-                            <p style='margin: 10px 0 0 0; font-size: 16px; color: #4a5568; font-weight: bold;'>{desc_label}: R$ {valor_exibir:.2f}</p>
-                        </div>
-                    </div>
-                    
-                    <div style='background-color: #0068C9; color: white; text-align: center; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>
-                        VT Total por dia R$ {valor_total:.2f}
-                    </div>
-                </div>
-                """
+                # Tudo em uma linha só para não confundir o sistema!
+                html_painel = f"<div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); height: 440px; display: flex; flex-direction: column; justify-content: space-between;'><div style='display: flex; align-items: flex-start; gap: 15px; margin-top: 15px;'><div style='background-color: #e2e8f0; border-radius: 50%; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 16px;'>SP</div><div><p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 16px;'>{label_trajeto}</p><p style='margin: 4px 0; font-size: 14px; color: #718096;'>Integração</p><p style='margin: 10px 0 0 0; font-size: 16px; color: #4a5568; font-weight: bold;'>{desc_label}: R$ {valor_exibir:.2f}</p></div></div><div style='background-color: #0068C9; color: white; text-align: center; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>VT Total por dia R$ {valor_total:.2f}</div></div>"
                 st.markdown(html_painel, unsafe_allow_html=True)
             
             with col_mapa:
