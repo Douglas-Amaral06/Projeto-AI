@@ -41,10 +41,9 @@ def carregar_dados():
     conexao.close()
     return df
 
-def inserir_novo_jovem(nome, cpf, cep_casa, cep_trabalho):
+def inserir_novo_jovem(nome, cpf, cep_casa, cep_trabalho, matricula):
     conexao = sqlite3.connect('mobilidade_renapsi.db')
     cursor = conexao.cursor()
-    matricula = str(random.randint(100000, 999999))
     status_rota = "Otimizado"
     
     cursor.execute('''
@@ -457,7 +456,7 @@ elif menu == "Pesquisar Consultas":
             st.markdown(f"""
             <div style="background-color: #FFFFFF; padding: 30px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); margin-top: -10px; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                    <h2 style="margin: 0; color: #5b677a; font-size: 28px;">Consulta {id_selecionado}</h2>
+                    <h2 style="margin: 0; color: #5b677a; font-size: 28px;">Consulta Numero {id_selecionado}</h2>
                     <span style="background-color: #d1f3e0; color: #1e8e3e; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-left: 15px;">{status_exib}</span>
                 </div>
                 <h3 style="color: #64748b; font-size: 18px; margin-top: 0; margin-bottom: 30px; font-weight: normal;">RENAPSI - SÃO PAULO - C-T</h3>
@@ -671,17 +670,20 @@ elif menu == "Cadastrar Novo Jovem":
             nome_input = col_nome.text_input("Nome Completo do Jovem:")
             cpf_input = col_cpf.text_input("CPF (Apenas números):", max_chars=11)
             
-            col_cep1, col_cep2 = st.columns(2)
-            cep_casa_input = col_cep1.text_input("CEP da Residência (Apenas números):", max_chars=8)
-            cep_trab_input = col_cep2.text_input("CEP do Trabalho/Pólo (Apenas números):", max_chars=8)
+            # Adicionar o campo de matrícula aqui dividindo espaço com os CEPs
+            col_cep1, col_cep2, col_mat = st.columns([2, 2, 1.5])
+            cep_casa_input = col_cep1.text_input("CEP da Residência:", max_chars=8)
+            cep_trab_input = col_cep2.text_input("CEP do Trabalho:", max_chars=8)
+            matricula_input = col_mat.text_input("Matrícula:")
             
             botao_salvar = st.form_submit_button("Salvar Jovem na Base de Dados")
 
     if botao_salvar:
-            if not (nome_input and cpf_input and cep_casa_input and cep_trab_input):
-                st.error("⚠️ Por favor, preenche todos os campos antes de salvar.")
+            # Não esquecer de exigir a matricula no cadastro 
+            if not (nome_input and cpf_input and cep_casa_input and cep_trab_input and matricula_input):
+                st.error("⚠️ Por favor, preencha todos os campos (incluindo matrícula) antes de salvar.")
             elif cpf_ja_existe(cpf_input):
-                st.error(f"❌ Operação bloqueada: O CPF {cpf_input} já está cadastrado para outro jovem no sistema!")
+                st.error(f"❌ Operação bloqueada: O CPF {cpf_input} já está cadastrado no sistema!")
             else:
                 with st.spinner("A validar CEPs nos Correios..."):
                     validacao_casa = buscar_endereco_viacep(cep_casa_input)
@@ -689,13 +691,13 @@ elif menu == "Cadastrar Novo Jovem":
                     
                     if "inválido" in validacao_casa or "inválido" in validacao_trab:
                         st.error("❌ Operação bloqueada: Um dos CEPs informados é inválido ou não existe no mapa.")
-                        st.info(f"Retorno Casa: {validacao_casa} | Retorno Trabalho: {validacao_trab}")
                     else:
-                        inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input)
-                        st.success(f"✅ Sucesso! O jovem {nome_input} foi cadastrado com Status 'Otimizado' e os CEPs foram validados.")
+                        # Passando a matrícula que você digitou para salvar no banco
+                        inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input, matricula_input)
+                        st.success(f"✅ Sucesso! O jovem {nome_input} (Matrícula: {matricula_input}) foi cadastrado!")
 
     with tab_massa:
-        st.info("💡 A tua folha de cálculo Excel ou CSV deve conter exatamente as colunas na primeira linha: **nome, cpf, cep_casa, cep_trabalho**")
+        st.info("💡 A sua planilha Excel ou CSV deve conter as colunas: **nome, cpf, cep_casa, cep_trabalho, matricula**")
         arquivo_upload = st.file_uploader("Arrasta o teu ficheiro Excel (.xlsx) ou CSV para cá", type=["xlsx", "csv"])
         
         if arquivo_upload is not None:
@@ -707,25 +709,28 @@ elif menu == "Cadastrar Novo Jovem":
                 
                 df_upload.columns = df_upload.columns.str.lower().str.strip()
                 
-                df_upload['matricula'] = [str(random.randint(100000, 999999)) for _ in range(len(df_upload))]
-                df_upload['status_rota'] = "Otimizado"
-                
-                st.write("🔍 Pré-visualização dos dados encontrados:")
-                st.dataframe(df_upload.head(), use_container_width=True)
-                
-                botao_salvar_massa = st.button("Importar Todos para a Base de Dados", type="primary")
-                
-                if botao_salvar_massa:
-                    with st.spinner("A enviar dados para a base..."):
-                        conexao = sqlite3.connect('mobilidade_renapsi.db')
-                        df_limpo = df_upload[['nome', 'cpf', 'cep_casa', 'cep_trabalho', 'matricula', 'status_rota']]
-                        
-                        df_limpo.to_sql('jovens_rotas', conexao, if_exists='append', index=False)
-                        conexao.close()
-                        
-                        st.success(f"✅ Sucesso! {len(df_limpo)} jovens foram importados para o sistema num piscar de olhos.")
-                        time.sleep(2)
-                        st.rerun()
+                # Verifica se a coluna 'matricula' realmente existe na planilha
+                if 'matricula' not in df_upload.columns:
+                    st.error("❌ Erro: O seu arquivo precisa ter uma coluna chamada exatemente 'matricula' na primeira linha.")
+                else:
+                    df_upload['status_rota'] = "Otimizado"
+                    
+                    st.write("🔍 Pré-visualização dos dados encontrados:")
+                    st.dataframe(df_upload.head(), use_container_width=True)
+                    
+                    botao_salvar_massa = st.button("Importar Todos para a Base de Dados", type="primary")
+                    
+                    if botao_salvar_massa:
+                        with st.spinner("A enviar dados para a base..."):
+                            conexao = sqlite3.connect('mobilidade_renapsi.db')
+                            df_limpo = df_upload[['nome', 'cpf', 'cep_casa', 'cep_trabalho', 'matricula', 'status_rota']]
+                            
+                            df_limpo.to_sql('jovens_rotas', conexao, if_exists='append', index=False)
+                            conexao.close()
+                            
+                            st.success(f"✅ Sucesso! {len(df_limpo)} jovens foram importados com suas matrículas.")
+                            time.sleep(2)
+                            st.rerun()
                         
             except Exception as e:
-                st.error(f"❌ Erro ao ler o ficheiro. Confirma se o nome das colunas está correto (em letras minúsculas). Detalhe técnico: {e}")
+                st.error(f"❌ Erro ao ler o ficheiro. Confirma as colunas. Detalhe técnico: {e}")
