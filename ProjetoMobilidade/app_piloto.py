@@ -489,9 +489,12 @@ elif menu == "Pesquisar Consultas":
             ja_implantado = (status_exib.upper() == "IMPLANTADO")
             
             with col_b1:
+                # 5- O Roteirizar agora atualiza a tela instantaneamente (via st.rerun)
                 if st.button("Roteirizar", disabled=ja_implantado, use_container_width=True):
                     st.session_state.rota_gerada = roteirizar_simulado()
                     st.session_state.modo_contestacao = False 
+                    st.rerun() 
+                    
             with col_b2:
                 if st.button("Contestações", use_container_width=True):
                     st.session_state.modo_contestacao = True
@@ -503,45 +506,82 @@ elif menu == "Pesquisar Consultas":
             col_painel, col_mapa = st.columns([1, 2.8])
             
             with col_painel:
-                html_painel = "<div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); height: 100%;'><div style='display: flex; gap: 8px; margin-bottom: 25px;'><div style='border: 2px solid #0068C9; color: #0068C9; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;'>Ida</div><div style='border: 2px solid #0068C9; color: #0068C9; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;'>Volta</div><div style='background-color: #0068C9; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;'>Bilhetes</div></div><div style='display: flex; align-items: flex-start; gap: 15px; margin-bottom: 30px;'><div style='background-color: #e2e8f0; border-radius: 50%; min-width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 14px;'>SP</div><div><p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 15px;'>2x SPTRANS</p><p style='margin: 2px 0; font-size: 13px; color: #718096;'>R$ 11,32 - Integração</p><p style='margin: 5px 0 0 0; font-size: 14px; color: #4a5568; font-weight: bold;'>Total de R$ 22,64</p></div></div><div style='background-color: #0068C9; color: white; text-align: center; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>VT Total por dia R$ 21,42</div></div>"
-                st.markdown(html_painel, unsafe_allow_html=True)
+                # 4- Criando os botões de controle de forma interativa com o st.radio
+                aba_selecionada = st.radio(
+                    "Selecione:",
+                    ["Ida", "Volta", "Bilhetes"],
+                    horizontal=True,
+                    label_visibility="collapsed"
+                )
+                
+                # Pegando as informações dinâmicas caso o usuário tenha clicado em 'Roteirizar'
+                if st.session_state.rota_gerada:
+                    nome_trajeto = st.session_state.rota_gerada["trajeto"]
+                    valor_total = st.session_state.rota_gerada["valor_diario"]
+                else:
+                    nome_trajeto = "2x SPTRANS"
+                    valor_total = 22.64
+                    
+                # Lógica matemática (Dividindo pela metade para Ida ou Volta)
+                if aba_selecionada == "Ida":
+                    valor_exibir = valor_total / 2
+                    label_trajeto = nome_trajeto.replace("2x", "1x") if "2x" in nome_trajeto else nome_trajeto
+                    desc_label = "Total Ida"
+                elif aba_selecionada == "Volta":
+                    valor_exibir = valor_total / 2
+                    label_trajeto = nome_trajeto.replace("2x", "1x") if "2x" in nome_trajeto else nome_trajeto
+                    desc_label = "Total Volta"
+                else:
+                    valor_exibir = valor_total
+                    label_trajeto = nome_trajeto
+                    desc_label = "Total Bilhetes"
+
+                # 3- HTML limpo, sem itens duplicados e alinhado com a altura do mapa
+                html_painel = f"""
+                <div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); height: 440px; display: flex; flex-direction: column; justify-content: space-between;'>
+                    <div style='display: flex; align-items: flex-start; gap: 15px; margin-top: 15px;'>
+                        <div style='background-color: #e2e8f0; border-radius: 50%; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 16px;'>
+                            SP
+                        </div>
+                        <div>
+                            <p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 16px;'>{label_trajeto}</p>
+                            <p style='margin: 4px 0; font-size: 14px; color: #718096;'>Integração</p>
+                            <p style='margin: 10px 0 0 0; font-size: 16px; color: #4a5568; font-weight: bold;'>{desc_label}: R$ {valor_exibir:.2f}</p>
+                        </div>
+                    </div>
+                    
+                    <div style='background-color: #0068C9; color: white; text-align: center; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>
+                        VT Total por dia R$ {valor_total:.2f}
+                    </div>
+                </div>
+                """
                 st.markdown(html_painel, unsafe_allow_html=True)
             
             with col_mapa:
-                # Extrair coordenadas ou usar fallback para SP (Casa e Trabalho)
                 lat_c, lon_c = extrair_coordenadas(coordenadas_casa, -23.6834, -46.7813)
-                lat_t, lon_t = -23.5677, -46.6465 # Simulando coordenadas do Trabalho
+                lat_t, lon_t = -23.5677, -46.6465 
                 
                 m = folium.Map(location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2], zoom_start=11, control_scale=True)
                 
-                # Ícone da Casa (Azul/Verde)
+                # 2- Aumentando os Ícones (width, height e font-size maiores)
                 icone_casa = folium.DivIcon(html=f"""
-                    <div style="background-color: #00BFA5; width: 34px; height: 34px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 18px; box-shadow: 0 3px 6px rgba(0,0,0,0.3);">
+                    <div style="background-color: #00BFA5; width: 48px; height: 48px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
                         C
                     </div>
                 """)
                 folium.Marker([lat_c, lon_c], icon=icone_casa, tooltip="Casa").add_to(m)
                 
-                # Ícone do Trabalho (Laranja)
                 icone_trab = folium.DivIcon(html=f"""
-                    <div style="background-color: #FF6D00; width: 34px; height: 34px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 18px; box-shadow: 0 3px 6px rgba(0,0,0,0.3);">
+                    <div style="background-color: #FF6D00; width: 48px; height: 48px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
                         T
                     </div>
                 """)
                 folium.Marker([lat_t, lon_t], icon=icone_trab, tooltip="Trabalho").add_to(m)
                 
-                # Linha a ligar C e T
-                folium.PolyLine(locations=[[lat_c, lon_c], [lat_t, lon_t]], color="#3182bd", weight=3, opacity=0.8).add_to(m)
+                folium.PolyLine(locations=[[lat_c, lon_c], [lat_t, lon_t]], color="#3182bd", weight=4, opacity=0.8).add_to(m)
                 
-                st_folium(m, height=350, use_container_width=True)
-
-            if st.session_state.rota_gerada:
-                rota = st.session_state.rota_gerada
-                st.success("Nova sugestão de rota calculada com base nos endereços!")
-                c1, c2, c3 = st.columns(3)
-                c1.metric(label="Trajeto Sugerido", value=rota["trajeto"])
-                c2.metric(label="Tempo Estimado", value=rota["tempo"])
-                c3.metric(label="Custo Diário", value=f"R$ {rota['valor_diario']:.2f}")
+                # 1- Altura do Mapa ajustada para ficar proporcional
+                st_folium(m, height=510, use_container_width=True)
 
             if st.session_state.modo_contestacao:
                 with st.form(key="form_nova_contestacao"):
