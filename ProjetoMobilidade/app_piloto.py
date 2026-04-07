@@ -6,11 +6,13 @@ import plotly.express as px
 import random
 import datetime
 import time
+import folium
+from streamlit_folium import st_folium
 
 # Configuração da página
 st.set_page_config(page_title="Nova Capta - Piloto", page_icon="🚌", layout="wide")
 
-#inserir CSS
+# Inserir CSS
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -42,9 +44,8 @@ def carregar_dados():
 def inserir_novo_jovem(nome, cpf, cep_casa, cep_trabalho):
     conexao = sqlite3.connect('mobilidade_renapsi.db')
     cursor = conexao.cursor()
-    # Gera uma matrícula aleatória de 6 dígitos
     matricula = str(random.randint(100000, 999999))
-    status_rota = "Otimizado" # Padrão exigido
+    status_rota = "Otimizado"
     
     cursor.execute('''
         INSERT INTO jovens_rotas (nome, cpf, cep_casa, cep_trabalho, matricula, status_rota)
@@ -69,7 +70,11 @@ def excluir_jovem(id_jovem):
     conexao.close()
 
 def buscar_endereco_viacep(cep):
-    url = f"https://viacep.com.br/ws/{cep}/json/"
+    cep_limpo = ''.join(filter(str.isdigit, str(cep)))
+    if len(cep_limpo) != 8:
+        return "CEP inválido."
+        
+    url = f"https://viacep.com.br/ws/{cep_limpo}/json/"
     try:
         resposta = requests.get(url).json()
         if "erro" not in resposta:
@@ -86,7 +91,6 @@ def roteirizar_simulado():
     ]
     return random.choice(opcoes_rota)
 
-# Atualização geral do banco de dados (Cria as colunas de Status e Matrícula caso não existam)
 def atualizar_banco_geral():
     conexao = sqlite3.connect('mobilidade_renapsi.db')
     cursor = conexao.cursor()
@@ -95,7 +99,11 @@ def atualizar_banco_geral():
         ("data_consulta", "TEXT"),
         ("sla_segundos", "REAL"),
         ("matricula", "TEXT"),
-        ("status_rota", "TEXT DEFAULT 'Otimizado'")
+        ("status_rota", "TEXT DEFAULT 'Otimizado'"),
+        ("email", "TEXT"),
+        ("celular", "TEXT"),
+        ("numero_casa", "TEXT"),
+        ("coordenadas", "TEXT")
     ]
     
     for coluna, tipo in colunas_novas:
@@ -104,9 +112,19 @@ def atualizar_banco_geral():
         except sqlite3.OperationalError:
             pass
             
-    # Trava de segurança: Se algum jovem antigo estiver com o status vazio, ele vira 'Otimizado'
     cursor.execute("UPDATE jovens_rotas SET status_rota = 'Otimizado' WHERE status_rota IS NULL")
     
+    conexao.commit()
+    conexao.close()
+
+def atualizar_dados_funcionario(id_jovem, matricula, email, celular, cep, numero, coordenadas):
+    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    cursor = conexao.cursor()
+    cursor.execute('''
+        UPDATE jovens_rotas 
+        SET matricula = ?, email = ?, celular = ?, cep_casa = ?, numero_casa = ?, coordenadas = ?
+        WHERE id = ?
+    ''', (matricula, email, celular, cep, numero, coordenadas, id_jovem))
     conexao.commit()
     conexao.close()
 
@@ -143,20 +161,12 @@ def atualizar_banco_para_contestacoes():
             tratativa TEXT
         )
     ''')
-    # Tenta adicionar as novas colunas caso a tabela antiga já exista
     try:
         cursor.execute("ALTER TABLE contestacoes ADD COLUMN status TEXT DEFAULT 'Pendente'")
         cursor.execute("ALTER TABLE contestacoes ADD COLUMN tratativa TEXT")
     except sqlite3.OperationalError:
         pass
         
-    conexao.commit()
-    conexao.close()
-
-def resolver_contestacao(id_contestacao, tratativa):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    cursor.execute("UPDATE contestacoes SET status = 'Resolvido', tratativa = ? WHERE id = ?", (tratativa, id_contestacao))
     conexao.commit()
     conexao.close()
 
@@ -178,23 +188,32 @@ def registrar_contestacao(nome, cid_res, cid_trab, motivo):
     conexao.commit()
     conexao.close()
 
-# Dispara as atualizações do banco assim que o sistema roda
+def extrair_coordenadas(coord_str, default_lat, default_lon):
+    if not coord_str:
+        return default_lat, default_lon
+    try:
+        parts = coord_str.replace(" ", "").split(",")
+        if len(parts) == 2:
+            return float(parts[0]), float(parts[1])
+    except:
+        pass
+    return default_lat, default_lon
+
 atualizar_banco_geral()
 atualizar_banco_para_contestacoes()
 
-
 # --- MENU LATERAL (SIDEBAR) ---
-st.sidebar.image("logo_renapsi.png", use_container_width=True)
-st.sidebar.title("Menu de Navegacao")
+st.sidebar.image("https://via.placeholder.com/150", use_container_width=True) 
+st.sidebar.title("Menu de Navegação")
 
-menu = st.sidebar.radio("Escolha a area:", [
+menu = st.sidebar.radio("Escolha a área:", [
     "Dashboard Principal", 
     "Pesquisar Consultas", 
     "Cadastrar Novo Jovem"
 ])
 
 # ==========================================
-# --- TELA 0: DASHBOARD PRINCIPAL (ABA 1) ---
+# --- TELA 0: DASHBOARD PRINCIPAL ---
 # ==========================================
 if menu == "Dashboard Principal":
     
@@ -220,12 +239,10 @@ if menu == "Dashboard Principal":
 
     total_consultas, sla_medio = obter_dados_dashboard()
     
-    # Busca os dados de contestações em tempo real
     conexao = sqlite3.connect('mobilidade_renapsi.db')
     df_contest = pd.read_sql_query("SELECT * FROM contestacoes", conexao)
     conexao.close()
     
-    # Prepara as variáveis (se a tabela for nova e estiver vazia)
     if 'status' not in df_contest.columns:
         df_contest['status'] = 'Pendente'
         
@@ -253,7 +270,6 @@ if menu == "Dashboard Principal":
             st.info("Nenhuma contestação.")
         else:
             fig_contest = px.pie(values=[qtd_resolvidas, qtd_pendentes], names=['Resolvidas', 'Pendentes'], hole=0.75)
-            # Verde para resolvidas, vermelho/cinza para pendentes
             fig_contest.update_traces(textinfo='none', marker=dict(colors=['#43b596', '#e2e8f0']), hoverinfo="skip")
             fig_contest.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=180, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig_contest, use_container_width=True, key="graf_contest")
@@ -274,12 +290,11 @@ if menu == "Dashboard Principal":
 
     st.markdown("---")
     
-    # EXPANDER COM AS ABAS DE TRATATIVA
     with st.expander("Ver Detalhes das Contestações (Cards / Tabela)"):
         if df_contest.empty:
-            st.info("Nenhuma contestação registrada até o momento.")
+            st.info("Nenhuma contestação registada até ao momento.")
         else:
-            st.markdown(f"### {total_contestacoes} contestações registradas")
+            st.markdown(f"### {total_contestacoes} contestações registadas")
             tab_pendentes, tab_resolvidas, tab_tabela = st.tabs(["Pendentes", "Resolvidas", "Tabela Geral"])
             
             with tab_pendentes:
@@ -291,23 +306,22 @@ if menu == "Dashboard Principal":
                         st.markdown(f"""
                         <div style="background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 10px; border-top: 4px solid #FF4B4B;">
                             <h4 style="margin-top: 0; color: #1E3A8A;">Consulta: {row['id']}</h4>
-                            <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Gerada em {row['data_geracao']} | <strong>Funcionário:</strong> {row['nome_jovem']}</p>
+                            <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Gerada a {row['data_geracao']} | <strong>Funcionário:</strong> {row['nome_jovem']}</p>
                             <div style="background-color: #F4F6F9; padding: 10px; border-radius: 5px; font-size: 14px; margin-bottom: 15px;">
                                 <strong>Motivo da Contestação:</strong> {row['motivo']}
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
                         
-                        # Botões e input para resolver
                         col_tratativa, col_btn = st.columns([3, 1])
                         with col_tratativa:
-                            tratativa_input = st.text_input("Qual a tratativa tomada?", key=f"input_{row['id']}")
+                            tratativa_input = st.text_input("Qual a tratativa aplicada?", key=f"input_{row['id']}")
                         with col_btn:
-                            st.write("") # Espaçador para alinhar com o input
+                            st.write("") 
                             st.write("")
                             if st.button("Resolver", type="primary", key=f"btn_{row['id']}", use_container_width=True):
                                 if tratativa_input.strip() == "":
-                                    st.error("Escreva a tratativa antes de resolver.")
+                                    st.error("Escreve a tratativa antes de resolver.")
                                 else:
                                     resolver_contestacao(row['id'], tratativa_input)
                                     st.rerun()
@@ -322,7 +336,7 @@ if menu == "Dashboard Principal":
                         st.markdown(f"""
                         <div style="background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; border-top: 4px solid #43b596;">
                             <h4 style="margin-top: 0; color: #1E3A8A;">Consulta: {row['id']} - RESOLVIDO</h4>
-                            <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Gerada em {row['data_geracao']} | <strong>Funcionário:</strong> {row['nome_jovem']}</p>
+                            <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Gerada a {row['data_geracao']} | <strong>Funcionário:</strong> {row['nome_jovem']}</p>
                             <p style="color: #666; font-size: 14px; margin-bottom: 5px;"><strong>Motivo:</strong> {row['motivo']}</p>
                             <div style="background-color: #d1f3e0; color: #1e8e3e; padding: 10px; border-radius: 5px; font-size: 14px;">
                                 <strong>Tratativa Aplicada:</strong> {row.get('tratativa', '')}
@@ -335,12 +349,10 @@ if menu == "Dashboard Principal":
                 df_exibicao.columns = ['ID', 'Data', 'Funcionário', 'Motivo', 'Status', 'Tratativa']
                 st.dataframe(df_exibicao, use_container_width=True, hide_index=True)
 
-
 # ==========================================
 # --- TELA 1.5: PESQUISAR CONSULTAS ---
 # ==========================================
 elif menu == "Pesquisar Consultas":
-# 1. Inicializa as variaveis de sessao
     if 'resultado_busca' not in st.session_state:
         st.session_state.resultado_busca = None
     if 'detalhes_abertos' not in st.session_state:
@@ -349,16 +361,19 @@ elif menu == "Pesquisar Consultas":
         st.session_state.rota_gerada = None
     if 'modo_contestacao' not in st.session_state:
         st.session_state.modo_contestacao = False
+    if 'modo_edicao' not in st.session_state:
+        st.session_state.modo_edicao = False
 
-    # --- SE A CONSULTA ESTIVER ABERTA (TELA CHEIA) ---
     if st.session_state.detalhes_abertos and st.session_state.resultado_busca is not None:
         
-    # Botao para voltar para a tela de pesquisa
-        if st.button("<- Voltar"):
-            st.session_state.detalhes_abertos = False
-            st.session_state.rota_gerada = None
-            st.session_state.modo_contestacao = False
-            st.rerun()
+        col_voltar, col_vazia = st.columns([1, 10])
+        with col_voltar:
+            if st.button("<- Voltar"):
+                st.session_state.detalhes_abertos = False
+                st.session_state.rota_gerada = None
+                st.session_state.modo_contestacao = False
+                st.session_state.modo_edicao = False
+                st.rerun()
 
         dados_jovem = st.session_state.resultado_busca.iloc[0]
         id_selecionado = dados_jovem['id']
@@ -366,102 +381,200 @@ elif menu == "Pesquisar Consultas":
         cpf_cru = str(dados_jovem['cpf']).zfill(11)
         cep_casa = dados_jovem['cep_casa']
         cep_trab = dados_jovem['cep_trabalho']
-        matricula_exib = dados_jovem.get('matricula', 'Nao informada')
+        matricula_exib = dados_jovem.get('matricula', 'Não informada')
         status_exib = dados_jovem.get('status_rota', 'Otimizado').upper()
         
-        with st.spinner("Carregando detalhes..."):
-            endereco_casa = buscar_endereco_viacep(cep_casa)
-            endereco_trab = buscar_endereco_viacep(cep_trab)
+        email_jovem = dados_jovem.get('email', '')
+        celular_jovem = dados_jovem.get('celular', '')
+        numero_casa = dados_jovem.get('numero_casa', '')
+        coordenadas_casa = dados_jovem.get('coordenadas', '')
 
-        st.markdown(f"""
-<div style="background-color: #FFFFFF; padding: 30px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); margin-top: 10px;">
-    <div style="display: flex; align-items: center; margin-bottom: 15px;">
-        <h2 style="margin: 0; color: #5b677a; font-size: 28px;">Consulta {id_selecionado}</h2>
-        <span style="background-color: #d1f3e0; color: #1e8e3e; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-left: 15px;">{status_exib}</span>
-    </div>
-    <h3 style="color: #64748b; font-size: 18px; margin-top: 0; margin-bottom: 30px; font-weight: normal;">RENAPSI - SAO PAULO - C-T</h3>
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-        <div style="flex: 1; min-width: 250px; margin-bottom: 15px; padding-right: 15px;">
-            <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Dados funcionario</h4>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CPF:</strong> {cpf_cru}</p>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Matricula:</strong> {matricula_exib}</p>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Nome:</strong> {nome_jovem}</p>
-        </div>
-        <div style="flex: 1; min-width: 250px; margin-bottom: 15px; padding-right: 15px;">
-            <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Endereco Funcionario</h4>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CEP:</strong> {cep_casa}</p>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096; line-height: 1.6;"><strong style="color: #4a5568;">Endereco:</strong><br>{endereco_casa}</p>
-        </div>
-        <div style="flex: 1; min-width: 250px; margin-bottom: 15px;">
-            <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Local de trabalho</h4>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CEP:</strong> {cep_trab}</p>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096; line-height: 1.6;"><strong style="color: #4a5568;">Endereco:</strong><br>{endereco_trab}</p>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Criando colunas para os botoes ficarem lado a lado e no tamanho parecido com o print
-        col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
-        
-        ja_implantado = (status_exib.upper() == "IMPLANTADO")
-        
-        with col_b1:
-            if st.button("Roteirizar", disabled=ja_implantado, use_container_width=True):
-                st.session_state.rota_gerada = roteirizar_simulado()
-                st.session_state.modo_contestacao = False # Fecha a contestacao se abrir a rota
+        # --- MODO DE EDIÇÃO ---
+        if st.session_state.modo_edicao:
+            st.markdown("### Editar dados da consulta")
+            st.markdown("---")
+            
+            col_edit1, col_edit2 = st.columns(2)
+            
+            with col_edit1:
+                st.markdown("<h4 style='color:#5b677a;'>👤 Dados funcionário</h4>", unsafe_allow_html=True)
+                mat_input = st.text_input("Matrícula do colaborador", value=matricula_exib if matricula_exib != 'Não informada' else '')
+                nome_input = st.text_input("Nome", value=nome_jovem, disabled=True)
+                email_input = st.text_input("E-mail", value=email_jovem if email_jovem else '')
+                celular_input = st.text_input("Celular do colaborador", value=celular_jovem if celular_jovem else '')
                 
-        with col_b2:
-            if st.button("Contestacoes", use_container_width=True):
-                st.session_state.modo_contestacao = True
-                st.session_state.rota_gerada = None # Fecha a rota se abrir a contestacao
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # Logica: O que acontece ao clicar em Roteirizar
-        if st.session_state.rota_gerada:
-            rota = st.session_state.rota_gerada
-            st.success("Nova sugestao de rota calculada com base nos enderecos!")
-            c1, c2, c3 = st.columns(3)
-            c1.metric(label="Trajeto Sugerido", value=rota["trajeto"])
-            c2.metric(label="Tempo Estimado", value=rota["tempo"])
-            c3.metric(label="Custo Diario", value=f"R$ {rota['valor_diario']:.2f}")
-
-        # Logica: O que acontece ao clicar em Contestacoes
-        if st.session_state.modo_contestacao:
-            with st.form(key="form_nova_contestacao"):
-                motivo_input = st.text_area("Descreva o problema (Ex: tarifa indevida, rota que nao faz sentido, etc):")
-                submit_contestacao = st.form_submit_button("Registrar Contestacao")
+            with col_edit2:
+                st.markdown("<h4 style='color:#5b677a;'>🏠 Endereço funcionário</h4>", unsafe_allow_html=True)
+                cep_input = st.text_input("CEP", value=cep_casa)
                 
-                if submit_contestacao:
-                    if motivo_input.strip() == "":
-                        st.error("Por favor, descreva o motivo antes de registrar.")
-                    else:
-                        registrar_contestacao(nome=nome_jovem, cid_res="Sao Paulo", cid_trab="Sao Paulo", motivo=motivo_input)
-                        st.success("Contestacao registrada! O Dashboard na pagina principal ja foi atualizado.")
-                        st.session_state.modo_contestacao = False
-                        time.sleep(2)
-                        st.rerun()
-    # --- SE A CONSULTA ESTIVER FECHADA (TELA DE PESQUISA NORMAL) ---
+                c_rua, c_num = st.columns([3, 1])
+                rua_input = c_rua.text_input("Logradouro/Bairro/Cidade", value=buscar_endereco_viacep(cep_input), disabled=True)
+                num_input = c_num.text_input("Número", value=numero_casa if numero_casa else '')
+                
+                if st.button("Buscar Coordenada Correspondente", use_container_width=True):
+                    st.session_state.coord_temp = f"-23.{random.randint(10000, 99999)}, -46.{random.randint(10000, 99999)}"
+                    st.rerun()
+                    
+                coord_atual = st.session_state.get('coord_temp', coordenadas_casa)
+                coord_input = st.text_input("Coordenadas", value=coord_atual if coord_atual else '')
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_btn_fechar, col_btn_confirmar = st.columns([1, 1])
+            
+            with col_btn_fechar:
+                if st.button("Fechar", use_container_width=True):
+                    st.session_state.modo_edicao = False
+                    if 'coord_temp' in st.session_state:
+                        del st.session_state.coord_temp
+                    st.rerun()
+                    
+            with col_btn_confirmar:
+                if st.button("Confirmar", type="primary", use_container_width=True):
+                    atualizar_dados_funcionario(id_selecionado, mat_input, email_input, celular_input, cep_input, num_input, coord_input)
+                    conexao = sqlite3.connect('mobilidade_renapsi.db')
+                    st.session_state.resultado_busca = pd.read_sql_query(f"SELECT * FROM jovens_rotas WHERE id = {id_selecionado}", conexao)
+                    conexao.close()
+                    
+                    st.session_state.modo_edicao = False
+                    if 'coord_temp' in st.session_state:
+                        del st.session_state.coord_temp
+                    st.success("Dados atualizados com sucesso!")
+                    time.sleep(1)
+                    st.rerun()
+
+        # --- TELA DA CONSULTA (COM MAPA) ---
+        else:
+            with st.spinner("A carregar detalhes..."):
+                endereco_casa = buscar_endereco_viacep(cep_casa)
+                endereco_trab = buscar_endereco_viacep(cep_trab)
+
+            col_filler, col_edit_btn = st.columns([9, 1])
+            with col_edit_btn:
+                if st.button("📝 Editar", use_container_width=True):
+                    st.session_state.modo_edicao = True
+                    st.rerun()
+
+            st.markdown(f"""
+            <div style="background-color: #FFFFFF; padding: 30px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); margin-top: -10px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0; color: #5b677a; font-size: 28px;">Consulta {id_selecionado}</h2>
+                    <span style="background-color: #d1f3e0; color: #1e8e3e; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-left: 15px;">{status_exib}</span>
+                </div>
+                <h3 style="color: #64748b; font-size: 18px; margin-top: 0; margin-bottom: 30px; font-weight: normal;">RENAPSI - SÃO PAULO - C-T</h3>
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                    <div style="flex: 1; min-width: 250px; margin-bottom: 15px; padding-right: 15px;">
+                        <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Dados funcionário</h4>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CPF:</strong> {cpf_cru}</p>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Matrícula:</strong> {matricula_exib}</p>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Nome:</strong> {nome_jovem}</p>
+                        {f'<p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">E-mail:</strong> {email_jovem}</p>' if email_jovem else ''}
+                        {f'<p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Celular:</strong> {celular_jovem}</p>' if celular_jovem else ''}
+                    </div>
+                    <div style="flex: 1; min-width: 250px; margin-bottom: 15px; padding-right: 15px;">
+                        <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Endereço Funcionário</h4>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CEP:</strong> {cep_casa}</p>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096; line-height: 1.6;"><strong style="color: #4a5568;">Endereço:</strong><br>{endereco_casa}{f', {numero_casa}' if numero_casa else ''}</p>
+                    </div>
+                    <div style="flex: 1; min-width: 250px; margin-bottom: 15px;">
+                        <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Local de trabalho</h4>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CEP:</strong> {cep_trab}</p>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096; line-height: 1.6;"><strong style="color: #4a5568;">Endereço:</strong><br>{endereco_trab}</p>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Botões de Ação
+            col_b1, col_b2, col_b3, col_b4, col_b5 = st.columns(5)
+            ja_implantado = (status_exib.upper() == "IMPLANTADO")
+            
+            with col_b1:
+                if st.button("Roteirizar", disabled=ja_implantado, use_container_width=True):
+                    st.session_state.rota_gerada = roteirizar_simulado()
+                    st.session_state.modo_contestacao = False 
+            with col_b2:
+                if st.button("Contestações", use_container_width=True):
+                    st.session_state.modo_contestacao = True
+                    st.session_state.rota_gerada = None 
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # Painel do Bilhete e Mapa
+            col_painel, col_mapa = st.columns([1, 2.8])
+            
+            with col_painel:
+                html_painel = "<div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); height: 100%;'><div style='display: flex; gap: 8px; margin-bottom: 25px;'><div style='border: 2px solid #0068C9; color: #0068C9; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;'>Ida</div><div style='border: 2px solid #0068C9; color: #0068C9; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;'>Volta</div><div style='background-color: #0068C9; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px;'>Bilhetes</div></div><div style='display: flex; align-items: flex-start; gap: 15px; margin-bottom: 30px;'><div style='background-color: #e2e8f0; border-radius: 50%; min-width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 14px;'>SP</div><div><p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 15px;'>2x SPTRANS</p><p style='margin: 2px 0; font-size: 13px; color: #718096;'>R$ 11,32 - Integração</p><p style='margin: 5px 0 0 0; font-size: 14px; color: #4a5568; font-weight: bold;'>Total de R$ 22,64</p></div></div><div style='background-color: #0068C9; color: white; text-align: center; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>VT Total por dia R$ 21,42</div></div>"
+                st.markdown(html_painel, unsafe_allow_html=True)
+                st.markdown(html_painel, unsafe_allow_html=True)
+            
+            with col_mapa:
+                # Extrair coordenadas ou usar fallback para SP (Casa e Trabalho)
+                lat_c, lon_c = extrair_coordenadas(coordenadas_casa, -23.6834, -46.7813)
+                lat_t, lon_t = -23.5677, -46.6465 # Simulando coordenadas do Trabalho
+                
+                m = folium.Map(location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2], zoom_start=11, control_scale=True)
+                
+                # Ícone da Casa (Azul/Verde)
+                icone_casa = folium.DivIcon(html=f"""
+                    <div style="background-color: #00BFA5; width: 34px; height: 34px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 18px; box-shadow: 0 3px 6px rgba(0,0,0,0.3);">
+                        C
+                    </div>
+                """)
+                folium.Marker([lat_c, lon_c], icon=icone_casa, tooltip="Casa").add_to(m)
+                
+                # Ícone do Trabalho (Laranja)
+                icone_trab = folium.DivIcon(html=f"""
+                    <div style="background-color: #FF6D00; width: 34px; height: 34px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 18px; box-shadow: 0 3px 6px rgba(0,0,0,0.3);">
+                        T
+                    </div>
+                """)
+                folium.Marker([lat_t, lon_t], icon=icone_trab, tooltip="Trabalho").add_to(m)
+                
+                # Linha a ligar C e T
+                folium.PolyLine(locations=[[lat_c, lon_c], [lat_t, lon_t]], color="#3182bd", weight=3, opacity=0.8).add_to(m)
+                
+                st_folium(m, height=350, use_container_width=True)
+
+            if st.session_state.rota_gerada:
+                rota = st.session_state.rota_gerada
+                st.success("Nova sugestão de rota calculada com base nos endereços!")
+                c1, c2, c3 = st.columns(3)
+                c1.metric(label="Trajeto Sugerido", value=rota["trajeto"])
+                c2.metric(label="Tempo Estimado", value=rota["tempo"])
+                c3.metric(label="Custo Diário", value=f"R$ {rota['valor_diario']:.2f}")
+
+            if st.session_state.modo_contestacao:
+                with st.form(key="form_nova_contestacao"):
+                    motivo_input = st.text_area("Descreve o problema (Ex: tarifa indevida, rota que não faz sentido, etc):")
+                    submit_contestacao = st.form_submit_button("Registar Contestação")
+                    
+                    if submit_contestacao:
+                        if motivo_input.strip() == "":
+                            st.error("Por favor, descreve o motivo antes de registar.")
+                        else:
+                            registrar_contestacao(nome=nome_jovem, cid_res="São Paulo", cid_trab="São Paulo", motivo=motivo_input)
+                            st.success("Contestação registada! O Dashboard na página principal já foi atualizado.")
+                            st.session_state.modo_contestacao = False
+                            time.sleep(2)
+                            st.rerun()
+
     else:
         st.title("Pesquisar Consultas")
         
         st.markdown("### Contexto da Pesquisa")
         modalidade_pesquisa = st.radio(
-            "Selecione o tipo de rota que voce esta avaliando agora:",
+            "Seleciona o tipo de rota que estás a avaliar agora:",
             ["Casa x Trabalho", "Casa x Curso"],
             horizontal=True
         )
-        st.info(f"Modo Ativo: Voce esta pesquisando e alterando rotas no contexto {modalidade_pesquisa}.")
+        st.info(f"Modo Ativo: Estás a pesquisar e alterar rotas no contexto {modalidade_pesquisa}.")
         st.markdown("---")
 
-        tab_cpf, tab_nome, tab_matricula = st.tabs(["Por CPF", "Por Nome", "Por Matricula"])
+        tab_cpf, tab_nome, tab_matricula = st.tabs(["Por CPF", "Por Nome", "Por Matrícula"])
 
         with tab_cpf:
-            st.write("Digite o CPF")
-            cpf_busca = st.text_input("Apenas numeros", key="input_cpf", max_chars=11)
+            st.write("Digita o CPF")
+            cpf_busca = st.text_input("Apenas números", key="input_cpf", max_chars=11)
             if st.button("Pesquisar", type="primary", key="btn_cpf"):
                 conexao = sqlite3.connect('mobilidade_renapsi.db')
                 st.session_state.resultado_busca = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE cpf = ?", conexao, params=(cpf_busca,))
@@ -469,7 +582,7 @@ elif menu == "Pesquisar Consultas":
                 conexao.close()
 
         with tab_nome:
-            st.write("Digite o Nome do Jovem")
+            st.write("Digita o Nome do Jovem")
             nome_busca = st.text_input("Nome completo", key="input_nome")
             if st.button("Pesquisar", type="primary", key="btn_nome"):
                 conexao = sqlite3.connect('mobilidade_renapsi.db')
@@ -478,15 +591,14 @@ elif menu == "Pesquisar Consultas":
                 conexao.close()
 
         with tab_matricula:
-            st.write("Digite o Codigo de Matricula")
-            mat_busca = st.text_input("Apenas numeros", key="input_mat")
+            st.write("Digita o Código de Matrícula")
+            mat_busca = st.text_input("Apenas números", key="input_mat")
             if st.button("Pesquisar", type="primary", key="btn_mat"):
                 conexao = sqlite3.connect('mobilidade_renapsi.db')
                 st.session_state.resultado_busca = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE matricula = ?", conexao, params=(mat_busca,))
                 st.session_state.detalhes_abertos = False
                 conexao.close()
 
-        # Renderiza o card de resumo se houver resultado
         if st.session_state.resultado_busca is not None:
             if st.session_state.resultado_busca.empty:
                 st.warning("Nenhum aprendiz encontrado com o dado informado.")
@@ -496,13 +608,13 @@ elif menu == "Pesquisar Consultas":
                 nome_jovem = dados_jovem['nome']
                 cpf_cru = str(dados_jovem['cpf']).zfill(11)
                 cpf_mascarado = f"***.***.{cpf_cru[6:9]}-{cpf_cru[9:11]}"
-                matricula_exib = dados_jovem.get('matricula', 'Nao informada')
+                matricula_exib = dados_jovem.get('matricula', 'Não informada')
                 status_exib = dados_jovem.get('status_rota', 'Otimizado').upper()
                 
                 data_roteirizacao = dados_jovem.get('data_consulta')
                 if not data_roteirizacao:
                     data_roteirizacao = "Pendente"
-                data_geracao = "26/08/2025 as 00h00m"
+                data_geracao = "26/08/2025 às 00h00m"
 
                 st.markdown(f"""
                 <div style="background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 4px rgba(0,0,0,0.05); margin-top: 10px; margin-bottom: 15px; border-left: 4px solid #0068C9;">
@@ -510,11 +622,11 @@ elif menu == "Pesquisar Consultas":
                         <h3 style="margin: 0; color: #5b677a; font-size: 16px;">{id_selecionado} - {nome_jovem.upper()}</h3>
                         <span style="background-color: #d1f3e0; color: #1e8e3e; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 10px;">{status_exib}</span>
                     </div>
-                    <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">PRE-ADM</p>
-                    <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">Gerada em {data_geracao}</p>
-                    <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">Ultima roteirizacao em {data_roteirizacao}</p>
+                    <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">PRÉ-ADM</p>
+                    <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">Gerada a {data_geracao}</p>
+                    <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">Última roteirização a {data_roteirizacao}</p>
                     <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">CPF: {cpf_mascarado}</p>
-                    <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">Matricula: {matricula_exib}</p>
+                    <p style="margin: 3px 0; color: #a0aec0; font-size: 13px;">Matrícula: {matricula_exib}</p>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -523,11 +635,11 @@ elif menu == "Pesquisar Consultas":
                     st.rerun()
 
 # ==========================================
-# --- TELA 3: CADASTRO DE JOVENS (COM ABAS) ---
+# --- TELA 3: CADASTRO DE JOVENS ---
 # ==========================================
 elif menu == "Cadastrar Novo Jovem":
     st.title("➕ Cadastrar Novo Jovem")
-    st.write("Adicione novos aprendizes à base de dados manualmente ou enviando uma planilha Excel.")
+    st.write("Adiciona novos aprendizes à base de dados manualmente ou enviando uma folha de cálculo Excel.")
     st.markdown("---")
 
     tab_manual, tab_massa = st.tabs(["✍️ Cadastro Manual", "📂 Importação em Massa (Excel/CSV)"])
@@ -540,17 +652,17 @@ elif menu == "Cadastrar Novo Jovem":
             
             col_cep1, col_cep2 = st.columns(2)
             cep_casa_input = col_cep1.text_input("CEP da Residência (Apenas números):", max_chars=8)
-            cep_trab_input = col_cep2.text_input("CEP do Trabalho/Polo (Apenas números):", max_chars=8)
+            cep_trab_input = col_cep2.text_input("CEP do Trabalho/Pólo (Apenas números):", max_chars=8)
             
             botao_salvar = st.form_submit_button("Salvar Jovem na Base de Dados")
 
     if botao_salvar:
             if not (nome_input and cpf_input and cep_casa_input and cep_trab_input):
-                st.error("⚠️ Por favor, preencha todos os campos antes de salvar.")
+                st.error("⚠️ Por favor, preenche todos os campos antes de salvar.")
             elif cpf_ja_existe(cpf_input):
                 st.error(f"❌ Operação bloqueada: O CPF {cpf_input} já está cadastrado para outro jovem no sistema!")
             else:
-                with st.spinner("Validando CEPs nos Correios..."):
+                with st.spinner("A validar CEPs nos Correios..."):
                     validacao_casa = buscar_endereco_viacep(cep_casa_input)
                     validacao_trab = buscar_endereco_viacep(cep_trab_input)
                     
@@ -562,8 +674,8 @@ elif menu == "Cadastrar Novo Jovem":
                         st.success(f"✅ Sucesso! O jovem {nome_input} foi cadastrado com Status 'Otimizado' e os CEPs foram validados.")
 
     with tab_massa:
-        st.info("💡 A sua planilha Excel ou CSV deve conter exatamente as colunas na primeira linha: **nome, cpf, cep_casa, cep_trabalho**")
-        arquivo_upload = st.file_uploader("Arraste o seu arquivo Excel (.xlsx) ou CSV para cá", type=["xlsx", "csv"])
+        st.info("💡 A tua folha de cálculo Excel ou CSV deve conter exatamente as colunas na primeira linha: **nome, cpf, cep_casa, cep_trabalho**")
+        arquivo_upload = st.file_uploader("Arrasta o teu ficheiro Excel (.xlsx) ou CSV para cá", type=["xlsx", "csv"])
         
         if arquivo_upload is not None:
             try:
@@ -574,7 +686,6 @@ elif menu == "Cadastrar Novo Jovem":
                 
                 df_upload.columns = df_upload.columns.str.lower().str.strip()
                 
-                # Gera matrículas aleatórias para a importação em massa e seta o Status padrão
                 df_upload['matricula'] = [str(random.randint(100000, 999999)) for _ in range(len(df_upload))]
                 df_upload['status_rota'] = "Otimizado"
                 
@@ -584,7 +695,7 @@ elif menu == "Cadastrar Novo Jovem":
                 botao_salvar_massa = st.button("Importar Todos para a Base de Dados", type="primary")
                 
                 if botao_salvar_massa:
-                    with st.spinner("Enviando dados para a base..."):
+                    with st.spinner("A enviar dados para a base..."):
                         conexao = sqlite3.connect('mobilidade_renapsi.db')
                         df_limpo = df_upload[['nome', 'cpf', 'cep_casa', 'cep_trabalho', 'matricula', 'status_rota']]
                         
@@ -596,4 +707,4 @@ elif menu == "Cadastrar Novo Jovem":
                         st.rerun()
                         
             except Exception as e:
-                st.error(f"❌ Erro ao ler o arquivo. Confirme se o nome das colunas está correto (em letras minúsculas). Detalhe técnico: {e}")
+                st.error(f"❌ Erro ao ler o ficheiro. Confirma se o nome das colunas está correto (em letras minúsculas). Detalhe técnico: {e}")
