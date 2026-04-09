@@ -50,31 +50,62 @@ def motor_de_rotas_gratuito(end_casa, end_trab):
     if not lat_t: lat_t, lon_t = -23.5874, -46.6576
     
     url_osrm = f"http://router.project-osrm.org/route/v1/driving/{lon_c},{lat_c};{lon_t},{lat_t}?overview=false"
-    distancia_km = 15.0
-    tempo_min = 60.0
+    distancia_km = 0.0
+    tempo_carro_vazio = 0.0
+    
     try:
         r_osrm = requests.get(url_osrm).json()
         if r_osrm.get("code") == "Ok":
-            distancia_km = r_osrm["routes"][0]["distance"] / 1000
-            tempo_min = r_osrm["routes"][0]["duration"] / 60
+            distancia_km = r_osrm["routes"][0]["distance"] / 1000 
+            tempo_carro_vazio = r_osrm["routes"][0]["duration"] / 60 
     except:
-        pass
+        distancia_km, tempo_carro_vazio = 10.0, 30.0 
         
-    if distancia_km <= 2.0:
-        trajeto, valor, bilhete = "A pé (Curta distância)", 0.00, "Nenhum"
-        tempo_final = f"{int(tempo_min * 2)} min (Caminhada)" 
-    elif distancia_km <= 8.0:
-        trajeto, valor, bilhete = "1 Ônibus Municipal (SPTrans)", 8.80, "Bilhete Único (Comum)"
-        tempo_final = f"{int(tempo_min + 15)} min" 
-    else:
-        trajeto, valor, bilhete = "1 Ônibus + 1 Metrô (Integração)", 16.40, "Bilhete Único (Vale-Transporte)"
-        tempo_final = f"{int(tempo_min + 20)} min"
-        
-    return {
-        "trajeto": trajeto, "valor_diario": valor, "tempo": tempo_final,
-        "bilhete": bilhete, "coords_reais": [(lat_c, lon_c), (lat_t, lon_t)]
-    }
+    # ==========================================
+    # 💰 TABELA DE TARIFAS VALE-TRANSPORTE (2026)
+    # ==========================================
+    TARIFA_ONIBUS_VT = 5.82
+    TARIFA_METRO_VT = 5.92
+    TARIFA_INTEGRACAO_VT = 11.32
+    
+    # Gerando as 3 opções de Rota baseadas na distância real
+    rotas = [
+        {
+            "modal": "🚌 Apenas Ônibus",
+            "trajeto": "Ônibus Municipal (SPTrans)",
+            "valor_diario": TARIFA_ONIBUS_VT * 2,
+            "tempo": f"{int((tempo_carro_vazio * 2.5) + 15)} min",
+            "bilhete": "Crédito Eletrônico VT (Ônibus)"
+        },
+        {
+            "modal": "🚇 Apenas Metrô/CPTM",
+            "trajeto": "Sistema Metroferroviário",
+            "valor_diario": TARIFA_METRO_VT * 2,
+            "tempo": f"{int((tempo_carro_vazio * 0.8) + 20)} min", # Anda até a estação
+            "bilhete": "Crédito Eletrônico VT (Metrô)"
+        },
+        {
+            "modal": "🔄 Integração",
+            "trajeto": "Ônibus + Metrô/CPTM",
+            "valor_diario": TARIFA_INTEGRACAO_VT * 2,
+            "tempo": f"{int((tempo_carro_vazio * 1.2) + 10)} min",
+            "bilhete": "Integração Ônibus+Metrô VT"
+        }
+    ]
 
-# Mantendo o simulado caso precise como backup
-def roteirizar_simulado():
-    return motor_de_rotas_gratuito("São Paulo, SP", "Avenida Paulista, SP")
+    # Se for muito perto, substitui a opção de integração por caminhada
+    if distancia_km <= 2.0:
+        rotas[2] = {
+            "modal": "🚶 Caminhada",
+            "trajeto": "A pé (Curta distância)",
+            "valor_diario": 0.00,
+            "tempo": f"{int(distancia_km * 12)} min",
+            "bilhete": "Nenhum"
+        }
+
+    return {
+        "rotas": rotas, 
+        "distancia_km": distancia_km,
+        "coords_reais": [(lat_c, lon_c), (lat_t, lon_t)],
+        "info_tarifas": f"Ônibus VT: R${TARIFA_ONIBUS_VT} | Metrô VT: R${TARIFA_METRO_VT} | Integração VT: R${TARIFA_INTEGRACAO_VT}"
+    }

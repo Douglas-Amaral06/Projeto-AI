@@ -1,6 +1,4 @@
 import streamlit as st
-from banco_dados import *
-from apis import *
 import sqlite3
 import pandas as pd
 import requests
@@ -10,6 +8,9 @@ import datetime
 import time
 import folium
 from streamlit_folium import st_folium
+from banco_dados import *
+from apis import *
+from agente_ia import *
 
 # Configuração da página
 st.set_page_config(page_title="Nova Capta - Piloto", page_icon="🚌", layout="wide")
@@ -300,8 +301,9 @@ elif menu == "Pesquisar Consultas":
                     time.sleep(1)
                     st.rerun()
 
+        # --- MODO DE VISUALIZAÇÃO (DADOS + MAPA) ---
         else:
-            with st.spinner("A carregar detalhes..."):
+            with st.spinner("A carregar detalhes e calcular rotas..."):
                 end_casa_dict = buscar_endereco_viacep(cep_casa)
                 end_trab_dict = buscar_endereco_viacep(cep_trab)
                 
@@ -310,6 +312,23 @@ elif menu == "Pesquisar Consultas":
                 
                 rua_trab = end_trab_dict.get('rua', 'N/A') if isinstance(end_trab_dict, dict) else end_trab_dict
                 bairro_cidade_trab = f"{end_trab_dict.get('bairro', '')} - {end_trab_dict.get('cidade_uf', '')}" if isinstance(end_trab_dict, dict) else ""
+
+                # ==========================================
+                # AUTO-ROTEIRIZAR: Roda sozinho ao abrir a tela
+                # ==========================================
+                if not st.session_state.get('rota_gerada'):
+                    end_completo_casa = f"{rua_casa}, {bairro_cidade_casa}"
+                    end_completo_trab = f"{rua_trab}, {bairro_cidade_trab}"
+                    
+                    rota = motor_de_rotas_gratuito(end_completo_casa, end_completo_trab)
+                    st.session_state.rota_gerada = rota
+                    
+                    st.session_state.analise_ia = analisar_rota_com_ia(
+                        rua_casa, rua_trab, 
+                        rota['distancia_km'], 
+                        rota['rotas'],
+                        rota['info_tarifas']
+                    )
 
             col_filler, col_edit_btn = st.columns([9, 1])
             with col_edit_btn:
@@ -352,15 +371,16 @@ elif menu == "Pesquisar Consultas":
             st.markdown("### Resultado")
             col_res1, col_res2 = st.columns([1, 2])
             with col_res1:
-                st.caption(f"Última roteirização em: {dados_jovem.get('data_ultima_roteirizacao', 'Pendente')}")
+                st.caption(f"Última roteirização em: {dados_jovem.get('data_ultima_roteirizacao', 'Agora')}")
             
             with col_res2:
                 col_b1, col_b2, col_b3 = st.columns(3)
                 ja_implantado = (status_exib.upper() == "IMPLANTADO")
                 
                 with col_b1:
-                    if st.button("🔄 Roteirizar", disabled=ja_implantado, use_container_width=True):
-                        st.session_state.rota_gerada = roteirizar_simulado()
+                    # O botão agora serve apenas para re-calcular (se der algum bug e quiser puxar de novo)
+                    if st.button("🔄 Recalcular Rota", disabled=ja_implantado, use_container_width=True):
+                        st.session_state.rota_gerada = None # Limpa para forçar o recálculo
                         st.session_state.modo_contestacao = False 
                         st.rerun()
                 with col_b2:
@@ -369,7 +389,6 @@ elif menu == "Pesquisar Consultas":
                 with col_b3:
                     if st.button("⚙️ Contestações", use_container_width=True):
                         st.session_state.modo_contestacao = not st.session_state.get('modo_contestacao', False)
-                        st.session_state.rota_gerada = None
 
             if st.session_state.get('mostrar_modal_email'):
                 st.info("**Enviar Resultado My-Link**")
@@ -386,7 +405,6 @@ elif menu == "Pesquisar Consultas":
                 with st.form(key="form_nova_contestacao"):
                     motivo_input = st.text_area("Descreve o problema (Ex: tarifa indevida, rota que não faz sentido, etc):")
                     submit_contestacao = st.form_submit_button("Registar Contestação")
-                    
                     if submit_contestacao:
                         if motivo_input.strip() == "":
                             st.error("Por favor, descreve o motivo antes de registar.")
@@ -399,44 +417,51 @@ elif menu == "Pesquisar Consultas":
 
             st.markdown("<br>", unsafe_allow_html=True)
 
+            # Exibe a análise da Inteligência Artificial 
+            if st.session_state.get('analise_ia'):
+                st.markdown(f"""
+                <div style="background-color: #F8FAFC; border-left: 4px solid #8B5CF6; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0; color: #8B5CF6; font-size: 16px;">🤖 Análise do Agente de Inteligência Artificial</h4>
+                    <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.5;">{st.session_state.analise_ia}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
             col_painel, col_mapa = st.columns([1, 2.8])
             
             with col_painel:
-                aba_selecionada = st.radio(
-                    "Selecione:",
-                    ["Ida", "Volta", "Bilhetes"],
-                    horizontal=True,
-                    label_visibility="collapsed"
-                )
+                st.markdown("<h4 style='color: #4a5568; margin-bottom: 10px;'>Opções de Trajeto</h4>", unsafe_allow_html=True)
                 
-                if st.session_state.get('rota_gerada'):
-                    nome_trajeto = st.session_state.rota_gerada["trajeto"]
-                    valor_total = st.session_state.rota_gerada["valor_diario"]
-                else:
-                    nome_trajeto = "2x SPTRANS"
-                    valor_total = 22.64
+                if st.session_state.get('rota_gerada') and 'rotas' in st.session_state.rota_gerada:
+                    # Cria 3 abas com o nome dos modais (Ônibus, Metrô, Integração)
+                    abas = st.tabs([r["modal"] for r in st.session_state.rota_gerada["rotas"]])
                     
-                if aba_selecionada == "Ida":
-                    valor_exibir = valor_total / 2
-                    label_trajeto = nome_trajeto.replace("2x", "1x") if "2x" in nome_trajeto else nome_trajeto
-                    desc_label = "Total Ida"
-                elif aba_selecionada == "Volta":
-                    valor_exibir = valor_total / 2
-                    label_trajeto = nome_trajeto.replace("2x", "1x") if "2x" in nome_trajeto else nome_trajeto
-                    desc_label = "Total Volta"
+                    for i, aba in enumerate(abas):
+                        with aba:
+                            rt = st.session_state.rota_gerada["rotas"][i]
+                            
+                            html_painel = f"""
+                            <div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); margin-top: 10px;'>
+                                <div style='display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px;'>
+                                    <div style='background-color: #e2e8f0; border-radius: 50%; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 16px;'>SP</div>
+                                    <div>
+                                        <p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 16px;'>{rt['trajeto']}</p>
+                                        <p style='margin: 4px 0; font-size: 14px; color: #718096;'>{rt['bilhete']}</p>
+                                        <p style='margin: 4px 0; font-size: 13px; color: #8B5CF6; font-weight: bold;'>⏱️ {rt['tempo']}</p>
+                                    </div>
+                                </div>
+                                <div style='background-color: #0068C9; color: white; text-align: center; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>
+                                    VT Diário (Ida e Volta): R$ {rt['valor_diario']:.2f}
+                                </div>
+                            </div>
+                            """
+                            st.markdown(html_painel, unsafe_allow_html=True)
                 else:
-                    valor_exibir = valor_total
-                    label_trajeto = nome_trajeto
-                    desc_label = "Total Bilhetes"
-
-                html_painel = f"<div style='background-color: #FFFFFF; padding: 20px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1);'><div style='display: flex; align-items: flex-start; gap: 15px; margin-top: 15px; margin-bottom: 20px;'><div style='background-color: #e2e8f0; border-radius: 50%; min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #718096; font-size: 16px;'>SP</div><div><p style='margin: 0; font-weight: bold; color: #4a5568; font-size: 16px;'>{label_trajeto}</p><p style='margin: 4px 0; font-size: 14px; color: #718096;'>Integração</p><p style='margin: 10px 0 0 0; font-size: 16px; color: #4a5568; font-weight: bold;'>{desc_label}: R$ {valor_exibir:.2f}</p></div></div><div style='background-color: #0068C9; color: white; text-align: center; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,104,201,0.3);'>VT Total por dia R$ {valor_total:.2f}</div></div>"
-                st.markdown(html_painel, unsafe_allow_html=True)
+                    st.info("Calculando as opções de rota...")
             
             with col_mapa:
-                lat_c, lon_c = extrair_coordenadas(coordenadas_casa, -23.6834, -46.7813)
-                lat_t, lon_t = -23.5677, -46.6465 
+                (lat_c, lon_c), (lat_t, lon_t) = st.session_state.rota_gerada['coords_reais']
                 
-                m = folium.Map(location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2], zoom_start=11, control_scale=True)
+                m = folium.Map(location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2], zoom_start=12, control_scale=True)
                 
                 icone_casa = folium.DivIcon(html=f"""
                     <div style="background-color: #00BFA5; width: 48px; height: 48px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.4);">
@@ -455,7 +480,6 @@ elif menu == "Pesquisar Consultas":
                 folium.PolyLine(locations=[[lat_c, lon_c], [lat_t, lon_t]], color="#3182bd", weight=4, opacity=0.8).add_to(m)
                 
                 st_folium(m, height=510, use_container_width=True)
-
     else:
         st.title("Pesquisar Consultas")
         
