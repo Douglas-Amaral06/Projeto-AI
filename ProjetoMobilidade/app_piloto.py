@@ -659,29 +659,30 @@ elif menu == "Pesquisar Consultas":
 # ==========================================
 elif menu == "Cadastrar Novo Jovem":
     st.title("➕ Cadastrar Novo Jovem")
-    st.write("Adiciona novos aprendizes à base de dados manualmente ou enviando uma folha de cálculo Excel.")
+    st.write("Adicione novos aprendizes à base de dados manualmente ou enviando uma planilha Excel.")
     st.markdown("---")
 
     tab_manual, tab_massa = st.tabs(["✍️ Cadastro Manual", "📂 Importação em Massa (Excel/CSV)"])
 
+    # --- ABA DE CADASTRO MANUAL ---
     with tab_manual:
         with st.form(key="form_novo_jovem"):
-            col_nome, col_cpf = st.columns(2)
+            # Dividindo em 3 colunas para a matrícula caber bonitinho
+            col_nome, col_cpf, col_mat = st.columns([2, 1, 1])
             nome_input = col_nome.text_input("Nome Completo do Jovem:")
             cpf_input = col_cpf.text_input("CPF (Apenas números):", max_chars=11)
+            matricula_input = col_mat.text_input("Matrícula (Apenas números):")
             
-            # Adicionar o campo de matrícula aqui dividindo espaço com os CEPs
-            col_cep1, col_cep2, col_mat = st.columns([2, 2, 1.5])
+            col_cep1, col_cep2 = st.columns(2)
             cep_casa_input = col_cep1.text_input("CEP da Residência:", max_chars=8)
             cep_trab_input = col_cep2.text_input("CEP do Trabalho:", max_chars=8)
-            matricula_input = col_mat.text_input("Matrícula:")
             
-            botao_salvar = st.form_submit_button("Salvar Jovem na Base de Dados")
+            botao_salvar = st.form_submit_button("💾 Salvar Jovem na Base de Dados")
 
     if botao_salvar:
-            # Não esquecer de exigir a matricula no cadastro 
+            # Trava atualizada exigindo a matrícula
             if not (nome_input and cpf_input and cep_casa_input and cep_trab_input and matricula_input):
-                st.error("⚠️ Por favor, preencha todos os campos (incluindo matrícula) antes de salvar.")
+                st.error("⚠️ Por favor, preencha todos os campos (incluindo a Matrícula) antes de salvar.")
             elif cpf_ja_existe(cpf_input):
                 st.error(f"❌ Operação bloqueada: O CPF {cpf_input} já está cadastrado no sistema!")
             else:
@@ -692,13 +693,14 @@ elif menu == "Cadastrar Novo Jovem":
                     if "inválido" in validacao_casa or "inválido" in validacao_trab:
                         st.error("❌ Operação bloqueada: Um dos CEPs informados é inválido ou não existe no mapa.")
                     else:
-                        # Passando a matrícula que você digitou para salvar no banco
+                        # Chama a função passando a matrícula digitada
                         inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input, matricula_input)
                         st.success(f"✅ Sucesso! O jovem {nome_input} (Matrícula: {matricula_input}) foi cadastrado!")
 
+    # --- ABA DE IMPORTAÇÃO EM MASSA ---
     with tab_massa:
         st.info("💡 A sua planilha Excel ou CSV deve conter as colunas: **nome, cpf, cep_casa, cep_trabalho, matricula**")
-        arquivo_upload = st.file_uploader("Arrasta o teu ficheiro Excel (.xlsx) ou CSV para cá", type=["xlsx", "csv"])
+        arquivo_upload = st.file_uploader("Arraste a sua planilha Excel (.xlsx) ou CSV para cá", type=["xlsx", "csv"])
         
         if arquivo_upload is not None:
             try:
@@ -709,28 +711,31 @@ elif menu == "Cadastrar Novo Jovem":
                 
                 df_upload.columns = df_upload.columns.str.lower().str.strip()
                 
-                # Verifica se a coluna 'matricula' realmente existe na planilha
+                # Trava de segurança: verifica se a planilha realmente tem a coluna matrícula
                 if 'matricula' not in df_upload.columns:
-                    st.error("❌ Erro: O seu arquivo precisa ter uma coluna chamada exatemente 'matricula' na primeira linha.")
+                    st.error("❌ Erro: O seu arquivo precisa ter uma coluna chamada 'matricula' na primeira linha.")
                 else:
+                    # Adiciona dados obrigatórios que não vêm da planilha
                     df_upload['status_rota'] = "Otimizado"
                     
                     st.write("🔍 Pré-visualização dos dados encontrados:")
                     st.dataframe(df_upload.head(), use_container_width=True)
                     
-                    botao_salvar_massa = st.button("Importar Todos para a Base de Dados", type="primary")
+                    botao_salvar_massa = st.button("🚀 Importar Todos para a Base de Dados", type="primary")
                     
                     if botao_salvar_massa:
                         with st.spinner("A enviar dados para a base..."):
                             conexao = sqlite3.connect('mobilidade_renapsi.db')
+                            
+                            # Filtra só as colunas que importam, agora com a matrícula
                             df_limpo = df_upload[['nome', 'cpf', 'cep_casa', 'cep_trabalho', 'matricula', 'status_rota']]
                             
                             df_limpo.to_sql('jovens_rotas', conexao, if_exists='append', index=False)
                             conexao.close()
                             
-                            st.success(f"✅ Sucesso! {len(df_limpo)} jovens foram importados com suas matrículas.")
+                            st.success(f"✅ Sucesso! {len(df_limpo)} jovens foram importados com as suas matrículas.")
                             time.sleep(2)
                             st.rerun()
                         
             except Exception as e:
-                st.error(f"❌ Erro ao ler o ficheiro. Confirma as colunas. Detalhe técnico: {e}")
+                st.error(f"❌ Erro ao ler o arquivo. Confirme as colunas. Detalhe técnico: {e}")
