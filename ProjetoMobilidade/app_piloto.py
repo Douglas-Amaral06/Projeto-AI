@@ -1,4 +1,6 @@
 import streamlit as st
+from banco_dados import *
+from apis import *
 import sqlite3
 import pandas as pd
 import requests
@@ -33,188 +35,23 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- FUNÇÕES DE BANCO DE DADOS E API ---
-
-def carregar_dados():
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    df = pd.read_sql_query("SELECT * FROM jovens_rotas", conexao)
-    conexao.close()
-    return df
-
-def inserir_novo_jovem(nome, cpf, cep_casa, cep_trabalho, matricula):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    status_rota = "Otimizado"
-    
-    cursor.execute('''
-        INSERT INTO jovens_rotas (nome, cpf, cep_casa, cep_trabalho, matricula, status_rota)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (nome, cpf, cep_casa, cep_trabalho, matricula, status_rota))
-    conexao.commit()
-    conexao.close()
-
-def cpf_ja_existe(cpf):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    cursor.execute("SELECT COUNT(*) FROM jovens_rotas WHERE cpf = ?", (cpf,))
-    resultado = cursor.fetchone()[0]
-    conexao.close()
-    return resultado > 0
-
-def excluir_jovem(id_jovem):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (id_jovem,))
-    conexao.commit()
-    conexao.close()
-
-def buscar_endereco_viacep(cep):
-    cep_limpo = ''.join(filter(str.isdigit, str(cep)))
-    if len(cep_limpo) != 8:
-        return {"rua": "CEP Inválido", "bairro": "", "cidade_uf": "", "completo": "CEP Inválido"}
-        
-    url = f"https://viacep.com.br/ws/{cep_limpo}/json/"
-    try:
-        resposta = requests.get(url).json()
-        if "erro" not in resposta:
-            return {
-                "rua": resposta.get('logradouro', 'N/A'),
-                "bairro": resposta.get('bairro', 'N/A'),
-                "cidade_uf": f"{resposta.get('localidade', 'N/A')} - {resposta.get('uf', 'N/A')}",
-                "completo": f"{resposta.get('logradouro')}, {resposta.get('bairro')} - {resposta.get('localidade')}/{resposta.get('uf')}"
-            }
-    except Exception:
-        pass
-    return {"rua": "Endereço não encontrado", "bairro": "", "cidade_uf": "", "completo": "Não encontrado"}
-
-def roteirizar_simulado():
-    opcoes_rota = [
-        {"trajeto": "1 Ônibus Municipal (SPTrans)", "valor_diario": 8.80, "tempo": "45 min"},
-        {"trajeto": "1 Ônibus + 1 Metrô (Integração)", "valor_diario": 10.00, "tempo": "1h 10min"},
-        {"trajeto": "Metrô Direto (Linha Azul)", "valor_diario": 10.00, "tempo": "30 min"}
-    ]
-    return random.choice(opcoes_rota)
-
-def atualizar_banco_geral():
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    
-    colunas_novas = [
-        ("data_consulta", "TEXT"),
-        ("sla_segundos", "REAL"),
-        ("matricula", "TEXT"),
-        ("status_rota", "TEXT DEFAULT 'Otimizado'"),
-        ("email", "TEXT"),
-        ("celular", "TEXT"),
-        ("numero_casa", "TEXT"),
-        ("coordenadas", "TEXT")
-    ]
-    
-    for coluna, tipo in colunas_novas:
-        try:
-            cursor.execute(f"ALTER TABLE jovens_rotas ADD COLUMN {coluna} {tipo}")
-        except sqlite3.OperationalError:
-            pass
-            
-    cursor.execute("UPDATE jovens_rotas SET status_rota = 'Otimizado' WHERE status_rota IS NULL")
-    
-    conexao.commit()
-    conexao.close()
-
-def atualizar_dados_funcionario(id_jovem, matricula, email, celular, cep, numero, coordenadas):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    cursor.execute('''
-        UPDATE jovens_rotas 
-        SET matricula = ?, email = ?, celular = ?, cep_casa = ?, numero_casa = ?, coordenadas = ?
-        WHERE id = ?
-    ''', (matricula, email, celular, cep, numero, coordenadas, id_jovem))
-    conexao.commit()
-    conexao.close()
-
-def obter_dados_dashboard():
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    mes_ano_atual = datetime.datetime.now().strftime("%Y-%m")
-    
-    cursor.execute("""
-        SELECT COUNT(DISTINCT id), AVG(sla_segundos) 
-        FROM jovens_rotas 
-        WHERE data_consulta LIKE ?
-    """, (f"{mes_ano_atual}%",))
-    
-    resultado = cursor.fetchone()
-    conexao.close()
-    
-    total_consultas = resultado[0] if resultado[0] else 0
-    sla_medio = resultado[1] if resultado[1] else 0.0
-    return total_consultas, sla_medio
-
-def atualizar_banco_para_contestacoes():
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS contestacoes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome_jovem TEXT,
-            cidade_residencia TEXT,
-            cidade_trabalho TEXT,
-            motivo TEXT,
-            data_geracao TEXT,
-            status TEXT DEFAULT 'Pendente',
-            tratativa TEXT
-        )
-    ''')
-    try:
-        cursor.execute("ALTER TABLE contestacoes ADD COLUMN status TEXT DEFAULT 'Pendente'")
-        cursor.execute("ALTER TABLE contestacoes ADD COLUMN tratativa TEXT")
-    except sqlite3.OperationalError:
-        pass
-        
-    conexao.commit()
-    conexao.close()
-
-def resolver_contestacao(id_contestacao, tratativa):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    cursor.execute("UPDATE contestacoes SET status = 'Resolvido', tratativa = ? WHERE id = ?", (tratativa, id_contestacao))
-    conexao.commit()
-    conexao.close()
-
-def registrar_contestacao(nome, cid_res, cid_trab, motivo):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    data_atual = datetime.datetime.now().strftime("%d/%m/%Y às %Hh%Mm")
-    cursor.execute('''
-        INSERT INTO contestacoes (nome_jovem, cidade_residencia, cidade_trabalho, motivo, data_geracao)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (nome, cid_res, cid_trab, motivo, data_atual))
-    conexao.commit()
-    conexao.close()
-
-def extrair_coordenadas(coord_str, default_lat, default_lon):
-    if not coord_str:
-        return default_lat, default_lon
-    try:
-        parts = coord_str.replace(" ", "").split(",")
-        if len(parts) == 2:
-            return float(parts[0]), float(parts[1])
-    except:
-        pass
-    return default_lat, default_lon
-
 atualizar_banco_geral()
 atualizar_banco_para_contestacoes()
 
-# --- MENU LATERAL (SIDEBAR) ---
+# --- MENU LATERAL (SIDEBAR) COM LÓGICA DE F5 ---
 st.sidebar.image("logo_renapsi.png", use_container_width=True)
 st.sidebar.title("Menu de Navegação")
 
-menu = st.sidebar.radio("Escolha a área:", [
-    "Dashboard Principal", 
-    "Pesquisar Consultas", 
-    "Cadastrar Novo Jovem"
-])
+# MÁGICA 1: Lendo a URL para saber onde estávamos antes do F5
+parametros_url = st.query_params
+pagina_salva = parametros_url.get("menu", "Dashboard Principal")
+opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem"]
+indice_padrao = opcoes_menu.index(pagina_salva) if pagina_salva in opcoes_menu else 0
+
+menu = st.sidebar.radio("Escolha a área:", opcoes_menu, index=indice_padrao)
+
+# Atualiza a URL se o usuário trocar de menu
+st.query_params["menu"] = menu
 
 # ==========================================
 # --- TELA 0: DASHBOARD PRINCIPAL ---
@@ -353,10 +190,22 @@ if menu == "Dashboard Principal":
                 df_exibicao.columns = ['ID', 'Data', 'Funcionário', 'Motivo', 'Status', 'Tratativa']
                 st.dataframe(df_exibicao, use_container_width=True, hide_index=True)
 
+
 # ==========================================
 # --- TELA 1.5: PESQUISAR CONSULTAS ---
 # ==========================================
 elif menu == "Pesquisar Consultas":
+    
+    # MÁGICA 2: Recupera o ID do Jovem se tiver dado F5 com a consulta aberta
+    if 'id_consulta' in st.query_params and st.session_state.get('resultado_busca') is None:
+        id_salvo = st.query_params['id_consulta']
+        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        df_salvo = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(id_salvo,))
+        conexao.close()
+        if not df_salvo.empty:
+            st.session_state.resultado_busca = df_salvo
+            st.session_state.detalhes_abertos = True
+
     if 'resultado_busca' not in st.session_state:
         st.session_state.resultado_busca = None
     if 'detalhes_abertos' not in st.session_state:
@@ -379,6 +228,10 @@ elif menu == "Pesquisar Consultas":
                 st.session_state.modo_contestacao = False
                 st.session_state.modo_edicao = False
                 st.session_state.mostrar_modal_email = False
+                st.session_state.resultado_busca = None
+                # Limpa a URL ao voltar para a lista de pesquisa
+                if 'id_consulta' in st.query_params:
+                    del st.query_params['id_consulta']
                 st.rerun()
 
         dados_jovem = st.session_state.resultado_busca.iloc[0]
@@ -464,40 +317,38 @@ elif menu == "Pesquisar Consultas":
                     st.session_state.modo_edicao = True
                     st.rerun()
 
-            # HTML totalmente sem indentação no inicio para não gerar bloco de código do Markdown
             html_painel_principal = f"""
-<div style="background-color: #FFFFFF; padding: 30px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); margin-top: -10px; margin-bottom: 20px;">
-    <div style="display: flex; align-items: center; margin-bottom: 15px;">
-        <h2 style="margin: 0; color: #5b677a; font-size: 28px;">Consulta Numero {id_selecionado}</h2>
-        <span style="background-color: #d1f3e0; color: #1e8e3e; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-left: 15px;">{status_exib}</span>
-    </div>
-    <h3 style="color: #64748b; font-size: 18px; margin-top: 0; margin-bottom: 30px; font-weight: normal;">RENAPSI - SÃO PAULO - C-T</h3>
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-        <div style="flex: 1; min-width: 250px; margin-bottom: 15px; padding-right: 15px;">
-            <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Dados funcionário</h4>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CPF:</strong> {cpf_cru}</p>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Matrícula:</strong> {matricula_exib}</p>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Nome:</strong> {nome_jovem}</p>
-            {f'<p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">E-mail:</strong> {email_jovem}</p>' if email_jovem else ''}
-            {f'<p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Celular:</strong> {celular_jovem}</p>' if celular_jovem else ''}
-        </div>
-        <div style="flex: 1; min-width: 250px; margin-bottom: 15px; padding-right: 15px;">
-            <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Endereço Funcionário</h4>
-            <span style='background-color:#d1fae5;color:#065f46;padding:3px 8px;font-size:11px;border-radius:4px; font-weight: bold;'>CRIMINALIDADE BAIXO RISCO</span><br><br>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CEP:</strong> {cep_casa}</p>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096; line-height: 1.6;"><strong style="color: #4a5568;">Endereço:</strong><br>{rua_casa}{f', {numero_casa}' if numero_casa else ''}<br>{bairro_cidade_casa}</p>
-        </div>
-        <div style="flex: 1; min-width: 250px; margin-bottom: 15px;">
-            <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Local de trabalho</h4>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CEP:</strong> {cep_trab}</p>
-            <p style="margin: 6px 0; font-size: 16px; color: #718096; line-height: 1.6;"><strong style="color: #4a5568;">Endereço:</strong><br>{rua_trab}<br>{bairro_cidade_trab}</p>
-        </div>
-    </div>
-</div>
-"""
+            <div style="background-color: #FFFFFF; padding: 30px; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); margin-top: -10px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0; color: #5b677a; font-size: 28px;">Consulta Numero {id_selecionado}</h2>
+                    <span style="background-color: #d1f3e0; color: #1e8e3e; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-left: 15px;">{status_exib}</span>
+                </div>
+                <h3 style="color: #64748b; font-size: 18px; margin-top: 0; margin-bottom: 30px; font-weight: normal;">RENAPSI - SÃO PAULO - C-T</h3>
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                    <div style="flex: 1; min-width: 250px; margin-bottom: 15px; padding-right: 15px;">
+                        <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Dados funcionário</h4>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CPF:</strong> {cpf_cru}</p>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Matrícula:</strong> {matricula_exib}</p>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Nome:</strong> {nome_jovem}</p>
+                        {f'<p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">E-mail:</strong> {email_jovem}</p>' if email_jovem else ''}
+                        {f'<p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">Celular:</strong> {celular_jovem}</p>' if celular_jovem else ''}
+                    </div>
+                    <div style="flex: 1; min-width: 250px; margin-bottom: 15px; padding-right: 15px;">
+                        <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Endereço Funcionário</h4>
+                        <span style='background-color:#d1fae5;color:#065f46;padding:3px 8px;font-size:11px;border-radius:4px; font-weight: bold;'>CRIMINALIDADE BAIXO RISCO</span><br><br>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CEP:</strong> {cep_casa}</p>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096; line-height: 1.6;"><strong style="color: #4a5568;">Endereço:</strong><br>{rua_casa}{f', {numero_casa}' if numero_casa else ''}<br>{bairro_cidade_casa}</p>
+                    </div>
+                    <div style="flex: 1; min-width: 250px; margin-bottom: 15px;">
+                        <h4 style="color: #718096; font-size: 20px; margin-bottom: 15px;">Local de trabalho</h4>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096;"><strong style="color: #4a5568;">CEP:</strong> {cep_trab}</p>
+                        <p style="margin: 6px 0; font-size: 16px; color: #718096; line-height: 1.6;"><strong style="color: #4a5568;">Endereço:</strong><br>{rua_trab}<br>{bairro_cidade_trab}</p>
+                    </div>
+                </div>
+            </div>
+            """
             st.markdown(html_painel_principal, unsafe_allow_html=True)
 
-            # Botões de Ação
             st.markdown("### Resultado")
             col_res1, col_res2 = st.columns([1, 2])
             with col_res1:
@@ -548,7 +399,6 @@ elif menu == "Pesquisar Consultas":
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # Painel do Bilhete e Mapa
             col_painel, col_mapa = st.columns([1, 2.8])
             
             with col_painel:
@@ -689,6 +539,8 @@ elif menu == "Pesquisar Consultas":
 
                 if st.button("Abrir Consulta", type="primary"):
                     st.session_state.detalhes_abertos = True
+                    # MÁGICA 3: Salva o ID na URL para o F5 não se perder
+                    st.query_params["id_consulta"] = id_selecionado
                     st.rerun()
 
 # ==========================================
