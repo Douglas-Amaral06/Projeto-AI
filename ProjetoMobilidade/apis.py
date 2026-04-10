@@ -1,6 +1,10 @@
 import requests
 import random
+from functools import lru_cache
+import hashlib
 
+# Cache para evitar chamadas repetidas às APIs
+@lru_cache(maxsize=100)
 def buscar_endereco_viacep(cep):
     cep_limpo = ''.join(filter(str.isdigit, str(cep)))
     if len(cep_limpo) != 8:
@@ -8,7 +12,7 @@ def buscar_endereco_viacep(cep):
         
     url = f"https://viacep.com.br/ws/{cep_limpo}/json/"
     try:
-        resposta = requests.get(url).json()
+        resposta = requests.get(url, timeout=5).json()
         if "erro" not in resposta:
             return {
                 "rua": resposta.get('logradouro', 'N/A'),
@@ -16,8 +20,8 @@ def buscar_endereco_viacep(cep):
                 "cidade_uf": f"{resposta.get('localidade', 'N/A')} - {resposta.get('uf', 'N/A')}",
                 "completo": f"{resposta.get('logradouro')}, {resposta.get('bairro')} - {resposta.get('localidade')}/{resposta.get('uf')}"
             }
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Erro ao buscar CEP {cep_limpo}: {e}")
     return {"rua": "Endereço não encontrado", "bairro": "", "cidade_uf": "", "completo": "Não encontrado"}
 
 def extrair_coordenadas(coord_str, default_lat, default_lon):
@@ -31,18 +35,24 @@ def extrair_coordenadas(coord_str, default_lat, default_lon):
         pass
     return default_lat, default_lon
 
+@lru_cache(maxsize=100)
 def obter_coordenadas_reais(endereco_texto):
+    """Obtém coordenadas via Nominatim com cache."""
     url = f"https://nominatim.openstreetmap.org/search?q={endereco_texto}&format=json&limit=1"
     headers = {'User-Agent': 'Renapsi_Routing_App'} 
     try:
-        r = requests.get(url, headers=headers).json()
-        if r:
-            return float(r[0]['lat']), float(r[0]['lon'])
-    except:
-        pass
+        r = requests.get(url, headers=headers, timeout=5).json()
+        if r and len(r) > 0:
+            lat = float(r[0]['lat'])
+            lon = float(r[0]['lon'])
+            print(f"Coordenadas encontradas para '{endereco_texto}': {lat}, {lon}")
+            return lat, lon
+    except Exception as e:
+        print(f"Erro ao buscar coordenadas para '{endereco_texto}': {e}")
     return None, None
 
 def motor_de_rotas_gratuito(end_casa, end_trab):
+    # Usa coordenadas em cache se disponível
     lat_c, lon_c = obter_coordenadas_reais(end_casa)
     lat_t, lon_t = obter_coordenadas_reais(end_trab)
     
@@ -54,7 +64,7 @@ def motor_de_rotas_gratuito(end_casa, end_trab):
     tempo_carro_vazio = 0.0
     
     try:
-        r_osrm = requests.get(url_osrm).json()
+        r_osrm = requests.get(url_osrm, timeout=3).json()
         if r_osrm.get("code") == "Ok":
             distancia_km = r_osrm["routes"][0]["distance"] / 1000 
             tempo_carro_vazio = r_osrm["routes"][0]["duration"] / 60 
