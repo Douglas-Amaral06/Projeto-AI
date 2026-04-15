@@ -7,6 +7,7 @@ import random
 import datetime
 import time
 import folium
+import os
 from streamlit_folium import st_folium
 from banco_dados import *
 from apis import *
@@ -203,7 +204,7 @@ st.sidebar.markdown("<p style='color:#64748B;font-size:11px;text-transform:upper
 
 parametros_url = st.query_params
 pagina_salva = parametros_url.get("menu", "Dashboard Principal")
-opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem"]
+opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem", "Banco de Dados"]
 indice_padrao = opcoes_menu.index(pagina_salva) if pagina_salva in opcoes_menu else 0
 
 menu = st.sidebar.radio("", opcoes_menu, index=indice_padrao)
@@ -1221,3 +1222,215 @@ elif menu == "Cadastrar Novo Jovem":
 
             except Exception as e:
                 st.error(f"❌ Erro ao ler o arquivo: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TELA 3 — BANCO DE DADOS
+# ══════════════════════════════════════════════════════════════════════════════
+elif menu == "Banco de Dados":
+
+    st.markdown("""
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div>
+            <h1 style="margin:0;font-size:28px;background:linear-gradient(135deg,#00D4FF,#7C3AED);
+                       -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">
+                Gerenciamento de Banco de Dados
+            </h1>
+            <p style="margin:0;color:#64748B;font-size:13px;letter-spacing:0.05em;">
+                Visualize, edite e gerencie todos os registos da tabela jovens_rotas
+            </p>
+        </div>
+    </div>
+    <hr style="border-color:rgba(0,212,255,0.1);margin-bottom:20px;">
+    """, unsafe_allow_html=True)
+
+    # Carrega dados do banco
+    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    df_banco = pd.read_sql_query("SELECT * FROM jovens_rotas", conexao)
+    conexao.close()
+
+    # Tabs para diferentes operações
+    tab_visualizar, tab_adicionar_coluna, tab_excluir, tab_backup = st.tabs([
+        "📊 Visualizar & Editar",
+        "➕ Adicionar Coluna",
+        "🚨 Excluir Registro",
+        "💾 Backup"
+    ])
+
+    # ── TAB 1: VISUALIZAR E EDITAR ──
+    with tab_visualizar:
+        st.markdown("""
+        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
+                    border-radius:14px;padding:20px;margin-bottom:20px;">
+            <h3 style="margin:0 0 4px;color:#00D4FF;">📊 Tabela de Jovens</h3>
+            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                Edite os dados diretamente na tabela. Clique em qualquer célula para modificar.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Exibe a tabela editável
+        df_editado = st.data_editor(
+            df_banco,
+            use_container_width=True,
+            num_rows="dynamic",
+            key="editor_banco",
+            hide_index=False
+        )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Botão para salvar alterações
+        col_save, col_info = st.columns([1, 4])
+        with col_save:
+            if st.button("💾 Salvar Alterações", type="primary", use_container_width=True):
+                try:
+                    # Força o tipo de dados para CPF (texto)
+                    df_editado['cpf'] = df_editado['cpf'].astype(str).str.zfill(11)
+                    
+                    # Salva no banco de dados
+                    conexao = sqlite3.connect('mobilidade_renapsi.db')
+                    df_editado.to_sql('jovens_rotas', conexao, if_exists='replace', index=False)
+                    conexao.close()
+
+                    # Cria backup automático
+                    import shutil
+                    shutil.copy('mobilidade_renapsi.db', 'mobilidade_renapsi_backup.db')
+
+                    st.success("✅ Alterações salvas com sucesso! Backup criado automaticamente.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erro ao salvar: {str(e)}")
+
+        with col_info:
+            st.markdown(f"""
+            <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
+                        border-radius:10px;padding:12px;text-align:center;">
+                <p style="color:#10B981;font-size:12px;margin:0;text-transform:uppercase;">
+                    Total de Registos: <strong>{len(df_editado)}</strong>
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # ── TAB 2: ADICIONAR COLUNA ──
+    with tab_adicionar_coluna:
+        st.markdown("""
+        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
+                    border-radius:14px;padding:20px;margin-bottom:20px;">
+            <h3 style="margin:0 0 4px;color:#00D4FF;">➕ Adicionar Nova Coluna</h3>
+            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                Expanda a estrutura da tabela com novas colunas.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_nome, col_tipo = st.columns(2)
+        with col_nome:
+            nome_coluna = st.text_input("Nome da coluna", placeholder="ex: telefone_secundario")
+        with col_tipo:
+            tipo_coluna = st.selectbox("Tipo de dados", ["TEXT", "INTEGER", "REAL", "BLOB"])
+
+        if st.button("➕ Adicionar Coluna", type="primary", use_container_width=True):
+            if not nome_coluna.strip():
+                st.error("❌ Digite um nome para a coluna")
+            else:
+                try:
+                    conexao = sqlite3.connect('mobilidade_renapsi.db')
+                    cursor = conexao.cursor()
+                    cursor.execute(f"ALTER TABLE jovens_rotas ADD COLUMN {nome_coluna} {tipo_coluna}")
+                    conexao.commit()
+                    conexao.close()
+                    st.success(f"✅ Coluna '{nome_coluna}' adicionada com sucesso!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erro ao adicionar coluna: {str(e)}")
+
+    # ── TAB 3: EXCLUIR REGISTRO ──
+    with tab_excluir:
+        st.markdown("""
+        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(239,68,68,0.3);
+                    border-radius:14px;padding:20px;margin-bottom:20px;">
+            <h3 style="margin:0 0 4px;color:#EF4444;">🚨 Excluir Registro</h3>
+            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                ⚠️ Esta ação é irreversível. Certifique-se antes de confirmar.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_id, col_btn = st.columns([2, 1])
+        with col_id:
+            id_excluir = st.number_input("ID do registro a excluir", min_value=1, step=1)
+        with col_btn:
+            st.write("")
+            st.write("")
+            if st.button("🚨 Excluir", type="secondary", use_container_width=True):
+                try:
+                    conexao = sqlite3.connect('mobilidade_renapsi.db')
+                    cursor = conexao.cursor()
+                    cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (id_excluir,))
+                    conexao.commit()
+                    conexao.close()
+                    
+                    # Cria backup automático
+                    import shutil
+                    shutil.copy('mobilidade_renapsi.db', 'mobilidade_renapsi_backup.db')
+                    
+                    st.success(f"✅ Registro #{id_excluir} excluído com sucesso! Backup criado.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erro ao excluir: {str(e)}")
+
+    # ── TAB 4: BACKUP ──
+    with tab_backup:
+        st.markdown("""
+        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
+                    border-radius:14px;padding:20px;margin-bottom:20px;">
+            <h3 style="margin:0 0 4px;color:#00D4FF;">💾 Gerenciamento de Backup</h3>
+            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                Crie e gerencie cópias de segurança do banco de dados.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_b1, col_b2 = st.columns(2)
+
+        with col_b1:
+            if st.button("💾 Criar Backup Agora", type="primary", use_container_width=True):
+                try:
+                    import shutil
+                    import datetime
+                    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                    backup_name = f"mobilidade_renapsi_backup_{timestamp}.db"
+                    shutil.copy('mobilidade_renapsi.db', backup_name)
+                    st.success(f"✅ Backup criado: {backup_name}")
+                except Exception as e:
+                    st.error(f"❌ Erro ao criar backup: {str(e)}")
+
+        with col_b2:
+            if st.button("📥 Restaurar Backup", type="secondary", use_container_width=True):
+                try:
+                    import shutil
+                    if os.path.exists('mobilidade_renapsi_backup.db'):
+                        shutil.copy('mobilidade_renapsi_backup.db', 'mobilidade_renapsi.db')
+                        st.success("✅ Banco restaurado do backup!")
+                        st.rerun()
+                    else:
+                        st.warning("⚠️ Nenhum backup disponível")
+                except Exception as e:
+                    st.error(f"❌ Erro ao restaurar: {str(e)}")
+
+        st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
+
+        # Informações sobre backups
+        st.markdown("""
+        <div style="background:rgba(13,17,23,0.6);border:1px solid rgba(0,212,255,0.15);
+                    border-radius:10px;padding:16px;">
+            <p style="color:#94A3B8;font-size:12px;margin:0;">
+                <strong>ℹ️ Informações:</strong><br>
+                • Backups automáticos são criados ao salvar alterações<br>
+                • Você pode criar backups manuais com timestamp<br>
+                • O arquivo de backup padrão é: mobilidade_renapsi_backup.db<br>
+                • Restaurar substitui o banco atual pelo backup
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
