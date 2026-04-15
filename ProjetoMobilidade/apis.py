@@ -35,30 +35,53 @@ def extrair_coordenadas(coord_str, default_lat, default_lon):
         pass
     return default_lat, default_lon
 
-@lru_cache(maxsize=100)
 def obter_coordenadas_reais(endereco_texto):
-    """Obtém coordenadas via Nominatim com cache."""
+    """Obtém coordenadas via Nominatim SEM cache para garantir precisão."""
+    # REMOVIDO @lru_cache para evitar coordenadas erradas em cache
     url = f"https://nominatim.openstreetmap.org/search?q={endereco_texto}&format=json&limit=1"
     headers = {'User-Agent': 'Renapsi_Routing_App'} 
     try:
+        print(f"🔍 Buscando coordenadas para: '{endereco_texto}'")
         r = requests.get(url, headers=headers, timeout=5).json()
         if r and len(r) > 0:
             lat = float(r[0]['lat'])
             lon = float(r[0]['lon'])
-            print(f"Coordenadas encontradas para '{endereco_texto}': {lat}, {lon}")
+            print(f"✅ Coordenadas encontradas: LAT={lat}, LON={lon}")
             return lat, lon
+        else:
+            print(f"⚠️ Nenhum resultado encontrado para '{endereco_texto}'")
     except Exception as e:
-        print(f"Erro ao buscar coordenadas para '{endereco_texto}': {e}")
+        print(f"❌ Erro ao buscar coordenadas para '{endereco_texto}': {e}")
     return None, None
 
 def motor_de_rotas_gratuito(end_casa, end_trab):
-    # Usa coordenadas em cache se disponível
+    """
+    Calcula rotas entre casa e trabalho com coordenadas REAIS.
+    end_casa e end_trab devem ser endereços completos (rua, bairro, cidade).
+    """
+    print(f"\n{'='*60}")
+    print(f"🏠 ENDEREÇO CASA: {end_casa}")
+    print(f"🏢 ENDEREÇO TRABALHO: {end_trab}")
+    print(f"{'='*60}\n")
+    
+    # Obtém coordenadas reais (SEM cache para evitar erros)
     lat_c, lon_c = obter_coordenadas_reais(end_casa)
     lat_t, lon_t = obter_coordenadas_reais(end_trab)
     
-    if not lat_c: lat_c, lon_c = -23.5505, -46.6333
-    if not lat_t: lat_t, lon_t = -23.5874, -46.6576
+    # Fallback apenas se geocoding falhar completamente
+    if not lat_c or not lon_c:
+        print(f"⚠️ FALLBACK: Usando coordenadas padrão para CASA")
+        lat_c, lon_c = -23.5505, -46.6333
     
+    if not lat_t or not lon_t:
+        print(f"⚠️ FALLBACK: Usando coordenadas padrão para TRABALHO")
+        lat_t, lon_t = -23.5874, -46.6576
+    
+    print(f"\n📍 COORDENADAS FINAIS:")
+    print(f"   Casa (C): LAT={lat_c}, LON={lon_c}")
+    print(f"   Trabalho (T): LAT={lat_t}, LON={lon_t}\n")
+    
+    # OSRM usa ordem: longitude, latitude (diferente do folium!)
     url_osrm = f"http://router.project-osrm.org/route/v1/driving/{lon_c},{lat_c};{lon_t},{lat_t}?overview=false"
     distancia_km = 0.0
     tempo_carro_vazio = 0.0
@@ -68,7 +91,9 @@ def motor_de_rotas_gratuito(end_casa, end_trab):
         if r_osrm.get("code") == "Ok":
             distancia_km = r_osrm["routes"][0]["distance"] / 1000 
             tempo_carro_vazio = r_osrm["routes"][0]["duration"] / 60 
-    except:
+            print(f"✅ Rota calculada: {distancia_km:.2f} km, {tempo_carro_vazio:.1f} min")
+    except Exception as e:
+        print(f"⚠️ Erro no OSRM, usando valores padrão: {e}")
         distancia_km, tempo_carro_vazio = 10.0, 30.0 
         
     # ==========================================
@@ -91,7 +116,7 @@ def motor_de_rotas_gratuito(end_casa, end_trab):
             "modal": "🚇 Apenas Metrô/CPTM",
             "trajeto": "Sistema Metroferroviário",
             "valor_diario": TARIFA_METRO_VT * 2,
-            "tempo": f"{int((tempo_carro_vazio * 0.8) + 20)} min", # Anda até a estação
+            "tempo": f"{int((tempo_carro_vazio * 0.8) + 20)} min",
             "bilhete": "Crédito Eletrônico VT (Metrô)"
         },
         {
@@ -116,6 +141,6 @@ def motor_de_rotas_gratuito(end_casa, end_trab):
     return {
         "rotas": rotas, 
         "distancia_km": distancia_km,
-        "coords_reais": [(lat_c, lon_c), (lat_t, lon_t)],
+        "coords_reais": [(lat_c, lon_c), (lat_t, lon_t)],  # Formato: [(lat_casa, lon_casa), (lat_trab, lon_trab)]
         "info_tarifas": f"Ônibus VT: R${TARIFA_ONIBUS_VT} | Metrô VT: R${TARIFA_METRO_VT} | Integração VT: R${TARIFA_INTEGRACAO_VT}"
     }

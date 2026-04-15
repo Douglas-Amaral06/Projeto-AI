@@ -1096,10 +1096,17 @@ elif menu == "Pesquisar Consultas":
             bairro_cidade_trab = f"{end_trab_dict.get('bairro','')} - {end_trab_dict.get('cidade_uf','')}" if isinstance(end_trab_dict, dict) else ""
 
             if not st.session_state.get('rota_gerada'):
-                # Calcula rota (motor já faz geocoding internamente com cache)
+                # Monta endereços completos para geocoding preciso
+                # Formato: "Rua, Bairro, Cidade, Estado, Brasil"
+                endereco_completo_casa = end_casa_dict.get('completo', f"{rua_casa}, São Paulo, SP, Brasil") if isinstance(end_casa_dict, dict) else f"{rua_casa}, São Paulo, SP, Brasil"
+                endereco_completo_trab = end_trab_dict.get('completo', f"{rua_trab}, São Paulo, SP, Brasil") if isinstance(end_trab_dict, dict) else f"{rua_trab}, São Paulo, SP, Brasil"
+                
+                print(f"\n🏠 ENDEREÇO CASA COMPLETO: {endereco_completo_casa}")
+                print(f"🏢 ENDEREÇO TRABALHO COMPLETO: {endereco_completo_trab}\n")
+                
                 rota = motor_de_rotas_gratuito(
-                    f"{rua_casa}, {bairro_cidade_casa}",
-                    f"{rua_trab}, {bairro_cidade_trab}"
+                    endereco_completo_casa,
+                    endereco_completo_trab
                 )
                 st.session_state.rota_gerada = rota
                 
@@ -1181,10 +1188,20 @@ elif menu == "Pesquisar Consultas":
             
             with col_b1:
                 if st.button("🔄 Recalcular", disabled=ja_implantado, use_container_width=True):
-                    # Limpa a rota gerada e força recálculo
-                    st.session_state.rota_gerada = None
-                    st.session_state.analise_ia = None
-                    st.session_state.modo_contestacao = False
+                    # Limpa TUDO relacionado à rota para forçar recálculo completo
+                    print("\n" + "="*60)
+                    print("🔄 RECALCULANDO ROTA - LIMPANDO CACHE")
+                    print("="*60 + "\n")
+                    
+                    if 'rota_gerada' in st.session_state:
+                        del st.session_state.rota_gerada
+                    if 'analise_ia' in st.session_state:
+                        del st.session_state.analise_ia
+                    if 'modo_contestacao' in st.session_state:
+                        del st.session_state.modo_contestacao
+                    
+                    st.success("✅ Cache limpo! Recalculando rota...")
+                    time.sleep(0.5)
                     st.rerun()
                     
             with col_b2:
@@ -1526,9 +1543,13 @@ elif menu == "Pesquisar Consultas":
             
             # Calcula rota se ainda não foi calculada
             if not st.session_state.get('rota_gerada'):
+                # Monta endereços completos para geocoding preciso
+                endereco_completo_casa = end_casa_dict.get('completo', f"{rua_casa}, São Paulo, SP, Brasil") if isinstance(end_casa_dict, dict) else f"{rua_casa}, São Paulo, SP, Brasil"
+                endereco_completo_trab = end_trab_dict.get('completo', f"{rua_trab}, São Paulo, SP, Brasil") if isinstance(end_trab_dict, dict) else f"{rua_trab}, São Paulo, SP, Brasil"
+                
                 rota = motor_de_rotas_gratuito(
-                    f"{rua_casa}, {bairro_cidade_casa}",
-                    f"{rua_trab}, {bairro_cidade_trab}"
+                    endereco_completo_casa,
+                    endereco_completo_trab
                 )
                 st.session_state.rota_gerada = rota
                 
@@ -1578,30 +1599,53 @@ elif menu == "Pesquisar Consultas":
 
             with col_mapa:
                 if st.session_state.get('rota_gerada'):
+                    # Extrai coordenadas: [(lat_casa, lon_casa), (lat_trabalho, lon_trabalho)]
                     (lat_c, lon_c), (lat_t, lon_t) = st.session_state.rota_gerada['coords_reais']
+                    
+                    # DEBUG: Mostra coordenadas no console
+                    print(f"\n🗺️ RENDERIZANDO MAPA:")
+                    print(f"   Marcador C (Casa): LAT={lat_c}, LON={lon_c}")
+                    print(f"   Marcador T (Trabalho): LAT={lat_t}, LON={lon_t}")
+                    print(f"   Centro do mapa: LAT={(lat_c + lat_t) / 2}, LON={(lon_c + lon_t) / 2}\n")
+                    
+                    # Cria mapa centralizado no ponto médio entre Casa e Trabalho
                     m = folium.Map(
-                        location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2],
-                        zoom_start=12, control_scale=True
+                        location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2],  # [latitude, longitude]
+                        zoom_start=12, 
+                        control_scale=True
                     )
                     folium.TileLayer('CartoDB dark_matter').add_to(m)
 
-                    folium.Marker([lat_c, lon_c], icon=folium.DivIcon(html="""
+                    # Marcador C (CASA) - Azul - COORDENADAS: [latitude, longitude]
+                    folium.Marker(
+                        [lat_c, lon_c],  # [latitude, longitude] da CASA
+                        icon=folium.DivIcon(html="""
                         <div style="background:linear-gradient(135deg,#00D4FF,#0EA5E9);width:44px;height:44px;
                                     border-radius:50%;border:2px solid rgba(0,212,255,0.6);display:flex;
                                     align-items:center;justify-content:center;font-weight:800;color:#0A0E1A;
                                     font-size:16px;box-shadow:0 0 16px rgba(0,212,255,0.6);">C</div>
-                    """), tooltip="Casa").add_to(m)
+                    """), 
+                        tooltip=f"🏠 Casa (LAT: {lat_c:.4f}, LON: {lon_c:.4f})"
+                    ).add_to(m)
 
-                    folium.Marker([lat_t, lon_t], icon=folium.DivIcon(html="""
+                    # Marcador T (TRABALHO) - Roxo - COORDENADAS: [latitude, longitude]
+                    folium.Marker(
+                        [lat_t, lon_t],  # [latitude, longitude] do TRABALHO
+                        icon=folium.DivIcon(html="""
                         <div style="background:linear-gradient(135deg,#7C3AED,#A855F7);width:44px;height:44px;
                                     border-radius:50%;border:2px solid rgba(124,58,237,0.6);display:flex;
                                     align-items:center;justify-content:center;font-weight:800;color:white;
                                     font-size:16px;box-shadow:0 0 16px rgba(124,58,237,0.6);">T</div>
-                    """), tooltip="Trabalho").add_to(m)
+                    """), 
+                        tooltip=f"🏢 Trabalho (LAT: {lat_t:.4f}, LON: {lon_t:.4f})"
+                    ).add_to(m)
 
+                    # Linha conectando Casa e Trabalho
                     folium.PolyLine(
-                        locations=[[lat_c, lon_c], [lat_t, lon_t]],
-                        color="#00D4FF", weight=3, opacity=0.7,
+                        locations=[[lat_c, lon_c], [lat_t, lon_t]],  # [[lat_casa, lon_casa], [lat_trab, lon_trab]]
+                        color="#00D4FF", 
+                        weight=3, 
+                        opacity=0.7,
                         dash_array="8 4"
                     ).add_to(m)
 
