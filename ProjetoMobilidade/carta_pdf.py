@@ -125,10 +125,18 @@ class CartaPDF(FPDF):
 
 
 def gerar_carta_pdf(dados_jovem: dict, rota_selecionada: dict,
-                    end_casa_completo: str, end_trab_completo: str) -> bytes:
+                    end_casa_completo: str, end_trab_completo: str, 
+                    modo_rota: str = 'automatica') -> bytes:
     """
     Gera a Carta de Opção de Transporte e Mobilidade em PDF.
     Retorna bytes do PDF.
+    
+    Args:
+        dados_jovem: Dicionário com dados do funcionário
+        rota_selecionada: Dicionário com dados da rota (automática ou manual)
+        end_casa_completo: Endereço completo da casa
+        end_trab_completo: Endereço completo do trabalho
+        modo_rota: 'automatica' ou 'manual' (padrão: 'automatica')
     """
     pdf = CartaPDF()
     lw = pdf.epw  # largura útil
@@ -207,17 +215,36 @@ def gerar_carta_pdf(dados_jovem: dict, rota_selecionada: dict,
 
     pdf._hr()
 
-    # ── Dados da rota ─────────────────────────────────────────────────────────
-    bilhete   = rota_selecionada.get('bilhete', 'Integracao Onibus+Metro VT')
-    trajeto   = rota_selecionada.get('trajeto', rota_selecionada.get('modal', ''))
-    tempo     = rota_selecionada.get('tempo', '-')
-    tarifa_un = rota_selecionada.get('valor_diario', 0) / 2
-    cod_item  = CODIGOS_BILHETE.get(bilhete, "214")
-    operadora = OPERADORAS.get(bilhete, "SPTRANS")
-    valor_total = rota_selecionada.get('valor_diario', 0)
+    # ── Dados da rota (AUTOMÁTICA OU MANUAL) ──────────────────────────────────
+    if modo_rota == 'manual':
+        # Rota Manual - usa dados inseridos manualmente
+        bilhete   = rota_selecionada.get('tipo_bilhete_manual', 'Bilhete Unico')
+        trajeto   = rota_selecionada.get('descricao_itinerario_manual', 'Trajeto manual')
+        tempo     = '-'
+        valor_total = float(rota_selecionada.get('valor_tarifa_manual', 0))
+        tarifa_un = valor_total / 2
+        
+        # Remove caracteres Unicode incompatíveis com PDF
+        trajeto = trajeto.replace('→', '->').replace('←', '<-').replace('↔', '<->')
+        trajeto = trajeto.encode('ascii', 'ignore').decode('ascii')
+        
+        # Tenta mapear o bilhete manual para códigos conhecidos
+        cod_item  = CODIGOS_BILHETE.get(bilhete, "210")
+        operadora = OPERADORAS.get(bilhete, "SPTRANS")
+        
+        linha_nome = f"VT. {bilhete.upper()}"
+    else:
+        # Rota Automática - usa dados calculados pela IA
+        bilhete   = rota_selecionada.get('bilhete', 'Integracao Onibus+Metro VT')
+        trajeto   = rota_selecionada.get('trajeto', rota_selecionada.get('modal', ''))
+        tempo     = rota_selecionada.get('tempo', '-')
+        tarifa_un = rota_selecionada.get('valor_diario', 0) / 2
+        cod_item  = CODIGOS_BILHETE.get(bilhete, "214")
+        operadora = OPERADORAS.get(bilhete, "SPTRANS")
+        valor_total = rota_selecionada.get('valor_diario', 0)
+        
+        linha_nome = f"VT. {bilhete.upper().replace('CREDITO ELETRONICO ','').replace('(','').replace(')','')}"
 
-    # Nome limpo para exibição
-    linha_nome = f"VT. {bilhete.upper().replace('CREDITO ELETRONICO ','').replace('(','').replace(')','')}"
     linha_nome = linha_nome.encode('ascii', 'replace').decode('ascii')
 
     w1, w2, w3, w4, w5 = lw*0.30, lw*0.12, lw*0.22, lw*0.22, lw*0.06
@@ -228,10 +255,19 @@ def gerar_carta_pdf(dados_jovem: dict, rota_selecionada: dict,
         ["IDA - Linha / Instrucao", "m - min.", "Origem - Embarque", "Destino - Desembarque", "Tarifa"],
         [w1, w2, w3, w4, w5]
     )
-    pdf._linha_dados(
-        [linha_nome, tempo, end_casa_completo[:28], end_trab_completo[:28], f"R${tarifa_un:.2f}"],
-        [w1, w2, w3, w4, w5]
-    )
+    
+    # Se for rota manual, exibe a descrição do itinerário
+    if modo_rota == 'manual':
+        descricao_ida = trajeto[:40] if len(trajeto) <= 40 else trajeto[:37] + "..."
+        pdf._linha_dados(
+            [descricao_ida, tempo, end_casa_completo[:28], end_trab_completo[:28], f"R${tarifa_un:.2f}"],
+            [w1, w2, w3, w4, w5]
+        )
+    else:
+        pdf._linha_dados(
+            [linha_nome, tempo, end_casa_completo[:28], end_trab_completo[:28], f"R${tarifa_un:.2f}"],
+            [w1, w2, w3, w4, w5]
+        )
     pdf.ln(2)
 
     # VOLTA
@@ -240,10 +276,18 @@ def gerar_carta_pdf(dados_jovem: dict, rota_selecionada: dict,
         ["VOLTA - Linha / Instrucao", "m - min.", "Origem - Embarque", "Destino - Desembarque", "Tarifa"],
         [w1, w2, w3, w4, w5]
     )
-    pdf._linha_dados(
-        [linha_nome, tempo, end_trab_completo[:28], end_casa_completo[:28], f"R${tarifa_un:.2f}"],
-        [w1, w2, w3, w4, w5]
-    )
+    
+    if modo_rota == 'manual':
+        descricao_volta = trajeto[:40] if len(trajeto) <= 40 else trajeto[:37] + "..."
+        pdf._linha_dados(
+            [descricao_volta, tempo, end_trab_completo[:28], end_casa_completo[:28], f"R${tarifa_un:.2f}"],
+            [w1, w2, w3, w4, w5]
+        )
+    else:
+        pdf._linha_dados(
+            [linha_nome, tempo, end_trab_completo[:28], end_casa_completo[:28], f"R${tarifa_un:.2f}"],
+            [w1, w2, w3, w4, w5]
+        )
     pdf.ln(2)
 
     # VT

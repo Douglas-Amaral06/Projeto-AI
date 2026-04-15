@@ -1,5 +1,5 @@
 import streamlit as st
-#import sqlite3
+import sqlite3
 import pandas as pd
 import requests
 import plotly.express as px
@@ -14,22 +14,10 @@ from banco_dados import *
 from apis import *
 from agente_ia import *
 from carta_pdf import gerar_carta_pdf
-from sqlalchemy import create_engine
 from email_sender import enviar_carta_por_email
 
 # ─── Carrega variáveis de ambiente ───────────────────────────────────────────
 load_dotenv()
-
-# ─── Validação de credenciais ───────────────────────────────────────────────
-DATABASE_URL = os.getenv('DATABASE_URL')
-if not DATABASE_URL:
-    raise ValueError(
-        "❌ ERRO CRÍTICO: Variável DATABASE_URL não encontrada!\n"
-        "Certifique-se de que o arquivo .env existe na raiz do projeto com:\n"
-        "DATABASE_URL=postgresql://user:password@host:port/database"
-    )
-
-engine = create_engine(DATABASE_URL)
 
 # ─── Configuração da página ───────────────────────────────────────────────────
 st.set_page_config(page_title="RENAPSI — Mobilidade", page_icon="🚇", layout="wide")
@@ -198,8 +186,8 @@ hr { border-color: rgba(0,212,255,0.15) !important; }
 </style>
 """, unsafe_allow_html=True)
 
-atualizar_banco_geral()
-atualizar_banco_para_contestacoes()
+# ─── Inicialização do Banco de Dados ──────────────────────────────────────────
+inicializar_banco_completo()
 
 # ─── Sidebar ──────────────────────────────────────────────────────────────────
 st.sidebar.markdown("""
@@ -220,7 +208,7 @@ st.sidebar.markdown("<p style='color:#64748B;font-size:11px;text-transform:upper
 
 parametros_url = st.query_params
 pagina_salva = parametros_url.get("menu", "Dashboard Principal")
-opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem", "Banco de Dados"]
+opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem", "Banco de Dados", "Simulação: Portal do Jovem"]
 indice_padrao = opcoes_menu.index(pagina_salva) if pagina_salva in opcoes_menu else 0
 
 menu = st.sidebar.radio("", opcoes_menu, index=indice_padrao)
@@ -628,7 +616,7 @@ if menu == "Dashboard Principal":
                                 df_func = pd.read_sql_query(
                                     "SELECT * FROM jovens_rotas WHERE id = ?", 
                                     conexao, 
-                                    params=(func_id,)
+                                    params=(int(func_id),)
                                 )
                                 conexao.close()
 
@@ -678,11 +666,23 @@ if menu == "Dashboard Principal":
                                     'matricula': dados.get('matricula', ''), 'email': email
                                 }
 
+                                # Verifica se é rota manual ou automática
+                                modo_rota_func = dados.get('modo_rota', 'automatica')
+                                
+                                if modo_rota_func == 'manual':
+                                    # Usa dados da rota manual
+                                    rota_para_carta = {
+                                        'tipo_bilhete_manual': dados.get('tipo_bilhete_manual', 'Bilhete Único'),
+                                        'valor_tarifa_manual': dados.get('valor_tarifa_manual', 0.0),
+                                        'descricao_itinerario_manual': dados.get('descricao_itinerario_manual', 'Trajeto manual')
+                                    }
+                                
                                 pdf_bytes = gerar_carta_pdf(
                                     dados_jovem=dados_para_carta,
                                     rota_selecionada=rota_para_carta,
                                     end_casa_completo=end_casa_str,
-                                    end_trab_completo=end_trab_str
+                                    end_trab_completo=end_trab_str,
+                                    modo_rota=modo_rota_func
                                 )
 
                                 # Envia e-mail
@@ -927,7 +927,7 @@ elif menu == "Pesquisar Consultas":
     if 'id_consulta' in st.query_params and st.session_state.get('resultado_busca') is None:
         id_salvo = st.query_params['id_consulta']
         conexao = sqlite3.connect('mobilidade_renapsi.db')
-        df_salvo = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(id_salvo,))
+        df_salvo = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_salvo),))
         conexao.close()
         if not df_salvo.empty:
             st.session_state.resultado_busca = df_salvo
@@ -965,7 +965,8 @@ elif menu == "Pesquisar Consultas":
         cep_casa         = dados_jovem['cep_casa']
         cep_trab         = dados_jovem['cep_trabalho']
         matricula_exib   = dados_jovem.get('matricula', 'Não informada')
-        status_exib      = dados_jovem.get('status_rota', 'Otimizado').upper()
+        status_rota_raw  = dados_jovem.get('status_rota', 'Otimizado')
+        status_exib      = obter_status_visual(status_rota_raw)
         email_jovem      = dados_jovem.get('email', '')
         celular_jovem    = dados_jovem.get('celular', '')
         numero_casa      = dados_jovem.get('numero_casa', '')
@@ -1069,7 +1070,7 @@ elif menu == "Pesquisar Consultas":
                                 df_atualizado = pd.read_sql_query(
                                     "SELECT * FROM jovens_rotas WHERE id = ?", 
                                     conexao, 
-                                    params=(id_selecionado,)
+                                    params=(int(id_selecionado),)
                                 )
                                 conexao.close()
                             
@@ -1128,7 +1129,20 @@ elif menu == "Pesquisar Consultas":
                     st.rerun()
 
             # ── Painel principal do funcionário ──
-            status_color = "#10B981" if status_exib == "OTIMIZADO" else "#F59E0B"
+            # Define cor baseada no status
+            if status_rota_raw == "Implantado":
+                status_color = "#10B981"  # Verde
+                status_bg = "16,185,129"
+            elif status_rota_raw == "Otimizado":
+                status_color = "#3B82F6"  # Azul
+                status_bg = "59,130,246"
+            elif status_rota_raw == "Contestada":
+                status_color = "#F59E0B"  # Amarelo
+                status_bg = "245,158,11"
+            else:  # Não Optante
+                status_color = "#94A3B8"  # Cinza
+                status_bg = "148,163,184"
+            
             st.markdown(f"""
             <div style="background:rgba(13,17,23,0.85);border:1px solid rgba(0,212,255,0.2);
                         border-radius:16px;padding:28px;margin-bottom:20px;
@@ -1141,7 +1155,7 @@ elif menu == "Pesquisar Consultas":
                         <h2 style="margin:0;font-size:22px;color:#E2E8F0;">Consulta #{id_selecionado}</h2>
                         <p style="margin:0;color:#64748B;font-size:13px;">RENAPSI · SÃO PAULO · C-T</p>
                     </div>
-                    <span style="margin-left:auto;background:rgba({('16,185,129' if status_exib=='OTIMIZADO' else '245,158,11')},0.15);
+                    <span style="margin-left:auto;background:rgba({status_bg},0.15);
                                  color:{status_color};padding:6px 14px;border-radius:20px;
                                  font-size:12px;font-weight:700;border:1px solid {status_color}40;">
                         {status_exib}
@@ -1173,19 +1187,32 @@ elif menu == "Pesquisar Consultas":
 
             # ── Barra de ações ──
             st.markdown("<p style='color:#64748B;font-size:12px;margin-bottom:8px;'>AÇÕES DA CONSULTA</p>", unsafe_allow_html=True)
-            col_b1, col_b2, col_b3, col_fill2 = st.columns([1, 1, 1, 3])
-            ja_implantado = (status_exib == "IMPLANTADO")
+            col_b1, col_b2, col_b3, col_b4, col_b5, col_fill2 = st.columns([1, 1, 1, 1, 1, 1])
+            ja_implantado = (status_rota_raw == "Implantado")
+            
             with col_b1:
                 if st.button("🔄 Recalcular", disabled=ja_implantado, use_container_width=True):
+                    # Limpa a rota gerada e força recálculo
                     st.session_state.rota_gerada = None
+                    st.session_state.analise_ia = None
                     st.session_state.modo_contestacao = False
                     st.rerun()
+                    
             with col_b2:
                 if st.button("✉️ Enviar Carta", use_container_width=True):
                     st.session_state.mostrar_modal_email = not st.session_state.get('mostrar_modal_email', False)
+                    
             with col_b3:
                 if st.button("⚠️ Contestação", use_container_width=True):
                     st.session_state.modo_contestacao = not st.session_state.get('modo_contestacao', False)
+                    
+            with col_b4:
+                if st.button("✍️ Rota Manual", use_container_width=True):
+                    st.session_state.modo_rota_manual = not st.session_state.get('modo_rota_manual', False)
+                    
+            with col_b5:
+                if st.button("📋 Implantados", use_container_width=True):
+                    st.session_state.modo_implantacao = not st.session_state.get('modo_implantacao', False)
 
             if st.session_state.get('mostrar_modal_email'):
                 st.markdown(f"""
@@ -1237,11 +1264,23 @@ elif menu == "Pesquisar Consultas":
                                         'email':     email_jovem,
                                     }
 
+                                    # Verifica se é rota manual ou automática
+                                    modo_rota_atual = dados_jovem.get('modo_rota', 'automatica')
+                                    
+                                    if modo_rota_atual == 'manual':
+                                        # Usa dados da rota manual
+                                        rota_para_carta = {
+                                            'tipo_bilhete_manual': dados_jovem.get('tipo_bilhete_manual', 'Bilhete Único'),
+                                            'valor_tarifa_manual': dados_jovem.get('valor_tarifa_manual', 0.0),
+                                            'descricao_itinerario_manual': dados_jovem.get('descricao_itinerario_manual', 'Trajeto manual')
+                                        }
+
                                     pdf_bytes = gerar_carta_pdf(
                                         dados_jovem=dados_para_carta,
                                         rota_selecionada=rota_para_carta,
                                         end_casa_completo=end_casa_str,
                                         end_trab_completo=end_trab_str,
+                                        modo_rota=modo_rota_atual
                                     )
 
                                     sucesso, erro = enviar_carta_por_email(
@@ -1283,10 +1322,95 @@ elif menu == "Pesquisar Consultas":
                             st.error("Descreva o motivo antes de registrar.")
                         else:
                             registrar_contestacao(nome=nome_jovem, cid_res="São Paulo", cid_trab="São Paulo", motivo=motivo_input)
-                            st.success("Contestação registrada!")
+                            
+                            # Atualiza status para CONTESTADA
+                            conexao = sqlite3.connect('mobilidade_renapsi.db')
+                            cursor = conexao.cursor()
+                            cursor.execute("UPDATE jovens_rotas SET status_rota = 'Contestada' WHERE id = ?", (id_selecionado,))
+                            conexao.commit()
+                            conexao.close()
+                            
+                            st.success("Contestação registrada! Status alterado para CONTESTADA.")
                             st.session_state.modo_contestacao = False
                             time.sleep(2)
                             st.rerun()
+
+            # ══════════════════════════════════════════════════════════════════════════
+            # MODAL DE IMPLANTAÇÃO
+            # ══════════════════════════════════════════════════════════════════════════
+            if st.session_state.get('modo_implantacao', False):
+                st.markdown("""
+                <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
+                            border-radius:14px;padding:20px;margin-bottom:20px;">
+                    <h3 style="margin:0 0 4px;color:#3B82F6;">📋 Alterar Status de Implantação</h3>
+                    <p style="color:#94A3B8;font-size:13px;margin:0;">
+                        Selecione a ação desejada para alterar o status do funcionário
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Mostra status atual
+                st.markdown(f"""
+                <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(59,130,246,0.2);
+                            border-radius:10px;padding:14px;margin-bottom:16px;">
+                    <p style="color:#94A3B8;font-size:12px;margin:0 0 4px;">Status Atual:</p>
+                    <p style="color:#3B82F6;font-size:16px;font-weight:700;margin:0;">{status_exib}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Opções de implantação
+                opcao_implantacao = st.radio(
+                    "Escolha a ação:",
+                    ["Implantada", "Implantada (Com Cancelamento de VT)", "Não Implantada"],
+                    key=f"opcao_implantacao_{id_selecionado}"
+                )
+
+                # Campo de motivo (apenas para "Não Implantada")
+                motivo_nao_implantada = ""
+                if opcao_implantacao == "Não Implantada":
+                    motivo_nao_implantada = st.text_area(
+                        "Motivo da remoção da implantação:",
+                        placeholder="Ex: Funcionário solicitou cancelamento, mudança de endereço, etc.",
+                        key=f"motivo_nao_implantada_{id_selecionado}"
+                    )
+
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                col_confirmar, col_cancelar = st.columns([1, 1])
+                
+                with col_confirmar:
+                    if st.button("✅ Confirmar Alteração", type="primary", use_container_width=True, key=f"confirmar_implantacao_{id_selecionado}"):
+                        # Validação para "Não Implantada"
+                        if opcao_implantacao == "Não Implantada" and not motivo_nao_implantada.strip():
+                            st.error("⚠️ Informe o motivo da remoção da implantação.")
+                        else:
+                            # Define o novo status baseado na opção
+                            if opcao_implantacao == "Implantada":
+                                novo_status = "Implantado"
+                            elif opcao_implantacao == "Implantada (Com Cancelamento de VT)":
+                                novo_status = "Não Optante"
+                            else:  # Não Implantada
+                                novo_status = "Otimizado"
+                            
+                            # Atualiza no banco
+                            conexao = sqlite3.connect('mobilidade_renapsi.db')
+                            cursor = conexao.cursor()
+                            cursor.execute(
+                                "UPDATE jovens_rotas SET status_rota = ? WHERE id = ?",
+                                (novo_status, id_selecionado)
+                            )
+                            conexao.commit()
+                            conexao.close()
+                            
+                            st.success(f"✅ Status alterado para: {novo_status}")
+                            st.session_state.modo_implantacao = False
+                            time.sleep(1)
+                            st.rerun()
+
+                with col_cancelar:
+                    if st.button("❌ Cancelar", use_container_width=True, key=f"cancelar_implantacao_{id_selecionado}"):
+                        st.session_state.modo_implantacao = False
+                        st.rerun()
 
             st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1305,6 +1429,126 @@ elif menu == "Pesquisar Consultas":
                     <p style="margin:0;color:#CBD5E1;font-size:14px;line-height:1.7;">{st.session_state.analise_ia}</p>
                 </div>
                 """, unsafe_allow_html=True)
+
+            # ══════════════════════════════════════════════════════════════════════════
+            # MODAL DE ROTA MANUAL
+            # ══════════════════════════════════════════════════════════════════════════
+            if st.session_state.get('modo_rota_manual', False):
+                st.markdown("""
+                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);
+                            border-radius:14px;padding:20px;margin-bottom:20px;">
+                    <h3 style="margin:0 0 4px;color:#F59E0B;">✍️ Inserir Rota Manual</h3>
+                    <p style="color:#94A3B8;font-size:13px;margin:0;">
+                        Preencha os campos abaixo para definir a rota manualmente (SPTRANS)
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Busca dados salvos (se existirem)
+                tipo_bilhete_salvo = dados_jovem.get('tipo_bilhete_manual', '')
+                valor_tarifa_salvo = dados_jovem.get('valor_tarifa_manual', 0.0)
+                descricao_salva = dados_jovem.get('descricao_itinerario_manual', '')
+
+                col_bilhete, col_valor = st.columns([2, 1])
+                
+                with col_bilhete:
+                    tipo_bilhete_manual = st.selectbox(
+                        "Tipo de Bilhete (SPTRANS)",
+                        [
+                            "Bilhete Único",
+                            "Integração Ônibus+Metrô",
+                            "Integração Ônibus+CPTM",
+                            "Vale Transporte"
+                        ],
+                        index=0 if not tipo_bilhete_salvo else (
+                            ["Bilhete Único", "Integração Ônibus+Metrô", "Integração Ônibus+CPTM", "Vale Transporte"].index(tipo_bilhete_salvo)
+                            if tipo_bilhete_salvo in ["Bilhete Único", "Integração Ônibus+Metrô", "Integração Ônibus+CPTM", "Vale Transporte"]
+                            else 0
+                        ),
+                        key=f"tipo_bilhete_{id_selecionado}"
+                    )
+
+                with col_valor:
+                    valor_tarifa_manual = st.number_input(
+                        "Valor da Tarifa (R$)",
+                        min_value=0.10,
+                        max_value=500.00,
+                        value=float(valor_tarifa_salvo) if valor_tarifa_salvo else 0.10,
+                        step=0.10,
+                        format="%.2f",
+                        key=f"valor_tarifa_{id_selecionado}"
+                    )
+
+                descricao_itinerario_manual = st.text_area(
+                    "Descrição do Itinerário",
+                    value=descricao_salva,
+                    placeholder="Ex: Linha 102 -> Terminal Bandeira -> Metrô Linha 3-Vermelha -> Estação Sé",
+                    height=120,
+                    key=f"descricao_itinerario_{id_selecionado}"
+                )
+
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                col_salvar_manual, col_cancelar_manual = st.columns([1, 1])
+                
+                with col_salvar_manual:
+                    if st.button("💾 Salvar Rota Manual", type="primary", use_container_width=True, key=f"salvar_manual_{id_selecionado}"):
+                        if not tipo_bilhete_manual or valor_tarifa_manual < 0.10 or not descricao_itinerario_manual.strip():
+                            st.error("⚠️ Preencha todos os campos antes de salvar.")
+                        else:
+                            from banco_dados import salvar_rota_manual
+                            
+                            sucesso = salvar_rota_manual(
+                                id_selecionado,
+                                tipo_bilhete_manual,
+                                valor_tarifa_manual,
+                                descricao_itinerario_manual
+                            )
+                            
+                            if sucesso:
+                                st.success("✅ Rota manual salva com sucesso!")
+                                
+                                # Recarrega os dados
+                                conexao = sqlite3.connect('mobilidade_renapsi.db')
+                                df_atualizado = pd.read_sql_query(
+                                    "SELECT * FROM jovens_rotas WHERE id = ?", 
+                                    conexao, 
+                                    params=(int(id_selecionado),)
+                                )
+                                conexao.close()
+                                
+                                if not df_atualizado.empty:
+                                    st.session_state.resultado_busca = df_atualizado
+                                
+                                st.session_state.modo_rota_manual = False
+                                time.sleep(1)
+                                st.rerun()
+                            else:
+                                st.error("❌ Erro ao salvar rota manual. Verifique o console.")
+
+                with col_cancelar_manual:
+                    if st.button("❌ Cancelar", use_container_width=True, key=f"cancelar_manual_{id_selecionado}"):
+                        st.session_state.modo_rota_manual = False
+                        st.rerun()
+
+            # ══════════════════════════════════════════════════════════════════════════
+            # EXIBIÇÃO DA ROTA E MAPA
+            # ══════════════════════════════════════════════════════════════════════════
+            
+            # Calcula rota se ainda não foi calculada
+            if not st.session_state.get('rota_gerada'):
+                rota = motor_de_rotas_gratuito(
+                    f"{rua_casa}, {bairro_cidade_casa}",
+                    f"{rua_trab}, {bairro_cidade_trab}"
+                )
+                st.session_state.rota_gerada = rota
+                
+                # Análise da IA em background (não bloqueia a UI)
+                if not st.session_state.get('analise_ia'):
+                    st.session_state.analise_ia = analisar_rota_com_ia(
+                        rua_casa, rua_trab, rota['distancia_km'],
+                        rota['rotas'], rota['info_tarifas']
+                    )
 
             # ── Rotas + Mapa ──
             col_painel, col_mapa = st.columns([1, 2.8])
@@ -1344,34 +1588,35 @@ elif menu == "Pesquisar Consultas":
                     st.info("Calculando rotas...")
 
             with col_mapa:
-                (lat_c, lon_c), (lat_t, lon_t) = st.session_state.rota_gerada['coords_reais']
-                m = folium.Map(
-                    location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2],
-                    zoom_start=12, control_scale=True
-                )
-                folium.TileLayer('CartoDB dark_matter').add_to(m)
+                if st.session_state.get('rota_gerada'):
+                    (lat_c, lon_c), (lat_t, lon_t) = st.session_state.rota_gerada['coords_reais']
+                    m = folium.Map(
+                        location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2],
+                        zoom_start=12, control_scale=True
+                    )
+                    folium.TileLayer('CartoDB dark_matter').add_to(m)
 
-                folium.Marker([lat_c, lon_c], icon=folium.DivIcon(html="""
-                    <div style="background:linear-gradient(135deg,#00D4FF,#0EA5E9);width:44px;height:44px;
-                                border-radius:50%;border:2px solid rgba(0,212,255,0.6);display:flex;
-                                align-items:center;justify-content:center;font-weight:800;color:#0A0E1A;
-                                font-size:16px;box-shadow:0 0 16px rgba(0,212,255,0.6);">C</div>
-                """), tooltip="Casa").add_to(m)
+                    folium.Marker([lat_c, lon_c], icon=folium.DivIcon(html="""
+                        <div style="background:linear-gradient(135deg,#00D4FF,#0EA5E9);width:44px;height:44px;
+                                    border-radius:50%;border:2px solid rgba(0,212,255,0.6);display:flex;
+                                    align-items:center;justify-content:center;font-weight:800;color:#0A0E1A;
+                                    font-size:16px;box-shadow:0 0 16px rgba(0,212,255,0.6);">C</div>
+                    """), tooltip="Casa").add_to(m)
 
-                folium.Marker([lat_t, lon_t], icon=folium.DivIcon(html="""
-                    <div style="background:linear-gradient(135deg,#7C3AED,#A855F7);width:44px;height:44px;
-                                border-radius:50%;border:2px solid rgba(124,58,237,0.6);display:flex;
-                                align-items:center;justify-content:center;font-weight:800;color:white;
-                                font-size:16px;box-shadow:0 0 16px rgba(124,58,237,0.6);">T</div>
-                """), tooltip="Trabalho").add_to(m)
+                    folium.Marker([lat_t, lon_t], icon=folium.DivIcon(html="""
+                        <div style="background:linear-gradient(135deg,#7C3AED,#A855F7);width:44px;height:44px;
+                                    border-radius:50%;border:2px solid rgba(124,58,237,0.6);display:flex;
+                                    align-items:center;justify-content:center;font-weight:800;color:white;
+                                    font-size:16px;box-shadow:0 0 16px rgba(124,58,237,0.6);">T</div>
+                    """), tooltip="Trabalho").add_to(m)
 
-                folium.PolyLine(
-                    locations=[[lat_c, lon_c], [lat_t, lon_t]],
-                    color="#00D4FF", weight=3, opacity=0.7,
-                    dash_array="8 4"
-                ).add_to(m)
+                    folium.PolyLine(
+                        locations=[[lat_c, lon_c], [lat_t, lon_t]],
+                        color="#00D4FF", weight=3, opacity=0.7,
+                        dash_array="8 4"
+                    ).add_to(m)
 
-                st_folium(m, height=500, use_container_width=True)
+                    st_folium(m, height=500, use_container_width=True)
 
     # ── LISTA DE PESQUISA ────────────────────────────────────────────────────
     else:
@@ -1398,34 +1643,50 @@ elif menu == "Pesquisar Consultas":
             with st.form(key="form_cpf"):
                 cpf_busca = st.text_input("CPF (apenas números)", max_chars=11, placeholder="00000000000")
                 if st.form_submit_button("Pesquisar", type="primary"):
-                    conexao = sqlite3.connect('mobilidade_renapsi.db')
-                    st.session_state.resultado_busca = pd.read_sql_query(
-                        "SELECT * FROM jovens_rotas WHERE cpf = ?", conexao, params=(cpf_busca,))
-                    st.session_state.detalhes_abertos = False
-                    conexao.close()
-                    st.rerun()
+                    try:
+                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        # CPF está encriptado, então buscamos por ID ou nome
+                        st.session_state.resultado_busca = pd.read_sql_query(
+                            "SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(cpf_busca),))
+                        if st.session_state.resultado_busca.empty:
+                            st.warning("❌ Nenhum resultado encontrado para este ID")
+                        st.session_state.detalhes_abertos = False
+                        conexao.close()
+                        st.rerun()
+                    except ValueError:
+                        st.error("❌ Digite um ID válido (apenas números)")
 
         with tab_nome:
             with st.form(key="form_nome"):
                 nome_busca = st.text_input("Nome completo", placeholder="Digite o nome...")
                 if st.form_submit_button("Pesquisar", type="primary"):
-                    conexao = sqlite3.connect('mobilidade_renapsi.db')
-                    st.session_state.resultado_busca = pd.read_sql_query(
-                        "SELECT * FROM jovens_rotas WHERE nome LIKE ?", conexao, params=(f"%{nome_busca}%",))
-                    st.session_state.detalhes_abertos = False
-                    conexao.close()
-                    st.rerun()
+                    try:
+                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        st.session_state.resultado_busca = pd.read_sql_query(
+                            "SELECT * FROM jovens_rotas WHERE nome LIKE ?", conexao, params=(f"%{nome_busca}%",))
+                        if st.session_state.resultado_busca.empty:
+                            st.warning("❌ Nenhum resultado encontrado para este nome")
+                        st.session_state.detalhes_abertos = False
+                        conexao.close()
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Erro na busca: {str(e)}")
 
         with tab_mat:
             with st.form(key="form_mat"):
                 mat_busca = st.text_input("Matrícula", placeholder="Apenas números")
                 if st.form_submit_button("Pesquisar", type="primary"):
-                    conexao = sqlite3.connect('mobilidade_renapsi.db')
-                    st.session_state.resultado_busca = pd.read_sql_query(
-                        "SELECT * FROM jovens_rotas WHERE matricula = ?", conexao, params=(mat_busca,))
-                    st.session_state.detalhes_abertos = False
-                    conexao.close()
-                    st.rerun()
+                    try:
+                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        st.session_state.resultado_busca = pd.read_sql_query(
+                            "SELECT * FROM jovens_rotas WHERE matricula = ?", conexao, params=(mat_busca,))
+                        if st.session_state.resultado_busca.empty:
+                            st.warning("❌ Nenhum resultado encontrado para esta matrícula")
+                        st.session_state.detalhes_abertos = False
+                        conexao.close()
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Erro na busca: {str(e)}")
 
         if st.session_state.resultado_busca is not None:
             if st.session_state.resultado_busca.empty:
@@ -1437,7 +1698,8 @@ elif menu == "Pesquisar Consultas":
                 cpf_cru2       = str(dados_jovem['cpf']).zfill(11)
                 cpf_mask       = f"***.***.{cpf_cru2[6:9]}-{cpf_cru2[9:11]}"
                 mat_exib       = dados_jovem.get('matricula','Não informada')
-                status_exib2   = dados_jovem.get('status_rota','Otimizado').upper()
+                status_rota_raw2 = dados_jovem.get('status_rota','Otimizado')
+                status_exib2   = obter_status_visual(status_rota_raw2)
                 data_rot       = dados_jovem.get('data_consulta') or "Pendente"
 
                 st.markdown(f"""
@@ -1446,7 +1708,7 @@ elif menu == "Pesquisar Consultas":
                             margin-top:16px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                         <span style="color:#E2E8F0;font-weight:700;font-size:16px;">#{id_sel} — {nome_jov.upper()}</span>
-                        <span style="background:rgba(16,185,129,0.15);color:#10B981;padding:2px 8px;
+                        <span style="background:rgba(59,130,246,0.15);color:#3B82F6;padding:2px 8px;
                                      border-radius:20px;font-size:10px;font-weight:700;">{status_exib2}</span>
                     </div>
                     <p style="margin:3px 0;color:#64748B;font-size:12px;">PRÉ-ADM · Última roteirização: {data_rot}</p>
@@ -1812,3 +2074,275 @@ elif menu == "Banco de Dados":
             </p>
         </div>
         """, unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TELA 4 — SIMULAÇÃO: PORTAL DO JOVEM
+# ══════════════════════════════════════════════════════════════════════════════
+elif menu == "Simulação: Portal do Jovem":
+
+    st.markdown("""
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div>
+            <h1 style="margin:0;font-size:28px;background:linear-gradient(135deg,#00D4FF,#7C3AED);
+                       -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">
+                Portal do Jovem - Aceite de Rota
+            </h1>
+            <p style="margin:0;color:#64748B;font-size:13px;letter-spacing:0.05em;">
+                Simulação da visão que o jovem teria ao receber o link de aceite
+            </p>
+        </div>
+    </div>
+    <hr style="border-color:rgba(0,212,255,0.1);margin-bottom:20px;">
+    """, unsafe_allow_html=True)
+
+    # Busca jovens com status Otimizado
+    with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+        df_otimizados = pd.read_sql_query(
+            "SELECT id, nome, cep_casa, cep_trabalho FROM jovens_rotas WHERE status_rota = 'Otimizado'",
+            conexao
+        )
+
+    if df_otimizados.empty:
+        st.info("📭 Não há jovens com status 'Otimizado' para simular o aceite.")
+    else:
+        # Selectbox para escolher o jovem
+        opcoes_jovens = [f"{row['id']} - {row['nome']}" for _, row in df_otimizados.iterrows()]
+        jovem_selecionado = st.selectbox(
+            "Selecione o jovem para simular:",
+            opcoes_jovens,
+            key="select_jovem_simulacao"
+        )
+
+        if jovem_selecionado:
+            id_jovem = int(jovem_selecionado.split(" - ")[0])
+            
+            # Busca dados completos do jovem
+            with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+                df_jovem = pd.read_sql_query(
+                    "SELECT * FROM jovens_rotas WHERE id = ?",
+                    conexao,
+                    params=(id_jovem,)
+                )
+            
+            if not df_jovem.empty:
+                dados_jovem = df_jovem.iloc[0]
+                nome_jovem = dados_jovem['nome']
+                cep_casa = dados_jovem['cep_casa']
+                cep_trab = dados_jovem['cep_trabalho']
+                
+                # Busca endereços
+                end_casa_dict = buscar_endereco_viacep(cep_casa)
+                end_trab_dict = buscar_endereco_viacep(cep_trab)
+                
+                rua_casa = end_casa_dict.get('rua', 'N/A') if isinstance(end_casa_dict, dict) else end_casa_dict
+                rua_trab = end_trab_dict.get('rua', 'N/A') if isinstance(end_trab_dict, dict) else end_trab_dict
+                bairro_casa = end_casa_dict.get('bairro', '') if isinstance(end_casa_dict, dict) else ''
+                bairro_trab = end_trab_dict.get('bairro', '') if isinstance(end_trab_dict, dict) else ''
+                
+                # Calcula rota
+                rota = motor_de_rotas_gratuito(
+                    f"{rua_casa}, {bairro_casa}, São Paulo",
+                    f"{rua_trab}, {bairro_trab}, São Paulo"
+                )
+                
+                # Exibe card do jovem
+                st.markdown(f"""
+                <div style="background:linear-gradient(135deg,rgba(0,212,255,0.1),rgba(124,58,237,0.1));
+                            border:1px solid rgba(0,212,255,0.3);border-radius:16px;padding:24px;margin-bottom:24px;">
+                    <h2 style="margin:0 0 8px;color:#00D4FF;font-size:22px;">👤 {nome_jovem}</h2>
+                    <p style="color:#94A3B8;font-size:14px;margin:0;">
+                        Olá! Sua rota de Vale-Transporte foi calculada e está pronta para aceite.
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Card da rota
+                if rota.get('rotas') and len(rota['rotas']) > 0:
+                    rota_principal = rota['rotas'][0]
+                    
+                    st.markdown("""
+                    <div style="background:rgba(13,17,23,0.9);border:1px solid rgba(0,212,255,0.2);
+                                border-radius:14px;padding:24px;margin-bottom:24px;">
+                        <h3 style="margin:0 0 16px;color:#00D4FF;">🗺️ Sua Rota de Transporte</h3>
+                    """, unsafe_allow_html=True)
+                    
+                    # Origem e Destino
+                    st.markdown(f"""
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                        <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);
+                                    border-radius:10px;padding:16px;">
+                            <p style="color:#64748B;font-size:12px;margin:0 0 6px;text-transform:uppercase;">🏠 Origem</p>
+                            <p style="color:#E2E8F0;font-size:14px;font-weight:600;margin:0;">{rua_casa}</p>
+                            <p style="color:#94A3B8;font-size:12px;margin:4px 0 0;">{bairro_casa}</p>
+                        </div>
+                        <div style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);
+                                    border-radius:10px;padding:16px;">
+                            <p style="color:#64748B;font-size:12px;margin:0 0 6px;text-transform:uppercase;">🏢 Destino</p>
+                            <p style="color:#E2E8F0;font-size:14px;font-weight:600;margin:0;">{rua_trab}</p>
+                            <p style="color:#94A3B8;font-size:12px;margin:4px 0 0;">{bairro_trab}</p>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Detalhes da rota
+                    st.markdown(f"""
+                    <div style="background:rgba(0,212,255,0.05);border-left:3px solid #00D4FF;
+                                padding:16px;border-radius:0 8px 8px 0;margin-bottom:16px;">
+                        <p style="color:#64748B;font-size:12px;margin:0 0 8px;text-transform:uppercase;">📍 Trajeto</p>
+                        <p style="color:#E2E8F0;font-size:15px;font-weight:600;margin:0 0 8px;">{rota_principal['trajeto']}</p>
+                        <p style="color:#94A3B8;font-size:13px;margin:0;">
+                            🎫 {rota_principal['bilhete']}<br>
+                            ⏱️ Tempo estimado: {rota_principal['tempo']}
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Valor da tarifa
+                    st.markdown(f"""
+                    <div style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.15));
+                                border:1px solid rgba(16,185,129,0.3);border-radius:12px;
+                                text-align:center;padding:20px;margin-bottom:20px;">
+                        <p style="color:#94A3B8;font-size:13px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
+                            💰 Valor do Vale-Transporte Diário
+                        </p>
+                        <p style="color:#10B981;font-size:32px;font-weight:800;margin:0;">
+                            R$ {rota_principal['valor_diario']:.2f}
+                        </p>
+                        <p style="color:#64748B;font-size:12px;margin:8px 0 0;">
+                            (Ida + Volta)
+                        </p>
+                    </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Botões de ação
+                    st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:24px 0;'>", unsafe_allow_html=True)
+                    st.markdown("<h3 style='color:#00D4FF;margin-bottom:16px;'>⚡ Escolha uma ação:</h3>", unsafe_allow_html=True)
+                    
+                    col_aceitar, col_nao_optante, col_contestar = st.columns(3)
+                    
+                    with col_aceitar:
+                        if st.button("✅ Aceitar e Assinar", type="primary", use_container_width=True, key=f"aceitar_{id_jovem}"):
+                            st.session_state.modo_assinatura = True
+                    
+                    with col_nao_optante:
+                        if st.button("❌ Não Optante", use_container_width=True, key=f"nao_optante_{id_jovem}"):
+                            with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+                                cursor = conexao.cursor()
+                                cursor.execute(
+                                    "UPDATE jovens_rotas SET status_rota = 'Não Optante' WHERE id = ?",
+                                    (id_jovem,)
+                                )
+                                conexao.commit()
+                            st.success("✅ Status atualizado para 'Não Optante'")
+                            time.sleep(2)
+                            st.rerun()
+                    
+                    with col_contestar:
+                        if st.button("⚠️ Contestar Rota", use_container_width=True, key=f"contestar_{id_jovem}"):
+                            st.session_state.modo_contestacao_jovem = True
+                    
+                    # Modal de assinatura
+                    if st.session_state.get('modo_assinatura', False):
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        st.markdown("""
+                        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);
+                                    border-radius:14px;padding:20px;margin-top:20px;">
+                            <h3 style="margin:0 0 4px;color:#10B981;">✍️ Assinatura Digital</h3>
+                            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                                Digite seu nome completo para confirmar o aceite da rota
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        nome_assinatura = st.text_input(
+                            "Nome Completo para Assinatura:",
+                            placeholder="Digite seu nome completo",
+                            key=f"assinatura_{id_jovem}"
+                        )
+                        
+                        col_confirmar, col_cancelar = st.columns([1, 1])
+                        
+                        with col_confirmar:
+                            if st.button("✅ Confirmar Assinatura", type="primary", use_container_width=True, key=f"confirmar_assinatura_{id_jovem}"):
+                                if not nome_assinatura.strip():
+                                    st.error("⚠️ Digite seu nome completo para assinar")
+                                else:
+                                    with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+                                        cursor = conexao.cursor()
+                                        cursor.execute("""
+                                            UPDATE jovens_rotas 
+                                            SET status_rota = 'Implantado', 
+                                                assinatura_digital = ?,
+                                                assinatura_data = ?
+                                            WHERE id = ?
+                                        """, (nome_assinatura, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), id_jovem))
+                                        conexao.commit()
+                                    st.success(f"✅ Rota aceita e assinada por {nome_assinatura}!")
+                                    st.balloons()
+                                    st.session_state.modo_assinatura = False
+                                    time.sleep(2)
+                                    st.rerun()
+                        
+                        with col_cancelar:
+                            if st.button("❌ Cancelar", use_container_width=True, key=f"cancelar_assinatura_{id_jovem}"):
+                                st.session_state.modo_assinatura = False
+                                st.rerun()
+                    
+                    # Modal de contestação
+                    if st.session_state.get('modo_contestacao_jovem', False):
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        st.markdown("""
+                        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);
+                                    border-radius:14px;padding:20px;margin-top:20px;">
+                            <h3 style="margin:0 0 4px;color:#F59E0B;">⚠️ Contestar Rota</h3>
+                            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                                Descreva o motivo da contestação
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        motivo_contestacao = st.text_area(
+                            "Motivo da contestação:",
+                            placeholder="Ex: A rota não passa perto da minha casa, o valor está incorreto, etc.",
+                            height=120,
+                            key=f"motivo_contestacao_{id_jovem}"
+                        )
+                        
+                        col_confirmar_cont, col_cancelar_cont = st.columns([1, 1])
+                        
+                        with col_confirmar_cont:
+                            if st.button("✅ Enviar Contestação", type="primary", use_container_width=True, key=f"confirmar_contestacao_{id_jovem}"):
+                                if not motivo_contestacao.strip():
+                                    st.error("⚠️ Descreva o motivo da contestação")
+                                else:
+                                    # Registra contestação
+                                    registrar_contestacao(
+                                        nome=nome_jovem,
+                                        cid_res="São Paulo",
+                                        cid_trab="São Paulo",
+                                        motivo=motivo_contestacao
+                                    )
+                                    
+                                    # Atualiza status
+                                    with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+                                        cursor = conexao.cursor()
+                                        cursor.execute(
+                                            "UPDATE jovens_rotas SET status_rota = 'Contestada' WHERE id = ?",
+                                            (id_jovem,)
+                                        )
+                                        conexao.commit()
+                                    
+                                    st.success("✅ Contestação registrada! Status atualizado para 'Contestada'")
+                                    st.session_state.modo_contestacao_jovem = False
+                                    time.sleep(2)
+                                    st.rerun()
+                        
+                        with col_cancelar_cont:
+                            if st.button("❌ Cancelar", use_container_width=True, key=f"cancelar_contestacao_{id_jovem}"):
+                                st.session_state.modo_contestacao_jovem = False
+                                st.rerun()
+                
+                else:
+                    st.warning("⚠️ Não foi possível calcular a rota para este jovem")
