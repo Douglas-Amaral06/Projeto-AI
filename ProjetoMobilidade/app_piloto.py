@@ -262,7 +262,7 @@ if menu == "Dashboard Principal":
 
     tipo_rota = st.radio(
         "Modalidade:",
-        ["🏠 Casa × Trabalho", "📚 Casa × Curso", "📊 Gestão de Base"],
+        ["🏠 Casa × Trabalho", "📚 Casa × Curso", "📊 Gestão de Base", "📧 Envios em Massa"],
         horizontal=True
     )
 
@@ -448,6 +448,319 @@ if menu == "Dashboard Principal":
         """, unsafe_allow_html=True)
 
     st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # ENVIOS EM MASSA
+    # ══════════════════════════════════════════════════════════════════════════
+    if tipo_rota == "📧 Envios em Massa":
+        st.markdown("""
+        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(59,130,246,0.3);
+                    border-radius:14px;padding:24px;margin-bottom:20px;">
+            <h3 style="margin:0 0 4px;color:#60A5FA;">📧 Envio em Massa de Cartas de VT</h3>
+            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                Selecione os funcionários e envie as cartas personalizadas automaticamente
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Busca funcionários pendentes (status != Implantado)
+        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        df_pendentes = pd.read_sql_query("""
+            SELECT id, nome, cpf, email, status_rota, cep_casa, cep_trabalho, matricula
+            FROM jovens_rotas 
+            WHERE status_rota != 'Implantado' OR status_rota IS NULL
+            ORDER BY nome
+        """, conexao)
+        conexao.close()
+
+        if df_pendentes.empty:
+            st.info("✅ Não há funcionários pendentes de envio. Todos já foram implantados!")
+        else:
+            # Filtra apenas quem tem e-mail cadastrado
+            df_com_email = df_pendentes[df_pendentes['email'].notna() & (df_pendentes['email'] != '')]
+            df_sem_email = df_pendentes[df_pendentes['email'].isna() | (df_pendentes['email'] == '')]
+
+            st.markdown(f"""
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+                <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
+                            border-radius:10px;padding:16px;text-align:center;">
+                    <p style="color:#60A5FA;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Total Pendentes</p>
+                    <p style="color:#E2E8F0;font-size:28px;font-weight:800;margin:0;">{len(df_pendentes)}</p>
+                </div>
+                <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
+                            border-radius:10px;padding:16px;text-align:center;">
+                    <p style="color:#10B981;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Com E-mail</p>
+                    <p style="color:#E2E8F0;font-size:28px;font-weight:800;margin:0;">{len(df_com_email)}</p>
+                </div>
+                <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+                            border-radius:10px;padding:16px;text-align:center;">
+                    <p style="color:#EF4444;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Sem E-mail</p>
+                    <p style="color:#E2E8F0;font-size:28px;font-weight:800;margin:0;">{len(df_sem_email)}</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if len(df_sem_email) > 0:
+                with st.expander(f"⚠️ {len(df_sem_email)} funcionário(s) sem e-mail cadastrado"):
+                    for _, row in df_sem_email.iterrows():
+                        st.markdown(f"""
+                        <div style="background:rgba(239,68,68,0.05);border-left:3px solid #EF4444;
+                                    padding:10px 14px;margin-bottom:8px;border-radius:0 6px 6px 0;">
+                            <p style="margin:0;color:#E2E8F0;font-size:14px;">
+                                <strong>#{row['id']}</strong> - {row['nome']} 
+                                <span style="color:#64748B;font-size:12px;">(CPF: {str(row['cpf']).zfill(11)})</span>
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+            if len(df_com_email) > 0:
+                st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
+                st.markdown("<p style='color:#00D4FF;font-size:14px;font-weight:600;margin-bottom:12px;'>Selecione os funcionários para envio:</p>", unsafe_allow_html=True)
+
+                # Opção de selecionar todos
+                selecionar_todos = st.checkbox("✅ Selecionar todos", value=False)
+
+                # Lista de seleção
+                funcionarios_selecionados = []
+                
+                if selecionar_todos:
+                    funcionarios_selecionados = df_com_email['id'].tolist()
+                    st.info(f"📋 {len(funcionarios_selecionados)} funcionário(s) selecionado(s)")
+                else:
+                    # Exibe lista com checkboxes
+                    for _, row in df_com_email.iterrows():
+                        cpf_mask = f"***.***.{str(row['cpf']).zfill(11)[6:9]}-{str(row['cpf']).zfill(11)[9:11]}"
+                        col_check, col_info = st.columns([0.5, 11.5])
+                        with col_check:
+                            if st.checkbox("", key=f"check_{row['id']}", label_visibility="collapsed"):
+                                funcionarios_selecionados.append(row['id'])
+                        with col_info:
+                            st.markdown(f"""
+                            <div style="background:rgba(13,17,23,0.6);border:1px solid rgba(0,212,255,0.15);
+                                        border-radius:8px;padding:12px;margin-bottom:8px;">
+                                <p style="margin:0;color:#E2E8F0;font-size:14px;">
+                                    <strong>#{row['id']}</strong> - {row['nome']}
+                                </p>
+                                <p style="margin:4px 0 0;color:#64748B;font-size:12px;">
+                                    CPF: {cpf_mask} · E-mail: {row['email']} · Status: {row['status_rota'] or 'Pendente'}
+                                </p>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                # Botão de envio
+                if len(funcionarios_selecionados) > 0:
+                    st.markdown(f"""
+                    <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
+                                border-radius:10px;padding:16px;margin-bottom:16px;text-align:center;">
+                        <p style="color:#60A5FA;font-size:14px;margin:0;">
+                            <strong>{len(funcionarios_selecionados)}</strong> funcionário(s) selecionado(s) para envio
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    col_env1, col_env2 = st.columns([1, 1])
+                    with col_env1:
+                        if st.button("🚀 Iniciar Envio em Massa", type="primary", use_container_width=True):
+                            st.session_state.iniciar_envio_massa = True
+                            st.session_state.ids_para_envio = funcionarios_selecionados
+                            st.rerun()
+                    with col_env2:
+                        if st.button("❌ Cancelar", use_container_width=True):
+                            st.rerun()
+
+                    # Processo de envio
+                    if st.session_state.get('iniciar_envio_massa'):
+                        st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
+                        st.markdown("""
+                        <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.3);
+                                    border-radius:12px;padding:20px;margin-bottom:20px;">
+                            <h4 style="margin:0 0 8px;color:#A78BFA;">⚡ Processamento em Andamento</h4>
+                            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                                Aguarde enquanto as cartas são geradas e enviadas...
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        # Barra de progresso
+                        progress_bar = st.progress(0)
+                        status_text = st.empty()
+                        log_container = st.container()
+
+                        total = len(st.session_state.ids_para_envio)
+                        sucessos = 0
+                        falhas = []
+
+                        for idx, func_id in enumerate(st.session_state.ids_para_envio):
+                            try:
+                                # Busca dados do funcionário
+                                conexao = sqlite3.connect('mobilidade_renapsi.db')
+                                df_func = pd.read_sql_query(
+                                    "SELECT * FROM jovens_rotas WHERE id = ?", 
+                                    conexao, 
+                                    params=(func_id,)
+                                )
+                                conexao.close()
+
+                                if df_func.empty:
+                                    with log_container:
+                                        st.error(f"❌ ID {func_id}: Funcionário não encontrado no banco")
+                                    falhas.append(f"ID {func_id} - Não encontrado")
+                                    continue
+
+                                dados = df_func.iloc[0]
+                                nome = dados['nome']
+                                email = dados['email']
+                                cpf = str(dados['cpf']).zfill(11)
+                                cep_casa = dados['cep_casa']
+                                cep_trab = dados['cep_trabalho']
+
+                                status_text.markdown(f"""
+                                <p style="color:#60A5FA;font-size:14px;">
+                                    📤 Processando <strong>{nome}</strong> ({idx + 1}/{total})...
+                                </p>
+                                """, unsafe_allow_html=True)
+
+                                # Calcula rota
+                                end_casa_dict = buscar_endereco_viacep(cep_casa)
+                                end_trab_dict = buscar_endereco_viacep(cep_trab)
+                                
+                                rua_casa = end_casa_dict.get('rua', 'N/A') if isinstance(end_casa_dict, dict) else end_casa_dict
+                                rua_trab = end_trab_dict.get('rua', 'N/A') if isinstance(end_trab_dict, dict) else end_trab_dict
+
+                                rota = motor_de_rotas_gratuito(
+                                    f"{rua_casa}, São Paulo, Brasil",
+                                    f"{rua_trab}, São Paulo, Brasil"
+                                )
+
+                                # Seleciona primeira rota disponível
+                                rota_para_carta = rota['rotas'][0] if rota.get('rotas') else {
+                                    'modal': 'Integração', 'trajeto': 'Ônibus + Metrô/CPTM',
+                                    'bilhete': 'Integração VT', 'valor_diario': 0.0, 'tempo': 'N/A'
+                                }
+
+                                end_casa_str = end_casa_dict.get('completo', cep_casa) if isinstance(end_casa_dict, dict) else cep_casa
+                                end_trab_str = end_trab_dict.get('completo', cep_trab) if isinstance(end_trab_dict, dict) else cep_trab
+
+                                # Gera PDF
+                                dados_para_carta = {
+                                    'id': func_id, 'nome': nome, 'cpf': cpf,
+                                    'matricula': dados.get('matricula', ''), 'email': email
+                                }
+
+                                pdf_bytes = gerar_carta_pdf(
+                                    dados_jovem=dados_para_carta,
+                                    rota_selecionada=rota_para_carta,
+                                    end_casa_completo=end_casa_str,
+                                    end_trab_completo=end_trab_str
+                                )
+
+                                # Envia e-mail
+                                sucesso, erro = enviar_carta_por_email(
+                                    destinatario=email,
+                                    nome_funcionario=nome,
+                                    pdf_bytes=pdf_bytes
+                                )
+
+                                if sucesso:
+                                    with log_container:
+                                        st.success(f"✅ {nome} - Carta enviada para {email}")
+                                    sucessos += 1
+                                else:
+                                    with log_container:
+                                        st.error(f"❌ {nome} - Falha: {erro}")
+                                    falhas.append(f"{nome} ({email})")
+
+                            except Exception as e:
+                                with log_container:
+                                    st.error(f"❌ ID {func_id}: Erro inesperado - {str(e)}")
+                                falhas.append(f"ID {func_id} - Erro: {str(e)}")
+
+                            # Atualiza progresso
+                            progress_bar.progress((idx + 1) / total)
+
+                            # Intervalo de 3 segundos entre envios
+                            if idx < total - 1:  # Não espera após o último
+                                time.sleep(3)
+
+                        # ══════════════════════════════════════════════════════════════════════════
+                        # RELATÓRIO DE FEEDBACK VISUAL
+                        # ══════════════════════════════════════════════════════════════════════════
+                        progress_bar.progress(1.0)
+                        
+                        st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
+                        
+                        # Resumo geral
+                        st.markdown(f"""
+                        <div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(16,185,129,0.05));
+                                    border:1px solid rgba(16,185,129,0.3);border-radius:14px;padding:24px;margin-bottom:20px;text-align:center;">
+                            <h3 style="margin:0 0 12px;color:#10B981;">✅ Envio Concluído!</h3>
+                            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                                <div>
+                                    <p style="color:#64748B;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Enviados com Sucesso</p>
+                                    <p style="color:#10B981;font-size:36px;font-weight:800;margin:0;">{sucessos}</p>
+                                </div>
+                                <div>
+                                    <p style="color:#64748B;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Falhas</p>
+                                    <p style="color:#EF4444;font-size:36px;font-weight:800;margin:0;">{len(falhas)}</p>
+                                </div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        # Detalhes de sucesso
+                        if sucessos > 0:
+                            st.markdown(f"""
+                            <div style="background:rgba(16,185,129,0.08);border-left:4px solid #10B981;
+                                        border-radius:0 8px 8px 0;padding:16px;margin-bottom:16px;">
+                                <p style="color:#10B981;font-size:14px;font-weight:600;margin:0 0 8px;">
+                                    ✅ {sucessos} e-mail(s) enviado(s) com sucesso
+                                </p>
+                                <p style="color:#94A3B8;font-size:12px;margin:0;">
+                                    Os funcionários receberão suas cartas de VT personalizadas em breve.
+                                </p>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                        # Detalhes de falhas
+                        if len(falhas) > 0:
+                            with st.expander(f"🚨 Detalhes das {len(falhas)} Falha(s)", expanded=True):
+                                st.markdown(f"""
+                                <div style="background:rgba(239,68,68,0.08);border-left:4px solid #EF4444;
+                                            border-radius:0 8px 8px 0;padding:16px;margin-bottom:16px;">
+                                    <p style="color:#EF4444;font-size:14px;font-weight:600;margin:0 0 12px;">
+                                        ⚠️ Os seguintes funcionários não receberam o e-mail:
+                                    </p>
+                                """, unsafe_allow_html=True)
+                                
+                                for falha in falhas:
+                                    st.markdown(f"""
+                                    <div style="background:rgba(239,68,68,0.05);border-left:2px solid #EF4444;
+                                                padding:10px 12px;margin-bottom:8px;border-radius:0 4px 4px 0;">
+                                        <p style="color:#E2E8F0;font-size:13px;margin:0;">
+                                            • {falha}
+                                        </p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                
+                                st.markdown("""
+                                <div style="background:rgba(239,68,68,0.05);border-left:4px solid #EF4444;
+                                            border-radius:0 8px 8px 0;padding:12px;margin-top:12px;">
+                                    <p style="color:#94A3B8;font-size:12px;margin:0;">
+                                        <strong>Ação recomendada:</strong> Verifique os e-mails cadastrados e tente novamente.
+                                    </p>
+                                </div>
+                                """, unsafe_allow_html=True)
+
+                        st.session_state.iniciar_envio_massa = False
+                        st.session_state.ids_para_envio = []
+
+                        if st.button("🔄 Voltar ao Início", type="primary"):
+                            st.rerun()
+
+                else:
+                    st.info("👆 Selecione pelo menos um funcionário para enviar")
 
     # ── Gráficos ──
     col_g1, col_g2, col_g3, col_g4 = st.columns(4)
