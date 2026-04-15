@@ -1676,16 +1676,52 @@ elif menu == "Banco de Dados":
             if not nome_coluna.strip():
                 st.error("❌ Digite um nome para a coluna")
             else:
-                try:
-                    conexao = sqlite3.connect('mobilidade_renapsi.db')
-                    cursor = conexao.cursor()
-                    cursor.execute(f"ALTER TABLE jovens_rotas ADD COLUMN {nome_coluna} {tipo_coluna}")
-                    conexao.commit()
-                    conexao.close()
-                    st.success(f"✅ Coluna '{nome_coluna}' adicionada com sucesso!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Erro ao adicionar coluna: {str(e)}")
+                # ─── VALIDAÇÃO DE SEGURANÇA: Previne SQL Injection ───────────────────
+                # SQLite DDL (ALTER TABLE) não suporta parameterized queries,
+                # então validamos rigorosamente o nome da coluna
+                import re
+                
+                # SQL Keywords que não podem ser usados como nomes de coluna
+                SQL_KEYWORDS = {
+                    "SELECT", "INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER",
+                    "TABLE", "DATABASE", "INDEX", "VIEW", "TRIGGER", "PROCEDURE",
+                    "FUNCTION", "WHERE", "FROM", "JOIN", "LEFT", "RIGHT", "INNER",
+                    "OUTER", "ON", "AND", "OR", "NOT", "IN", "EXISTS", "BETWEEN",
+                    "LIKE", "IS", "NULL", "TRUE", "FALSE", "ORDER", "BY", "GROUP",
+                    "HAVING", "LIMIT", "OFFSET", "UNION", "INTERSECT", "EXCEPT",
+                    "CASE", "WHEN", "THEN", "ELSE", "END", "CAST", "AS", "DISTINCT",
+                    "ALL", "ANY", "SOME", "CONSTRAINT", "PRIMARY", "KEY", "FOREIGN",
+                    "UNIQUE", "CHECK", "DEFAULT", "COLLATE", "PRAGMA", "VACUUM",
+                    "ANALYZE", "EXPLAIN", "PLAN", "QUERY", "TRANSACTION", "BEGIN",
+                    "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE", "ATTACH", "DETACH"
+                }
+                
+                # Valida nome da coluna: apenas letras, números e underscore
+                if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', nome_coluna):
+                    st.error("❌ Nome da coluna inválido. Use apenas letras, números e underscore (_).")
+                elif len(nome_coluna) > 64:
+                    st.error("❌ Nome da coluna muito longo (máximo 64 caracteres).")
+                elif nome_coluna.upper() in SQL_KEYWORDS:
+                    st.error(f"❌ '{nome_coluna}' é uma palavra-chave SQL reservada. Escolha outro nome.")
+                elif tipo_coluna not in ["TEXT", "INTEGER", "REAL", "BLOB"]:
+                    st.error("❌ Tipo de dados inválido.")
+                else:
+                    try:
+                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        cursor = conexao.cursor()
+                        # Agora é seguro usar f-string pois validamos rigorosamente
+                        cursor.execute(f"ALTER TABLE jovens_rotas ADD COLUMN {nome_coluna} {tipo_coluna}")
+                        conexao.commit()
+                        conexao.close()
+                        st.success(f"✅ Coluna '{nome_coluna}' adicionada com sucesso!")
+                        st.rerun()
+                    except sqlite3.OperationalError as e:
+                        if "already exists" in str(e):
+                            st.error(f"❌ Coluna '{nome_coluna}' já existe na tabela.")
+                        else:
+                            st.error(f"❌ Erro ao adicionar coluna: {str(e)}")
+                    except Exception as e:
+                        st.error(f"❌ Erro inesperado: {str(e)}")
 
     # ── TAB 3: EXCLUIR REGISTRO ──
     with tab_excluir:

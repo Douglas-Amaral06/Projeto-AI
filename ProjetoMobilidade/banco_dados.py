@@ -1,31 +1,76 @@
 import sqlite3
 import pandas as pd
 import datetime
+from encriptacao_dados import encriptar_valor, desencriptar_valor, encriptar_dicionario, desencriptar_dicionario
+import logging
+
+logger = logging.getLogger(__name__)
 
 def carregar_dados():
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    df = pd.read_sql_query("SELECT * FROM jovens_rotas", conexao)
-    conexao.close()
-    return df
+    """
+    Carrega dados do banco e desencripta campos sensíveis.
+    """
+    try:
+        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        df = pd.read_sql_query("SELECT * FROM jovens_rotas", conexao)
+        conexao.close()
+        
+        # Desencripta CPF
+        if 'cpf' in df.columns:
+            df['cpf'] = df['cpf'].apply(lambda x: desencriptar_valor(x) if x else None)
+        
+        logger.info(f"Carregados {len(df)} registros do banco")
+        return df
+    except Exception as e:
+        logger.exception(f"Erro ao carregar dados: {e}")
+        return pd.DataFrame()
 
 def inserir_novo_jovem(nome, cpf, cep_casa, cep_trabalho, matricula):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    status_rota = "Otimizado"
-    cursor.execute('''
-        INSERT INTO jovens_rotas (nome, cpf, cep_casa, cep_trabalho, matricula, status_rota)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (nome, cpf, cep_casa, cep_trabalho, matricula, status_rota))
-    conexao.commit()
-    conexao.close()
+    """
+    Insere novo jovem no banco de dados com encriptação de dados sensíveis.
+    
+    Campos encriptados: CPF
+    """
+    try:
+        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        cursor = conexao.cursor()
+        status_rota = "Otimizado"
+        
+        # Encripta CPF antes de salvar
+        cpf_encriptado = encriptar_valor(cpf)
+        
+        cursor.execute('''
+            INSERT INTO jovens_rotas (nome, cpf, cep_casa, cep_trabalho, matricula, status_rota)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (nome, cpf_encriptado, cep_casa, cep_trabalho, matricula, status_rota))
+        
+        conexao.commit()
+        conexao.close()
+        logger.info(f"Novo jovem inserido: {nome}")
+        return True
+    except Exception as e:
+        logger.exception(f"Erro ao inserir novo jovem: {e}")
+        return False
 
 def cpf_ja_existe(cpf):
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    cursor = conexao.cursor()
-    cursor.execute("SELECT COUNT(*) FROM jovens_rotas WHERE cpf = ?", (cpf,))
-    resultado = cursor.fetchone()[0]
-    conexao.close()
-    return resultado > 0
+    """
+    Verifica se CPF já existe no banco (comparando valores encriptados).
+    """
+    try:
+        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        cursor = conexao.cursor()
+        
+        # Encripta CPF para comparação
+        cpf_encriptado = encriptar_valor(cpf)
+        
+        cursor.execute("SELECT COUNT(*) FROM jovens_rotas WHERE cpf = ?", (cpf_encriptado,))
+        resultado = cursor.fetchone()[0]
+        conexao.close()
+        
+        return resultado > 0
+    except Exception as e:
+        logger.exception(f"Erro ao verificar CPF: {e}")
+        return False
 
 def excluir_jovem(id_jovem):
     conexao = sqlite3.connect('mobilidade_renapsi.db')
@@ -52,7 +97,11 @@ def atualizar_banco_geral():
     conexao.close()
 
 def atualizar_dados_funcionario(id_jovem, matricula, email, celular, cep, numero, coordenadas):
-    """Atualiza dados do funcionário no banco de dados - aceita qualquer valor."""
+    """
+    Atualiza dados do funcionário no banco de dados com encriptação de dados sensíveis.
+    
+    Campos encriptados: E-mail, Celular
+    """
     try:
         # Garante que o ID é inteiro
         id_jovem = int(id_jovem)
@@ -66,23 +115,21 @@ def atualizar_dados_funcionario(id_jovem, matricula, email, celular, cep, numero
         
         if not existe:
             conexao.close()
-            print(f"ERRO: Registro com ID {id_jovem} não encontrado no banco")
+            logger.error(f"Registro com ID {id_jovem} não encontrado no banco")
             return False
         
-        print(f"Atualizando ID {id_jovem} com:")
-        print(f"  Matrícula: {matricula}")
-        print(f"  Email: {email}")
-        print(f"  Celular: {celular}")
-        print(f"  CEP: {cep}")
-        print(f"  Número: {numero}")
-        print(f"  Coordenadas: {coordenadas}")
+        # Encripta dados sensíveis
+        email_encriptado = encriptar_valor(email) if email else None
+        celular_encriptado = encriptar_valor(celular) if celular else None
         
-        # Executa o UPDATE - aceita qualquer valor, sem validação
+        logger.info(f"Atualizando ID {id_jovem}")
+        
+        # Executa o UPDATE com dados encriptados
         cursor.execute('''
             UPDATE jovens_rotas 
             SET matricula = ?, email = ?, celular = ?, cep_casa = ?, numero_casa = ?, coordenadas = ?
             WHERE id = ?
-        ''', (matricula, email, celular, cep, numero, coordenadas, id_jovem))
+        ''', (matricula, email_encriptado, celular_encriptado, cep, numero, coordenadas, id_jovem))
         
         # Verifica se alguma linha foi afetada
         linhas_afetadas = cursor.rowcount
@@ -90,13 +137,11 @@ def atualizar_dados_funcionario(id_jovem, matricula, email, celular, cep, numero
         conexao.commit()
         conexao.close()
         
-        print(f"✅ UPDATE executado com sucesso: {linhas_afetadas} linha(s) afetada(s)")
+        logger.info(f"UPDATE executado com sucesso: {linhas_afetadas} linha(s) afetada(s)")
         return linhas_afetadas > 0
         
     except Exception as e:
-        print(f"❌ ERRO na atualização: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.exception(f"ERRO na atualização: {str(e)}")
         return False
 
 def obter_dados_dashboard():

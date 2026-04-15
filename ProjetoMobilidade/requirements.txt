@@ -17,6 +17,7 @@ sqlite3
 
 # ─── Segurança & Variáveis de Ambiente ──────────────────────────────────────
 python-dotenv==1.0.0
+cryptography==41.0.7
 
 # ─── Geração de PDF ─────────────────────────────────────────────────────────
 fpdf2==2.7.0
