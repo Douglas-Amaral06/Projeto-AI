@@ -13,8 +13,22 @@ import os
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-EMAIL_REMETENTE = os.getenv("EMAIL_REMETENTE", "douglas.amaral@renapsi.org.br")
-EMAIL_SENHA     = os.getenv("EMAIL_SENHA",     "DAtendimento@Jovem25")
+# ─── Validação de Credenciais ───────────────────────────────────────────────
+EMAIL_REMETENTE = os.getenv("EMAIL_REMETENTE")
+EMAIL_SENHA     = os.getenv("EMAIL_SENHA")
+
+if not EMAIL_REMETENTE:
+    raise ValueError(
+        "❌ ERRO CRÍTICO: Variável EMAIL_REMETENTE não encontrada no .env!\n"
+        "Adicione ao arquivo .env: EMAIL_REMETENTE=seu_email@renapsi.org.br"
+    )
+
+if not EMAIL_SENHA:
+    raise ValueError(
+        "❌ ERRO CRÍTICO: Variável EMAIL_SENHA não encontrada no .env!\n"
+        "Adicione ao arquivo .env: EMAIL_SENHA=sua_senha_aplicacao"
+    )
+
 SMTP_HOST       = "smtp.office365.com"
 SMTP_PORT       = 587
 
