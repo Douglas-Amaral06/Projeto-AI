@@ -285,29 +285,18 @@ if menu == "Dashboard Principal":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    total_consultas, sla_medio = obter_dados_dashboard()
-
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
-    df_contest = pd.read_sql_query("SELECT * FROM contestacoes", conexao)
-    conexao.close()
-
-    if 'status' not in df_contest.columns:
-        df_contest['status'] = 'Pendente'
-
-    qtd_pendentes  = len(df_contest[df_contest['status'] == 'Pendente'])
-    qtd_resolvidas = len(df_contest[df_contest['status'] == 'Resolvido'])
-    total_contestacoes = qtd_pendentes + qtd_resolvidas
+    total_consultas, sla_medio, total_contestacoes, total_implantados = obter_dados_dashboard()
 
     # ── KPI Cards ──
     col_k1, col_k2, col_k3, col_k4 = st.columns(4)
     with col_k1:
-        st.metric("Total de Consultas", f"{total_consultas}", "Mês atual")
+        st.metric("Total de Consultas", f"{total_consultas}", "Rotas únicas")
     with col_k2:
         st.metric("SLA Médio", f"{sla_medio:.2f}s", "Tempo de resposta")
     with col_k3:
-        st.metric("Contestações", f"{total_contestacoes}", f"{qtd_pendentes} pendentes")
+        st.metric("Contestações", f"{total_contestacoes}", "Total histórico")
     with col_k4:
-        st.metric("Implantações", "0", "No período")
+        st.metric("Implantações", f"{total_implantados}", "Ativos no momento")
 
     st.markdown("<br>", unsafe_allow_html=True)
 

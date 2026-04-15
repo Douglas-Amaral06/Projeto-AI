@@ -154,19 +154,30 @@ def salvar_rota_manual(id_jovem, tipo_bilhete, valor_tarifa, descricao_itinerari
 
 def obter_dados_dashboard():
     try:
-        mes_ano_atual = datetime.datetime.now().strftime("%Y-%m")
         conexao = sqlite3.connect(DATABASE_FILE)
         cursor = conexao.cursor()
-        cursor.execute(
-            "SELECT COUNT(DISTINCT id), AVG(sla_segundos) FROM jovens_rotas WHERE data_consulta LIKE ?", 
-            (f"{mes_ano_atual}%",)
-        )
-        resultado = cursor.fetchone()
+        
+        # Total de Consultas (rotas únicas abertas)
+        cursor.execute("SELECT COUNT(DISTINCT id) FROM jovens_rotas")
+        total_consultas = cursor.fetchone()[0] or 0
+        
+        # SLA Médio (tempo médio de consulta em segundos)
+        cursor.execute("SELECT AVG(sla_segundos) FROM jovens_rotas WHERE sla_segundos IS NOT NULL")
+        sla_medio = cursor.fetchone()[0] or 0.0
+        
+        # Total de Contestações (todas, mesmo as resolvidas)
+        cursor.execute("SELECT COUNT(*) FROM contestacoes")
+        total_contestacoes = cursor.fetchone()[0] or 0
+        
+        # Implantações (funcionários com status IMPLANTADO no momento)
+        cursor.execute("SELECT COUNT(*) FROM jovens_rotas WHERE status_rota = 'Implantado'")
+        total_implantados = cursor.fetchone()[0] or 0
+        
         conexao.close()
-        return (resultado[0] if resultado and resultado[0] else 0), (resultado[1] if resultado and resultado[1] else 0.0)
+        return total_consultas, sla_medio, total_contestacoes, total_implantados
     except Exception as e:
         logger.exception(f"Erro ao obter dados do dashboard: {e}")
-        return 0, 0.0
+        return 0, 0.0, 0, 0
 
 def atualizar_banco_para_contestacoes():
     try:
