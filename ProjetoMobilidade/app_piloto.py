@@ -293,6 +293,161 @@ if menu == "Dashboard Principal":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ══════════════════════════════════════════════════════════════════════════
+    # ROI DASHBOARD — ANÁLISE FINANCEIRA
+    # ══════════════════════════════════════════════════════════════════════════
+    st.markdown("""
+    <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
+                border-radius:14px;padding:24px;margin-bottom:20px;">
+        <h3 style="margin:0 0 4px;color:#00D4FF;">💰 Análise de ROI — Retorno sobre Investimento</h3>
+        <p style="color:#94A3B8;font-size:13px;margin:0;">
+            Comparativo de custos: Mobilidade Manual vs. Otimizada
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Busca total de jovens na base
+    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    df_jovens = pd.read_sql_query("SELECT COUNT(*) as total FROM jovens_rotas", conexao)
+    total_jovens = df_jovens.iloc[0]['total'] if not df_jovens.empty else 0
+    conexao.close()
+
+    # Constantes financeiras
+    CUSTO_MANUAL_DIARIO = 15.00  # R$ por dia
+    CUSTO_OTIMIZADO_DIARIO = 11.32  # R$ por dia
+    DIAS_UTEIS_MES = 22  # Dias úteis em um mês
+
+    # Cálculos
+    custo_manual_mes = CUSTO_MANUAL_DIARIO * DIAS_UTEIS_MES * total_jovens
+    custo_otimizado_mes = CUSTO_OTIMIZADO_DIARIO * DIAS_UTEIS_MES * total_jovens
+    economia_mes = custo_manual_mes - custo_otimizado_mes
+    percentual_economia = (economia_mes / custo_manual_mes * 100) if custo_manual_mes > 0 else 0
+
+    # Blocos de métricas financeiras
+    col_roi1, col_roi2, col_roi3 = st.columns(3)
+
+    with col_roi1:
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,rgba(239,68,68,0.1),rgba(239,68,68,0.05));
+                    border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;text-align:center;">
+            <p style="color:#EF4444;font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
+                Custo Manual (Mês)
+            </p>
+            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">
+                R$ {custo_manual_mes:,.2f}
+            </p>
+            <p style="color:#64748B;font-size:11px;margin:4px 0 0;letter-spacing:0.05em;">
+                {total_jovens} jovens × R${CUSTO_MANUAL_DIARIO:.2f}/dia × {DIAS_UTEIS_MES} dias
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_roi2:
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(16,185,129,0.05));
+                    border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:20px;text-align:center;">
+            <p style="color:#10B981;font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
+                Custo Otimizado (Mês)
+            </p>
+            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">
+                R$ {custo_otimizado_mes:,.2f}
+            </p>
+            <p style="color:#64748B;font-size:11px;margin:4px 0 0;letter-spacing:0.05em;">
+                {total_jovens} jovens × R${CUSTO_OTIMIZADO_DIARIO:.2f}/dia × {DIAS_UTEIS_MES} dias
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_roi3:
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(124,58,237,0.05));
+                    border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:20px;text-align:center;">
+            <p style="color:#A78BFA;font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
+                Economia Mensal
+            </p>
+            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">
+                R$ {economia_mes:,.2f}
+            </p>
+            <p style="color:#64748B;font-size:11px;margin:4px 0 0;letter-spacing:0.05em;">
+                Redução de {percentual_economia:.1f}% nos custos
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Gráfico de distribuição modal
+    col_chart1, col_chart2 = st.columns([1.5, 1])
+
+    with col_chart1:
+        st.markdown("""
+        <p style="color:#94A3B8;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">
+            Distribuição Modal das Rotas
+        </p>
+        """, unsafe_allow_html=True)
+        
+        # Dados de distribuição modal
+        modais = ['Integração', 'Ônibus', 'Metrô']
+        percentuais = [40, 35, 25]
+        cores_modais = ['#00D4FF', '#7C3AED', '#10B981']
+
+        fig_modal = px.pie(
+            values=percentuais,
+            names=modais,
+            hole=0.5,
+            color_discrete_sequence=cores_modais
+        )
+        fig_modal.update_traces(
+            textposition='inside',
+            textinfo='label+percent',
+            textfont=dict(size=12, color='#E2E8F0'),
+            hovertemplate='<b>%{label}</b><br>%{value}%<extra></extra>'
+        )
+        fig_modal.update_layout(
+            showlegend=True,
+            legend=dict(
+                orientation='v',
+                yanchor='middle',
+                y=0.5,
+                xanchor='left',
+                x=1.05,
+                font=dict(size=11, color='#94A3B8')
+            ),
+            margin=dict(t=10, b=10, l=10, r=100),
+            height=280,
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(family='Arial', size=12, color='#E2E8F0')
+        )
+        st.plotly_chart(fig_modal, use_container_width=True, key="graf_modal_roi")
+
+    with col_chart2:
+        st.markdown("""
+        <p style="color:#94A3B8;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">
+            Resumo Financeiro
+        </p>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
+                    border-radius:12px;padding:16px;height:280px;display:flex;flex-direction:column;justify-content:space-around;">
+            <div>
+                <p style="color:#64748B;font-size:11px;margin:0 0 4px;text-transform:uppercase;">Total de Jovens</p>
+                <p style="color:#00D4FF;font-size:24px;font-weight:800;margin:0;">{total_jovens}</p>
+            </div>
+            <div>
+                <p style="color:#64748B;font-size:11px;margin:0 0 4px;text-transform:uppercase;">Dias Úteis/Mês</p>
+                <p style="color:#7C3AED;font-size:24px;font-weight:800;margin:0;">{DIAS_UTEIS_MES}</p>
+            </div>
+            <div>
+                <p style="color:#64748B;font-size:11px;margin:0 0 4px;text-transform:uppercase;">Economia Anual</p>
+                <p style="color:#10B981;font-size:24px;font-weight:800;margin:0;">R$ {economia_mes * 12:,.2f}</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
+
     # ── Gráficos ──
     col_g1, col_g2, col_g3, col_g4 = st.columns(4)
 
