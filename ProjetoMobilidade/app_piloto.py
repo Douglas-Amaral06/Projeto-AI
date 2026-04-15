@@ -228,6 +228,19 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
+# ── Selo de Conformidade LGPD ──
+st.sidebar.markdown("""
+<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.2);
+            border-radius:10px;padding:14px;margin-top:16px;text-align:center;">
+    <p style="color:#00D4FF;font-size:12px;font-weight:600;margin:0 0 8px;letter-spacing:0.05em;">
+        🔒 PRIVACIDADE ASSEGURADA
+    </p>
+    <p style="color:#94A3B8;font-size:10px;line-height:1.4;margin:0;">
+        Conformidade com <strong>LGPD</strong>. Dados de colaboradores (CPF, Morada, E-mail) são processados localmente e armazenados de forma segura. Nenhuma informação pessoal sensível é partilhada com APIs externas sem anonimização.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
 # ══════════════════════════════════════════════════════════════════════════════
 # TELA 0 — DASHBOARD PRINCIPAL
 # ══════════════════════════════════════════════════════════════════════════════
