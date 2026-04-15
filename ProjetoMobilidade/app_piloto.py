@@ -1,5 +1,5 @@
 import streamlit as st
-import sqlite3
+#import sqlite3
 import pandas as pd
 import requests
 import plotly.express as px
@@ -8,12 +8,28 @@ import datetime
 import time
 import folium
 import os
+from dotenv import load_dotenv
 from streamlit_folium import st_folium
 from banco_dados import *
 from apis import *
 from agente_ia import *
 from carta_pdf import gerar_carta_pdf
+from sqlalchemy import create_engine
 from email_sender import enviar_carta_por_email
+
+# ─── Carrega variáveis de ambiente ───────────────────────────────────────────
+load_dotenv()
+
+# ─── Validação de credenciais ───────────────────────────────────────────────
+DATABASE_URL = os.getenv('DATABASE_URL')
+if not DATABASE_URL:
+    raise ValueError(
+        "❌ ERRO CRÍTICO: Variável DATABASE_URL não encontrada!\n"
+        "Certifique-se de que o arquivo .env existe na raiz do projeto com:\n"
+        "DATABASE_URL=postgresql://user:password@host:port/database"
+    )
+
+engine = create_engine(DATABASE_URL)
 
 # ─── Configuração da página ───────────────────────────────────────────────────
 st.set_page_config(page_title="RENAPSI — Mobilidade", page_icon="🚇", layout="wide")
