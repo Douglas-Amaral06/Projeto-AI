@@ -29,8 +29,8 @@
 #### 🚨 CRÍTICO: `email_sender.py` (Linhas 14-15)
 
 ```python
-EMAIL_REMETENTE = os.getenv("EMAIL_REMETENTE", "douglas.amaral@renapsi.org.br")
-EMAIL_SENHA     = os.getenv("EMAIL_SENHA",     "DAtendimento@Jovem25")  # ⚠️ EXPOSTO!
+EMAIL_REMETENTE = os.getenv("EMAIL_REMETENTE", "seu_email@renapsi.org.br")
+EMAIL_SENHA     = os.getenv("EMAIL_SENHA",     "SUA_SENHA_AQUI")  # ⚠️ EXPOSTO!
 ```
 
 **Problema:** A senha está hardcoded como valor padrão no `os.getenv()`.
