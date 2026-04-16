@@ -1,3 +1,4 @@
+import os
 """
 Módulo de gerenciamento de tokens de assinatura digital.
 
@@ -47,7 +48,7 @@ def gerar_token(consulta_id: int) -> dict:
         'http://localhost:8501/assinar?token=xK7j9mP2qR...'
     """
     # Validar que consulta_id existe
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     cursor.execute("SELECT id FROM jovens_rotas WHERE id = ?", (consulta_id,))
@@ -139,7 +140,7 @@ def validar_token(token: str) -> dict:
         }
     
     # Conectar ao banco de dados
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     try:
@@ -260,7 +261,7 @@ def marcar_token_usado(token: str, ip_cliente: Optional[str] = None) -> bool:
     """
     try:
         # Conectar ao banco de dados
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         
         # Registrar timestamp atual
@@ -305,7 +306,7 @@ def limpar_tokens_expirados() -> int:
     """
     try:
         # Conectar ao banco de dados
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         
         # Obter timestamp atual
@@ -345,3 +346,4 @@ def limpar_tokens_expirados() -> int:
         # Em caso de erro, registrar e retornar 0
         print(f"[ERROR] Erro ao limpar tokens expirados: {e}")
         return 0
+

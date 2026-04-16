@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 
 # --- Configuração do Banco Local (SQLite) ---
 load_dotenv()
-DATABASE_FILE = 'mobilidade_renapsi.db'
+# Aponta para o banco de dados na raiz do projeto (diretório pai)
+DATABASE_FILE = os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')
 logger = logging.getLogger(__name__)
 
 def carregar_dados():

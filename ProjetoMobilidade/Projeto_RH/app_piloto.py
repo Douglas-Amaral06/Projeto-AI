@@ -22,7 +22,22 @@ load_dotenv()
 # ─── Configuração da página ───────────────────────────────────────────────────
 st.set_page_config(page_title="RENAPSI — Mobilidade", page_icon="🚇", layout="wide")
 
-# ─── CSS Global — Tema Dark Futurista ─────────────────────────────────────────
+# ── CORREÇÃO FORÇADA: LETRAS BRANCAS NOS BOTÕES ──
+st.markdown("""
+<style>
+/* Força qualquer texto dentro dos botões azuis (secondary) e laranjas (primary) a ficar branco */
+.stButton > button[kind="secondary"] p,
+.stButton > button[kind="secondary"] span,
+.stButton > button[kind="secondary"] div,
+.stButton > button[kind="primary"] p,
+.stButton > button[kind="primary"] span,
+.stButton > button[kind="primary"] div {
+    color: #FFFFFF !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ─── CSS Global — Tema Claro Institucional RENAPSI ───────────────────────────
 st.markdown("""
 <style>
 /* ── Reset ── */
@@ -30,114 +45,143 @@ st.markdown("""
 footer     {visibility: hidden;}
 header     {visibility: hidden;}
 
-/* ── Fundo principal ── */
+/* ── Fundo principal — Branco puro ── */
 .stApp {
-    background: linear-gradient(135deg, #0A0E1A 0%, #0D1117 60%, #0A0E1A 100%);
-    font-size: 16px !important;
+    background: #FFFFFF !important;
+    font-size: 18px !important;
 }
 
-/* ── Sidebar dark ── */
+/* ── Sidebar — Branco/Cinza gelo ── */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0D1117 0%, #080C14 100%) !important;
-    border-right: 1px solid rgba(0,212,255,0.15);
+    background: #F8FAFC !important;
+    border-right: 1px solid #E2E8F0 !important;
 }
 [data-testid="stSidebar"] .stRadio > label {
-    color: #94A3B8 !important;
-    font-size: 16px !important;
+    color: #1E293B !important;
+    font-size: 20px !important;
 }
 [data-testid="stSidebar"] h1,
 [data-testid="stSidebar"] .stMarkdown p {
-    color: #CBD5E1 !important;
-    font-size: 15px !important;
+    color: #333333 !important;
+    font-size: 19px !important;
 }
 [data-testid="stSidebar"] .stRadio [data-testid="stMarkdownContainer"] p {
-    color: #94A3B8;
-    font-size: 16px !important;
+    color: #64748B;
+    font-size: 20px !important;
     transition: color 0.2s;
 }
 [data-testid="stSidebar"] .stRadio [data-testid="stMarkdownContainer"] p:hover {
-    color: #00D4FF;
+    color: #f8ae28;
 }
 
-/* ── KPI cards ── */
+/* ── KPI cards — Fundo branco com sombra suave ── */
 div[data-testid="metric-container"] {
-    background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(124,58,237,0.08));
-    border: 1px solid rgba(0,212,255,0.25);
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
     border-radius: 14px;
     padding: 20px;
-    box-shadow: 0 0 24px rgba(0,212,255,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
-    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
 }
 div[data-testid="metric-container"] [data-testid="stMetricLabel"] {
-    color: #94A3B8 !important;
-    font-size: 15px !important;
+    color: #64748B !important;
+    font-size: 19px !important;
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
 div[data-testid="metric-container"] [data-testid="stMetricValue"] {
-    color: #00D4FF !important;
-    font-size: 2.2rem !important;
+    color: #f8ae28 !important;
+    font-size: 2.6rem !important;
     font-weight: 700;
 }
-
-/* ── Headings ── */
-h1, h2, h3 { color: #E2E8F0 !important; font-size: 1.3em !important; }
-h4          { color: #CBD5E1 !important; font-size: 1.2em !important; }
-
-/* ── Texto geral ── */
-p, span, div, label, input, textarea, select {
-    font-size: 15px !important;
+div[data-testid="metric-container"] [data-testid="stMetricDelta"] {
+    background: #f8ae28 !important;
+    color: #FFFFFF !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+}
+div[data-testid="metric-container"] [data-testid="stMetricDelta"] svg {
+    display: none !important;
 }
 
-/* ── Botões primários ── */
+/* ── Headings — Cinza escuro ── */
+h1, h2, h3 { color: #1E293B !important; font-size: 1.5em !important; }
+h4          { color: #333333 !important; font-size: 1.3em !important; }
+
+/* ── Texto geral — Cinza escuro para contraste ── */
+p, span, div, label, input, textarea, select {
+    color: #333333 !important;
+    font-size: 19px !important;
+}
+
+/* ── Botões primários — Laranja RENAPSI ── */
 .stButton > button[kind="primary"],
 button[data-testid="baseButton-primary"] {
-    background: linear-gradient(135deg, #00D4FF, #7C3AED) !important;
+    background: #f8ae28 !important;
     border: none !important;
-    color: #0A0E1A !important;
+    color: #FFFFFF !important;
     font-weight: 700 !important;
-    font-size: 16px !important;
+    font-size: 20px !important;
     border-radius: 8px !important;
-    box-shadow: 0 0 18px rgba(0,212,255,0.35) !important;
-    transition: box-shadow 0.2s, transform 0.1s !important;
+    box-shadow: 0 2px 4px rgba(248,174,40,0.3) !important;
+    transition: background 0.2s, transform 0.1s !important;
 }
 .stButton > button[kind="primary"]:hover,
 button[data-testid="baseButton-primary"]:hover {
-    box-shadow: 0 0 30px rgba(0,212,255,0.6) !important;
+    background: #e09a1f !important;
     transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(248,174,40,0.4) !important;
 }
 
-/* ── Botões secundários ── */
+/* ── Botões secundários — Azul RENAPSI ── */
 .stButton > button[kind="secondary"],
 button[data-testid="baseButton-secondary"] {
-    background: rgba(13,17,23,0.8) !important;
-    border: 1px solid rgba(0,212,255,0.3) !important;
-    color: #00D4FF !important;
-    font-size: 16px !important;
+    background: #444c9b !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-size: 20px !important;
+    border-radius: 8px !important;
+    transition: background 0.2s, box-shadow 0.2s !important;
+}
+.stButton > button[kind="secondary"]:hover {
+    background: #363d7f !important;
+    box-shadow: 0 2px 6px rgba(68,76,155,0.3) !important;
+}
+
+/* ── Botões padrão (sem type) — Tema claro ── */
+.stButton > button:not([kind]),
+button[data-testid="baseButton-minimal"] {
+    background: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    color: #333333 !important;
+    font-size: 20px !important;
     border-radius: 8px !important;
     transition: border-color 0.2s, box-shadow 0.2s !important;
 }
-.stButton > button[kind="secondary"]:hover {
-    border-color: #00D4FF !important;
-    box-shadow: 0 0 12px rgba(0,212,255,0.25) !important;
+.stButton > button:not([kind]):hover,
+button[data-testid="baseButton-minimal"]:hover {
+    border-color: #CBD5E1 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+    background: #F8FAFC !important;
 }
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
-    background: rgba(13,17,23,0.6);
+    background: #F8FAFC;
     border-radius: 10px;
     padding: 4px;
-    border: 1px solid rgba(0,212,255,0.15);
+    border: 1px solid #E2E8F0;
 }
 .stTabs [data-baseweb="tab"] {
-    color: #94A3B8 !important;
-    font-size: 16px !important;
+    color: #64748B !important;
+    font-size: 20px !important;
     border-radius: 8px;
 }
 .stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2)) !important;
-    color: #00D4FF !important;
-    border-bottom: 2px solid #00D4FF !important;
+    background: #f8ae28 !important;
+    color: #FFFFFF !important;
+    border-bottom: 2px solid #f8ae28 !important;
 }
 
 /* ── Inputs ── */
@@ -145,44 +189,65 @@ button[data-testid="baseButton-secondary"] {
 .stNumberInput > div > div > input,
 .stTextArea > div > div > textarea,
 .stSelectbox > div > div {
-    background: rgba(13,17,23,0.8) !important;
-    border: 1px solid rgba(0,212,255,0.2) !important;
-    color: #E2E8F0 !important;
-    font-size: 15px !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #333333 !important;
+    font-size: 19px !important;
     border-radius: 8px !important;
 }
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
-    border-color: #00D4FF !important;
-    box-shadow: 0 0 10px rgba(0,212,255,0.2) !important;
+    border-color: #f8ae28 !important;
+    box-shadow: 0 0 0 2px rgba(248,174,40,0.1) !important;
 }
 
 /* ── Dataframe ── */
 .stDataFrame {
-    border: 1px solid rgba(0,212,255,0.15) !important;
+    border: 1px solid #E2E8F0 !important;
     border-radius: 10px !important;
-    font-size: 15px !important;
+    font-size: 19px !important;
 }
 
 /* ── Expander ── */
-.streamlit-expanderHeader {
-    background: rgba(13,17,23,0.6) !important;
-    border: 1px solid rgba(0,212,255,0.15) !important;
+[data-testid="stExpander"] details summary {
+    background-color: #444c9b !important;
     border-radius: 8px !important;
-    color: #CBD5E1 !important;
-    font-size: 16px !important;
+    border: none !important;
+}
+/* Evita que fique preto ao clicar (estado de foco/hover) */
+[data-testid="stExpander"] details summary:hover,
+[data-testid="stExpander"] details summary:focus,
+[data-testid="stExpander"] details summary:active {
+    background-color: #363d7f !important;
+    outline: none !important;
+}
+/* Força o texto e o ícone da setinha a ficarem brancos */
+[data-testid="stExpander"] details summary p,
+[data-testid="stExpander"] details summary svg {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
+    font-weight: 600 !important;
+    font-size: 18px !important;
+}
+/* Garante que o conteúdo que abre embaixo continue com fundo branco */
+[data-testid="stExpander"] {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+}
 }
 
 /* ── Divider ── */
-hr { border-color: rgba(0,212,255,0.15) !important; }
+hr { border-color: #E2E8F0 !important; }
 
 /* ── Spinner ── */
-.stSpinner > div { border-top-color: #00D4FF !important; }
+.stSpinner > div { border-top-color: #f8ae28 !important; }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0A0E1A; }
-::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+::-webkit-scrollbar-track { background: #F8FAFC; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -200,11 +265,11 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 st.sidebar.image("logo_renapsi.png", use_container_width=True)
 st.sidebar.markdown(
-    "<p style='color:#94A3B8;font-size:11px;text-align:center;letter-spacing:0.1em;margin-top:-8px;'>SISTEMA DE MOBILIDADE URBANA</p>",
+    "<p style='color:#64748B;font-size:13px;text-align:center;letter-spacing:0.1em;margin-top:-8px;'>SISTEMA DE MOBILIDADE URBANA</p>",
     unsafe_allow_html=True
 )
 st.sidebar.markdown("---")
-st.sidebar.markdown("<p style='color:#64748B;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;'>Navegação</p>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='color:#1E293B;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;'>Navegação</p>", unsafe_allow_html=True)
 
 parametros_url = st.query_params
 pagina_salva = parametros_url.get("menu", "Dashboard Principal")
@@ -228,18 +293,19 @@ st.query_params["menu"] = menu
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(
-    "<p style='color:#334155;font-size:10px;text-align:center;'>v1.0 · RENAPSI © 2026</p>",
+    "<p style='color:#334155;font-size:14px;text-align:center;'>Copyright ©️ Renapsi - 2026. Todos os direitos reservados. CNPJ 37.381.902/0001-25.</p>",
     unsafe_allow_html=True
 )
 
 # ── Selo de Conformidade LGPD ──
 st.sidebar.markdown("""
-<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(0,212,255,0.2);
-            border-radius:10px;padding:14px;margin-top:16px;text-align:center;">
-    <p style="color:#00D4FF;font-size:12px;font-weight:600;margin:0 0 8px;letter-spacing:0.05em;">
+<div style="background:#FFFFFF;border:1px solid #E2E8F0;
+            border-radius:10px;padding:14px;margin-top:16px;text-align:center;
+            box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+    <p style="color:#f8ae28;font-size:15px;font-weight:600;margin:0 0 8px;letter-spacing:0.05em;">
         🔒 PRIVACIDADE ASSEGURADA
     </p>
-    <p style="color:#94A3B8;font-size:10px;line-height:1.4;margin:0;">
+    <p style="color:#64748B;font-size:14px;line-height:1.4;margin:0;">
         Conformidade com <strong>LGPD</strong>. Dados de colaboradores (CPF, Morada, E-mail) são processados localmente e armazenados de forma segura. Nenhuma informação pessoal sensível é partilhada com APIs externas sem anonimização.
     </p>
 </div>
@@ -256,26 +322,26 @@ if menu == "Dashboard Principal":
     ano_atual = datetime.datetime.now().year
 
     # ── Cabeçalho ──
-    st.markdown(f"""
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div>
-            <h1 style="margin:0;font-size:28px;background:linear-gradient(135deg,#00D4FF,#7C3AED);
-                       -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">
-                Dashboard de Mobilidade
-            </h1>
-            <p style="margin:0;color:#64748B;font-size:13px;letter-spacing:0.05em;">
-                {mes_atual.upper()} {ano_atual} &nbsp;·&nbsp; SÃO PAULO
-            </p>
+    col_header, col_img = st.columns([10, 2])
+    with col_header:
+        st.markdown("""
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
+            <svg viewBox="0 0 133.83 114" width="60" height="50">
+              <defs><style>.s2-1{fill:#fff;} .s2-2{fill:#402fdd;}</style></defs>
+              <g><path class="s2-2" d="M57,0C25.52,0,0,25.52,0,57s25.52,57,57,57h19.83c31.48,0,57-25.52,57-57S108.31,0,76.83,0h-19.83Z"/>
+              <path class="s2-1" d="M66.91,48.07c-9.15,0-16.59,7.48-16.59,16.66s7.44,16.66,16.59,16.66,16.59-7.48,16.59-16.66-7.44-16.66-16.59-16.66M66.91,88.58c-13.09,0-23.74-10.7-23.74-23.85s10.65-23.85,23.74-23.85,23.74,10.7,23.74,23.85-10.65,23.85-23.74,23.85"/>
+              <polygon class="s2-1" points="90.66 88.58 83.5 87.55 83.5 29.11 90.66 30.14 90.66 88.58"/>
+              <polygon class="s2-1" points="56.55 25.42 56.55 32.47 77.28 35.45 77.28 28.4 56.55 25.42"/></g>
+            </svg>
+            <h1 style="margin:0; color:#444c9b; font-size:32px;">Dashboard de Mobilidade</h1>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-            <span style="background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);
-                         color:#00D4FF;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;">
-                ● SISTEMA ATIVO
-            </span>
-        </div>
-    </div>
-    <hr style="border-color:rgba(0,212,255,0.1);margin-bottom:20px;">
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+    
+    with col_img:
+        try:
+            st.image("forma_grafica.png", width=100)
+        except:
+            pass  # Imagem decorativa opcional
 
     tipo_rota = st.radio(
         "Modalidade:",
@@ -304,17 +370,17 @@ if menu == "Dashboard Principal":
     # ROI DASHBOARD — ANÁLISE FINANCEIRA
     # ══════════════════════════════════════════════════════════════════════════
     st.markdown("""
-    <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
-                border-radius:14px;padding:24px;margin-bottom:20px;">
-        <h3 style="margin:0 0 4px;color:#00D4FF;">💰 Análise de ROI — Retorno sobre Investimento</h3>
-        <p style="color:#94A3B8;font-size:13px;margin:0;">
+    <div style="background:#FFFFFF;border:1px solid #E2E8F0;
+                border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+        <h3 style="margin:0 0 4px;color:#f8ae28;">💰 Análise de ROI — Retorno sobre Investimento</h3>
+        <p style="color:#64748B;font-size:15px;margin:0;">
             Comparativo de custos: Mobilidade Manual vs. Otimizada
         </p>
     </div>
     """, unsafe_allow_html=True)
 
     # Busca total de jovens na base
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     df_jovens = pd.read_sql_query("SELECT COUNT(*) as total FROM jovens_rotas", conexao)
     total_jovens = df_jovens.iloc[0]['total'] if not df_jovens.empty else 0
     conexao.close()
@@ -337,13 +403,13 @@ if menu == "Dashboard Principal":
         st.markdown(f"""
         <div style="background:linear-gradient(135deg,rgba(239,68,68,0.1),rgba(239,68,68,0.05));
                     border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;text-align:center;">
-            <p style="color:#EF4444;font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
+            <p style="color:#EF4444;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
                 Custo Manual (Mês)
             </p>
-            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">
+            <p style="color:#E2E8F0;font-size:36px;font-weight:800;margin:0;">
                 R$ {custo_manual_mes:,.2f}
             </p>
-            <p style="color:#64748B;font-size:11px;margin:4px 0 0;letter-spacing:0.05em;">
+            <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
                 {total_jovens} jovens × R${CUSTO_MANUAL_DIARIO:.2f}/dia × {DIAS_UTEIS_MES} dias
             </p>
         </div>
@@ -353,13 +419,13 @@ if menu == "Dashboard Principal":
         st.markdown(f"""
         <div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(16,185,129,0.05));
                     border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:20px;text-align:center;">
-            <p style="color:#10B981;font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
+            <p style="color:#10B981;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
                 Custo Otimizado (Mês)
             </p>
-            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">
+            <p style="color:#E2E8F0;font-size:36px;font-weight:800;margin:0;">
                 R$ {custo_otimizado_mes:,.2f}
             </p>
-            <p style="color:#64748B;font-size:11px;margin:4px 0 0;letter-spacing:0.05em;">
+            <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
                 {total_jovens} jovens × R${CUSTO_OTIMIZADO_DIARIO:.2f}/dia × {DIAS_UTEIS_MES} dias
             </p>
         </div>
@@ -369,13 +435,13 @@ if menu == "Dashboard Principal":
         st.markdown(f"""
         <div style="background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(124,58,237,0.05));
                     border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:20px;text-align:center;">
-            <p style="color:#A78BFA;font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
+            <p style="color:#A78BFA;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
                 Economia Mensal
             </p>
-            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">
+            <p style="color:#E2E8F0;font-size:36px;font-weight:800;margin:0;">
                 R$ {economia_mes:,.2f}
             </p>
-            <p style="color:#64748B;font-size:11px;margin:4px 0 0;letter-spacing:0.05em;">
+            <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
                 Redução de {percentual_economia:.1f}% nos custos
             </p>
         </div>
@@ -388,7 +454,7 @@ if menu == "Dashboard Principal":
 
     with col_chart1:
         st.markdown("""
-        <p style="color:#94A3B8;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">
+        <p style="color:#94A3B8;font-size:15px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">
             Distribuição Modal das Rotas
         </p>
         """, unsafe_allow_html=True)
@@ -396,7 +462,7 @@ if menu == "Dashboard Principal":
         # Dados de distribuição modal
         modais = ['Integração', 'Ônibus', 'Metrô']
         percentuais = [40, 35, 25]
-        cores_modais = ['#00D4FF', '#7C3AED', '#10B981']
+        cores_modais = ['#f8ae28', '#444c9b', '#64748B']  # Laranja, Azul, Cinza RENAPSI
 
         fig_modal = px.pie(
             values=percentuais,
@@ -407,7 +473,7 @@ if menu == "Dashboard Principal":
         fig_modal.update_traces(
             textposition='inside',
             textinfo='label+percent',
-            textfont=dict(size=12, color='#E2E8F0'),
+            textfont=dict(size=14, color='#FFFFFF'),
             hovertemplate='<b>%{label}</b><br>%{value}%<extra></extra>'
         )
         fig_modal.update_layout(
@@ -418,37 +484,38 @@ if menu == "Dashboard Principal":
                 y=0.5,
                 xanchor='left',
                 x=1.05,
-                font=dict(size=11, color='#94A3B8')
+                font=dict(size=13, color='#64748B')
             ),
             margin=dict(t=10, b=10, l=10, r=100),
             height=280,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Arial', size=12, color='#E2E8F0')
+            font=dict(family='Arial', size=14, color='#333333')
         )
         st.plotly_chart(fig_modal, use_container_width=True, key="graf_modal_roi")
 
     with col_chart2:
         st.markdown("""
-        <p style="color:#94A3B8;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">
+        <p style="color:#94A3B8;font-size:15px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">
             Resumo Financeiro
         </p>
         """, unsafe_allow_html=True)
         
         st.markdown(f"""
-        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
-                    border-radius:12px;padding:16px;height:280px;display:flex;flex-direction:column;justify-content:space-around;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                    border-radius:12px;padding:16px;height:280px;display:flex;flex-direction:column;justify-content:space-around;
+                    box-shadow:0 2px 4px rgba(0,0,0,0.05);">
             <div>
-                <p style="color:#64748B;font-size:11px;margin:0 0 4px;text-transform:uppercase;">Total de Jovens</p>
-                <p style="color:#00D4FF;font-size:24px;font-weight:800;margin:0;">{total_jovens}</p>
+                <p style="color:#666666;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Total de Jovens</p>
+                <p style="color:#f8ae28;font-size:28px;font-weight:800;margin:0;">{total_jovens}</p>
             </div>
             <div>
-                <p style="color:#64748B;font-size:11px;margin:0 0 4px;text-transform:uppercase;">Dias Úteis/Mês</p>
-                <p style="color:#7C3AED;font-size:24px;font-weight:800;margin:0;">{DIAS_UTEIS_MES}</p>
+                <p style="color:#666666;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Dias Úteis/Mês</p>
+                <p style="color:#444c9b;font-size:28px;font-weight:800;margin:0;">{DIAS_UTEIS_MES}</p>
             </div>
             <div>
-                <p style="color:#64748B;font-size:11px;margin:0 0 4px;text-transform:uppercase;">Economia Anual</p>
-                <p style="color:#10B981;font-size:24px;font-weight:800;margin:0;">R$ {economia_mes * 12:,.2f}</p>
+                <p style="color:#666666;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Economia Anual</p>
+                <p style="color:#10B981;font-size:28px;font-weight:800;margin:0;">R$ {economia_mes * 12:,.2f}</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -460,17 +527,17 @@ if menu == "Dashboard Principal":
     # ══════════════════════════════════════════════════════════════════════════
     if tipo_rota == "📧 Envios em Massa":
         st.markdown("""
-        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(59,130,246,0.3);
-                    border-radius:14px;padding:24px;margin-bottom:20px;">
-            <h3 style="margin:0 0 4px;color:#60A5FA;">📧 Envio em Massa de Cartas de VT</h3>
-            <p style="color:#94A3B8;font-size:13px;margin:0;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                    border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 4px;color:#444c9b;">📧 Envio em Massa de Cartas de VT</h3>
+            <p style="color:#666666;font-size:15px;margin:0;">
                 Selecione os funcionários e envie as cartas personalizadas automaticamente
             </p>
         </div>
         """, unsafe_allow_html=True)
 
         # Busca funcionários pendentes (status != Implantado)
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         df_pendentes = pd.read_sql_query("""
             SELECT id, nome, cpf, email, status_rota, cep_casa, cep_trabalho, matricula
             FROM jovens_rotas 
@@ -490,18 +557,18 @@ if menu == "Dashboard Principal":
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
                 <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
                             border-radius:10px;padding:16px;text-align:center;">
-                    <p style="color:#60A5FA;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Total Pendentes</p>
-                    <p style="color:#E2E8F0;font-size:28px;font-weight:800;margin:0;">{len(df_pendentes)}</p>
+                    <p style="color:#60A5FA;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Total Pendentes</p>
+                    <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">{len(df_pendentes)}</p>
                 </div>
                 <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
                             border-radius:10px;padding:16px;text-align:center;">
-                    <p style="color:#10B981;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Com E-mail</p>
-                    <p style="color:#E2E8F0;font-size:28px;font-weight:800;margin:0;">{len(df_com_email)}</p>
+                    <p style="color:#10B981;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Com E-mail</p>
+                    <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">{len(df_com_email)}</p>
                 </div>
                 <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
                             border-radius:10px;padding:16px;text-align:center;">
-                    <p style="color:#EF4444;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Sem E-mail</p>
-                    <p style="color:#E2E8F0;font-size:28px;font-weight:800;margin:0;">{len(df_sem_email)}</p>
+                    <p style="color:#EF4444;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Sem E-mail</p>
+                    <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">{len(df_sem_email)}</p>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -512,16 +579,16 @@ if menu == "Dashboard Principal":
                         st.markdown(f"""
                         <div style="background:rgba(239,68,68,0.05);border-left:3px solid #EF4444;
                                     padding:10px 14px;margin-bottom:8px;border-radius:0 6px 6px 0;">
-                            <p style="margin:0;color:#E2E8F0;font-size:14px;">
+                            <p style="margin:0;color:#E2E8F0;font-size:16px;">
                                 <strong>#{row['id']}</strong> - {row['nome']} 
-                                <span style="color:#64748B;font-size:12px;">(CPF: {str(row['cpf']).zfill(11)})</span>
+                                <span style="color:#64748B;font-size:16px;">(CPF: {str(row['cpf']).zfill(11)})</span>
                             </p>
                         </div>
                         """, unsafe_allow_html=True)
 
             if len(df_com_email) > 0:
-                st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
-                st.markdown("<p style='color:#00D4FF;font-size:14px;font-weight:600;margin-bottom:12px;'>Selecione os funcionários para envio:</p>", unsafe_allow_html=True)
+                st.markdown("<hr style='border-color:#E2E8F0;margin:20px 0;'>", unsafe_allow_html=True)
+                st.markdown("<p style='color:#444c9b;font-size:16px;font-weight:600;margin-bottom:12px;'>Selecione os funcionários para envio:</p>", unsafe_allow_html=True)
 
                 # Opção de selecionar todos
                 selecionar_todos = st.checkbox("✅ Selecionar todos", value=False)
@@ -542,12 +609,12 @@ if menu == "Dashboard Principal":
                                 funcionarios_selecionados.append(row['id'])
                         with col_info:
                             st.markdown(f"""
-                            <div style="background:rgba(13,17,23,0.6);border:1px solid rgba(0,212,255,0.15);
-                                        border-radius:8px;padding:12px;margin-bottom:8px;">
-                                <p style="margin:0;color:#E2E8F0;font-size:14px;">
+                            <div style="background:#FFFFFF;border:1px solid #E5E7EB;
+                                        border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                <p style="margin:0;color:#333333;font-size:16px;">
                                     <strong>#{row['id']}</strong> - {row['nome']}
                                 </p>
-                                <p style="margin:4px 0 0;color:#64748B;font-size:12px;">
+                                <p style="margin:4px 0 0;color:#666666;font-size:16px;">
                                     CPF: {cpf_mask} · E-mail: {row['email']} · Status: {row['status_rota'] or 'Pendente'}
                                 </p>
                             </div>
@@ -560,7 +627,7 @@ if menu == "Dashboard Principal":
                     st.markdown(f"""
                     <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
                                 border-radius:10px;padding:16px;margin-bottom:16px;text-align:center;">
-                        <p style="color:#60A5FA;font-size:14px;margin:0;">
+                        <p style="color:#60A5FA;font-size:16px;margin:0;">
                             <strong>{len(funcionarios_selecionados)}</strong> funcionário(s) selecionado(s) para envio
                         </p>
                     </div>
@@ -583,7 +650,7 @@ if menu == "Dashboard Principal":
                         <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.3);
                                     border-radius:12px;padding:20px;margin-bottom:20px;">
                             <h4 style="margin:0 0 8px;color:#A78BFA;">⚡ Processamento em Andamento</h4>
-                            <p style="color:#94A3B8;font-size:13px;margin:0;">
+                            <p style="color:#94A3B8;font-size:15px;margin:0;">
                                 Aguarde enquanto as cartas são geradas e enviadas...
                             </p>
                         </div>
@@ -601,7 +668,7 @@ if menu == "Dashboard Principal":
                         for idx, func_id in enumerate(st.session_state.ids_para_envio):
                             try:
                                 # Busca dados do funcionário
-                                conexao = sqlite3.connect('mobilidade_renapsi.db')
+                                conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                                 df_func = pd.read_sql_query(
                                     "SELECT * FROM jovens_rotas WHERE id = ?", 
                                     conexao, 
@@ -623,7 +690,7 @@ if menu == "Dashboard Principal":
                                 cep_trab = dados['cep_trabalho']
 
                                 status_text.markdown(f"""
-                                <p style="color:#60A5FA;font-size:14px;">
+                                <p style="color:#60A5FA;font-size:16px;">
                                     📤 Processando <strong>{nome}</strong> ({idx + 1}/{total})...
                                 </p>
                                 """, unsafe_allow_html=True)
@@ -716,11 +783,11 @@ if menu == "Dashboard Principal":
                             <h3 style="margin:0 0 12px;color:#10B981;">✅ Envio Concluído!</h3>
                             <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
                                 <div>
-                                    <p style="color:#64748B;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Enviados com Sucesso</p>
+                                    <p style="color:#64748B;font-size:14px;margin:0 0 4px;text-transform:uppercase;">Enviados com Sucesso</p>
                                     <p style="color:#10B981;font-size:36px;font-weight:800;margin:0;">{sucessos}</p>
                                 </div>
                                 <div>
-                                    <p style="color:#64748B;font-size:12px;margin:0 0 4px;text-transform:uppercase;">Falhas</p>
+                                    <p style="color:#64748B;font-size:14px;margin:0 0 4px;text-transform:uppercase;">Falhas</p>
                                     <p style="color:#EF4444;font-size:36px;font-weight:800;margin:0;">{len(falhas)}</p>
                                 </div>
                             </div>
@@ -732,10 +799,10 @@ if menu == "Dashboard Principal":
                             st.markdown(f"""
                             <div style="background:rgba(16,185,129,0.08);border-left:4px solid #10B981;
                                         border-radius:0 8px 8px 0;padding:16px;margin-bottom:16px;">
-                                <p style="color:#10B981;font-size:14px;font-weight:600;margin:0 0 8px;">
+                                <p style="color:#10B981;font-size:16px;font-weight:600;margin:0 0 8px;">
                                     ✅ {sucessos} e-mail(s) enviado(s) com sucesso
                                 </p>
-                                <p style="color:#94A3B8;font-size:12px;margin:0;">
+                                <p style="color:#94A3B8;font-size:14px;margin:0;">
                                     Os funcionários receberão suas cartas de VT personalizadas em breve.
                                 </p>
                             </div>
@@ -747,7 +814,7 @@ if menu == "Dashboard Principal":
                                 st.markdown(f"""
                                 <div style="background:rgba(239,68,68,0.08);border-left:4px solid #EF4444;
                                             border-radius:0 8px 8px 0;padding:16px;margin-bottom:16px;">
-                                    <p style="color:#EF4444;font-size:14px;font-weight:600;margin:0 0 12px;">
+                                    <p style="color:#EF4444;font-size:16px;font-weight:600;margin:0 0 12px;">
                                         ⚠️ Os seguintes funcionários não receberam o e-mail:
                                     </p>
                                 """, unsafe_allow_html=True)
@@ -765,7 +832,7 @@ if menu == "Dashboard Principal":
                                 st.markdown("""
                                 <div style="background:rgba(239,68,68,0.05);border-left:4px solid #EF4444;
                                             border-radius:0 8px 8px 0;padding:12px;margin-top:12px;">
-                                    <p style="color:#94A3B8;font-size:12px;margin:0;">
+                                    <p style="color:#94A3B8;font-size:14px;margin:0;">
                                         <strong>Ação recomendada:</strong> Verifique os e-mails cadastrados e tente novamente.
                                     </p>
                                 </div>
@@ -781,55 +848,70 @@ if menu == "Dashboard Principal":
                     st.info("👆 Selecione pelo menos um funcionário para enviar")
 
     # ── Gráficos ──
+
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+    try:
+        df_contest = pd.read_sql_query("SELECT * FROM contestacoes", conexao)
+        qtd_resolvidas = len(df_contest[df_contest['status'] == 'Resolvido'])
+        qtd_pendentes = len(df_contest[df_contest['status'] == 'Pendente'])
+    except Exception:
+        df_contest = pd.DataFrame(columns=['id', 'data_geracao', 'nome_jovem', 'motivo', 'status', 'tratativa'])
+        qtd_resolvidas = 0
+        qtd_pendentes = 0
+    conexao.close()
+    
     col_g1, col_g2, col_g3, col_g4 = st.columns(4)
 
-    CORES_NEON = ['#00D4FF', '#7C3AED', '#10B981', '#F59E0B']
+    CORES_RENAPSI = ['#f8ae28', '#444c9b', '#64748B', '#F59E0B']  # Laranja, Azul, Cinza, Amarelo
 
     with col_g1:
         st.markdown("""
-        <div style="background:rgba(13,17,23,0.7);border:1px solid rgba(0,212,255,0.15);
-                    border-radius:12px;padding:16px;text-align:center;">
-            <p style="color:#64748B;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;
+                    border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <p style="color:#666666;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px;">
                 Implantações
             </p>
-            <p style="color:#334155;font-size:13px;margin:0;">Nenhuma no período</p>
+            <p style="color:#666666;font-size:13px;margin:0;">Nenhuma no período</p>
         </div>
         """, unsafe_allow_html=True)
 
     with col_g2:
         st.markdown(f"""
-        <p style="color:#94A3B8;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">
+        <p style="color:#94A3B8;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">
             Contestações ({qtd_resolvidas}/{total_contestacoes})
         </p>
         """, unsafe_allow_html=True)
         if total_contestacoes == 0:
             st.markdown("""
-            <div style="background:rgba(13,17,23,0.7);border:1px solid rgba(0,212,255,0.15);
-                        border-radius:12px;padding:16px;text-align:center;">
-                <p style="color:#334155;font-size:13px;margin:0;">Nenhuma contestação</p>
+            <div style="background:#FFFFFF;border:1px solid #E5E7EB;
+                        border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                <p style="color:#666666;font-size:13px;margin:0;">Nenhuma contestação</p>
             </div>
             """, unsafe_allow_html=True)
         else:
             fig = px.pie(values=[qtd_resolvidas, qtd_pendentes], names=['Resolvidas','Pendentes'], hole=0.72)
-            fig.update_traces(textinfo='none', marker=dict(colors=['#00D4FF','#1E293B']), hoverinfo="skip")
+            fig.update_traces(textinfo='none', marker=dict(colors=['#444c9b','#E5E7EB']), hoverinfo="skip")
             fig.update_layout(showlegend=False, margin=dict(t=5,b=5,l=5,r=5), height=160,
-                              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                              font=dict(size=13, color='#333333'))
             st.plotly_chart(fig, use_container_width=True, key="graf_contest")
 
     with col_g3:
-        st.markdown("<p style='color:#94A3B8;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;'>Por Local de Trabalho</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#666666;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;'>Por Local de Trabalho</p>", unsafe_allow_html=True)
         fig2 = px.pie(values=[10, 0], names=['SP','Outros'], hole=0.72)
-        fig2.update_traces(textinfo='none', marker=dict(colors=['#7C3AED','#1E293B']), hoverinfo="skip")
+        fig2.update_traces(textinfo='none', marker=dict(colors=['#f8ae28','#E5E7EB']), hoverinfo="skip")
         fig2.update_layout(showlegend=False, margin=dict(t=5,b=5,l=5,r=5), height=160,
-                           paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                           paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                           font=dict(size=13, color='#333333'))
         st.plotly_chart(fig2, use_container_width=True, key="graf_local")
 
     with col_g4:
-        st.markdown("<p style='color:#94A3B8;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;'>Por UF</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color:#666666;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;'>Por UF</p>", unsafe_allow_html=True)
         fig3 = px.pie(values=[10, 0], names=['SP','Outros'], hole=0.72)
-        fig3.update_traces(textinfo='none', marker=dict(colors=['#10B981','#1E293B']), hoverinfo="skip")
+        fig3.update_traces(textinfo='none', marker=dict(colors=['#444c9b','#E5E7EB']), hoverinfo="skip")
         fig3.update_layout(showlegend=False, margin=dict(t=5,b=5,l=5,r=5), height=160,
-                           paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                           paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                           font=dict(size=13, color='#333333'))
         st.plotly_chart(fig3, use_container_width=True, key="graf_uf")
 
     st.markdown("<hr style='border-color:rgba(0,212,255,0.1);'>", unsafe_allow_html=True)
@@ -848,19 +930,19 @@ if menu == "Dashboard Principal":
                 else:
                     for _, row in df_pend.iterrows():
                         st.markdown(f"""
-                        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(239,68,68,0.4);
+                        <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #EF4444;
                                     border-radius:12px;padding:20px;margin-bottom:12px;
-                                    box-shadow:0 0 16px rgba(239,68,68,0.1);">
+                                    box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                                 <span style="color:#EF4444;font-weight:700;font-size:15px;">Consulta #{row['id']}</span>
                                 <span style="background:rgba(239,68,68,0.15);color:#EF4444;padding:2px 8px;
-                                             border-radius:20px;font-size:11px;">PENDENTE</span>
+                                             border-radius:20px;font-size:13px;">PENDENTE</span>
                             </div>
-                            <p style="color:#64748B;font-size:13px;margin:0 0 8px;">
-                                {row['data_geracao']} · <strong style="color:#94A3B8;">{row['nome_jovem']}</strong>
+                            <p style="color:#666666;font-size:13px;margin:0 0 8px;">
+                                {row['data_geracao']} · <strong style="color:#333333;">{row['nome_jovem']}</strong>
                             </p>
                             <div style="background:rgba(239,68,68,0.05);border-left:3px solid #EF4444;
-                                        padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#CBD5E1;">
+                                        padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#333333;">
                                 {row['motivo']}
                             </div>
                         </div>
@@ -885,17 +967,17 @@ if menu == "Dashboard Principal":
                 else:
                     for _, row in df_res.iterrows():
                         st.markdown(f"""
-                        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(16,185,129,0.3);
-                                    border-radius:12px;padding:20px;margin-bottom:12px;">
+                        <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #10B981;
+                                    border-radius:12px;padding:20px;margin-bottom:12px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                                 <span style="color:#10B981;font-weight:700;font-size:15px;">Consulta #{row['id']}</span>
                                 <span style="background:rgba(16,185,129,0.15);color:#10B981;padding:2px 8px;
-                                             border-radius:20px;font-size:11px;">RESOLVIDO</span>
+                                             border-radius:20px;font-size:13px;">RESOLVIDO</span>
                             </div>
-                            <p style="color:#64748B;font-size:13px;margin:0 0 6px;">{row['data_geracao']} · <strong style="color:#94A3B8;">{row['nome_jovem']}</strong></p>
-                            <p style="color:#64748B;font-size:13px;margin:0 0 8px;"><strong>Motivo:</strong> {row['motivo']}</p>
+                            <p style="color:#666666;font-size:13px;margin:0 0 6px;">{row['data_geracao']} · <strong style="color:#333333;">{row['nome_jovem']}</strong></p>
+                            <p style="color:#666666;font-size:13px;margin:0 0 8px;"><strong>Motivo:</strong> {row['motivo']}</p>
                             <div style="background:rgba(16,185,129,0.08);border-left:3px solid #10B981;
-                                        padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#CBD5E1;">
+                                        padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#333333;">
                                 <strong>Tratativa:</strong> {row.get('tratativa','')}
                             </div>
                         </div>
@@ -912,11 +994,11 @@ if menu == "Dashboard Principal":
 # ══════════════════════════════════════════════════════════════════════════════
 elif menu == "Pesquisar Consultas":
 
-    # Recupera estado após F5
+   # Recupera estado após F5
     if 'id_consulta' in st.query_params and st.session_state.get('resultado_busca') is None:
         id_salvo = st.query_params['id_consulta']
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
-        df_salvo = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_salvo),))
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+        df_salvo = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(float(id_salvo)),))
         conexao.close()
         if not df_salvo.empty:
             st.session_state.resultado_busca = df_salvo
@@ -964,23 +1046,23 @@ elif menu == "Pesquisar Consultas":
         # ── MODO EDIÇÃO ──
         if st.session_state.modo_edicao:
             st.markdown("""
-            <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.2);
-                        border-radius:14px;padding:24px;margin-bottom:20px;">
-                <h3 style="margin:0 0 4px;color:#00D4FF;">✏️ Editar Dados da Consulta</h3>
-                <p style="color:#64748B;font-size:13px;margin:0;">Atualize as informações do funcionário</p>
+            <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                        border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                <h3 style="margin:0 0 4px;color:#444c9b;">✏️ Editar Dados da Consulta</h3>
+                <p style="color:#666666;font-size:13px;margin:0;">Atualize as informações do funcionário</p>
             </div>
             """, unsafe_allow_html=True)
 
             col_e1, col_e2 = st.columns(2)
             with col_e1:
-                st.markdown("<p style='color:#00D4FF;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;'>👤 Dados do Funcionário</p>", unsafe_allow_html=True)
+                st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>👤 Dados do Funcionário</p>", unsafe_allow_html=True)
                 mat_input    = st.text_input("Matrícula", value=matricula_exib if matricula_exib != 'Não informada' else '')
                 nome_input   = st.text_input("Nome", value=nome_jovem, disabled=True)
                 email_input  = st.text_input("E-mail", value=email_jovem or '')
                 celular_input= st.text_input("Celular", value=celular_jovem or '')
 
             with col_e2:
-                st.markdown("<p style='color:#00D4FF;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;'>🏠 Endereço</p>", unsafe_allow_html=True)
+                st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏠 Endereço</p>", unsafe_allow_html=True)
                 cep_input = st.text_input("CEP", value=cep_casa)
                 c_rua, c_num = st.columns([3, 1])
                 
@@ -993,7 +1075,7 @@ elif menu == "Pesquisar Consultas":
                 coord_atual = st.session_state.get('coord_temp', coordenadas_casa)
                 coord_input = st.text_input("Coordenadas", value=coord_atual or '')
                 
-                if st.button("🔍 Buscar Coordenadas Reais", use_container_width=True):
+                if st.button("🔍 Buscar Coordenadas Reais", type="secondary", use_container_width=True):
                     if cep_input and len(cep_input.strip()) == 8:
                         end_completo = f"CEP {cep_input}, {num_input if num_input else ''}, São Paulo, Brasil"
                         lat, lon = obter_coordenadas_reais(end_completo)
@@ -1055,7 +1137,7 @@ elif menu == "Pesquisar Consultas":
                             
                             # Recarrega os dados do banco
                             with st.spinner("Recarregando dados..."):
-                                conexao = sqlite3.connect('mobilidade_renapsi.db')
+                                conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                                 df_atualizado = pd.read_sql_query(
                                     "SELECT * FROM jovens_rotas WHERE id = ?", 
                                     conexao, 
@@ -1140,16 +1222,16 @@ elif menu == "Pesquisar Consultas":
                 status_bg = "148,163,184"
             
             st.markdown(f"""
-            <div style="background:rgba(13,17,23,0.85);border:1px solid rgba(0,212,255,0.2);
+            <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
                         border-radius:16px;padding:28px;margin-bottom:20px;
-                        box-shadow:0 4px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.03);">
+                        box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                 <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
-                    <div style="background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(124,58,237,0.15));
-                                border:1px solid rgba(0,212,255,0.3);border-radius:50%;width:52px;height:52px;
+                    <div style="background:linear-gradient(135deg,rgba(68,76,155,0.15),rgba(248,174,40,0.15));
+                                border:1px solid #E5E7EB;border-radius:50%;width:52px;height:52px;
                                 display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>
                     <div>
-                        <h2 style="margin:0;font-size:22px;color:#E2E8F0;">Consulta #{id_selecionado}</h2>
-                        <p style="margin:0;color:#64748B;font-size:13px;">RENAPSI · SÃO PAULO · C-T</p>
+                        <h2 style="margin:0;font-size:22px;color:#333333;">Consulta #{id_selecionado}</h2>
+                        <p style="margin:0;color:#666666;font-size:13px;">RENAPSI · SÃO PAULO · C-T</p>
                     </div>
                     <span style="margin-left:auto;background:rgba({status_bg},0.15);
                                  color:{status_color};padding:6px 14px;border-radius:20px;
@@ -1158,24 +1240,24 @@ elif menu == "Pesquisar Consultas":
                     </span>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
-                    <div style="border-right:1px solid rgba(0,212,255,0.1);padding-right:20px;">
-                        <p style="color:#00D4FF;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Dados do Funcionário</p>
-                        <p style="margin:5px 0;font-size:14px;color:#CBD5E1;"><span style="color:#64748B;">CPF:</span> {cpf_cru}</p>
-                        <p style="margin:5px 0;font-size:14px;color:#CBD5E1;"><span style="color:#64748B;">Matrícula:</span> {matricula_exib}</p>
-                        <p style="margin:5px 0;font-size:14px;color:#CBD5E1;"><span style="color:#64748B;">Nome:</span> {nome_jovem}</p>
-                        {f'<p style="margin:5px 0;font-size:14px;color:#CBD5E1;"><span style="color:#64748B;">E-mail:</span> {email_jovem}</p>' if email_jovem else ''}
-                        {f'<p style="margin:5px 0;font-size:14px;color:#CBD5E1;"><span style="color:#64748B;">Celular:</span> {celular_jovem}</p>' if celular_jovem else ''}
+                    <div style="border-right:1px solid #E5E7EB;padding-right:20px;">
+                        <p style="color:#444c9b;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Dados do Funcionário</p>
+                        <p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">CPF:</span> {cpf_cru}</p>
+                        <p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">Matrícula:</span> {matricula_exib}</p>
+                        <p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">Nome:</span> {nome_jovem}</p>
+                        {f'<p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">E-mail:</span> {email_jovem}</p>' if email_jovem else ''}
+                        {f'<p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">Celular:</span> {celular_jovem}</p>' if celular_jovem else ''}
                     </div>
-                    <div style="border-right:1px solid rgba(0,212,255,0.1);padding-right:20px;">
-                        <p style="color:#00D4FF;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Endereço Residencial</p>
-                        <span style="background:rgba(16,185,129,0.1);color:#10B981;padding:2px 8px;font-size:10px;border-radius:20px;font-weight:600;">● BAIXO RISCO</span>
-                        <p style="margin:8px 0 5px;font-size:14px;color:#CBD5E1;"><span style="color:#64748B;">CEP:</span> {cep_casa}</p>
-                        <p style="margin:5px 0;font-size:14px;color:#CBD5E1;line-height:1.5;">{rua_casa}{f', {numero_casa}' if numero_casa else ''}<br><span style="color:#64748B;">{bairro_cidade_casa}</span></p>
+                    <div style="border-right:1px solid #E5E7EB;padding-right:20px;">
+                        <p style="color:#444c9b;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Endereço Residencial</p>
+                        <span style="background:rgba(16,185,129,0.1);color:#10B981;padding:2px 8px;font-size:12px;border-radius:20px;font-weight:600;">● BAIXO RISCO</span>
+                        <p style="margin:8px 0 5px;font-size:14px;color:#333333;"><span style="color:#666666;">CEP:</span> {cep_casa}</p>
+                        <p style="margin:5px 0;font-size:14px;color:#333333;line-height:1.5;">{rua_casa}{f', {numero_casa}' if numero_casa else ''}<br><span style="color:#666666;">{bairro_cidade_casa}</span></p>
                     </div>
                     <div>
-                        <p style="color:#00D4FF;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Local de Trabalho</p>
-                        <p style="margin:5px 0;font-size:14px;color:#CBD5E1;"><span style="color:#64748B;">CEP:</span> {cep_trab}</p>
-                        <p style="margin:5px 0;font-size:14px;color:#CBD5E1;line-height:1.5;">{rua_trab}<br><span style="color:#64748B;">{bairro_cidade_trab}</span></p>
+                        <p style="color:#444c9b;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Local de Trabalho</p>
+                        <p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">CEP:</span> {cep_trab}</p>
+                        <p style="margin:5px 0;font-size:14px;color:#333333;line-height:1.5;">{rua_trab}<br><span style="color:#666666;">{bairro_cidade_trab}</span></p>
                     </div>
                 </div>
             </div>
@@ -1187,7 +1269,7 @@ elif menu == "Pesquisar Consultas":
             ja_implantado = (status_rota_raw == "Implantado")
             
             with col_b1:
-                if st.button("🔄 Recalcular", disabled=ja_implantado, use_container_width=True):
+                if st.button("🔄 Recalcular", type="secondary", use_container_width=True):
                     # Limpa TUDO relacionado à rota para forçar recálculo completo
                     print("\n" + "="*60)
                     print("🔄 RECALCULANDO ROTA - LIMPANDO CACHE")
@@ -1205,19 +1287,19 @@ elif menu == "Pesquisar Consultas":
                     st.rerun()
                     
             with col_b2:
-                if st.button("✉️ Enviar Carta", use_container_width=True):
+                if st.button("✉️ Enviar Carta", type="secondary", use_container_width=True):
                     st.session_state.mostrar_modal_email = not st.session_state.get('mostrar_modal_email', False)
                     
             with col_b3:
-                if st.button("⚠️ Contestação", use_container_width=True):
+                if st.button("⚠️ Contestação", type="secondary", use_container_width=True):
                     st.session_state.modo_contestacao = not st.session_state.get('modo_contestacao', False)
                     
             with col_b4:
-                if st.button("✍️ Rota Manual", use_container_width=True):
+                if st.button("✍️ Rota Manual", type="secondary", use_container_width=True):
                     st.session_state.modo_rota_manual = not st.session_state.get('modo_rota_manual', False)
                     
             with col_b5:
-                if st.button("📋 Implantados", use_container_width=True):
+                if st.button("📋 Implantados", type="secondary", use_container_width=True):
                     st.session_state.modo_implantacao = not st.session_state.get('modo_implantacao', False)
 
             if st.session_state.get('mostrar_modal_email'):
@@ -1330,7 +1412,7 @@ elif menu == "Pesquisar Consultas":
                             registrar_contestacao(nome=nome_jovem, cid_res="São Paulo", cid_trab="São Paulo", motivo=motivo_input)
                             
                             # Atualiza status para CONTESTADA
-                            conexao = sqlite3.connect('mobilidade_renapsi.db')
+                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                             cursor = conexao.cursor()
                             cursor.execute("UPDATE jovens_rotas SET status_rota = 'Contestada' WHERE id = ?", (id_selecionado,))
                             conexao.commit()
@@ -1399,7 +1481,7 @@ elif menu == "Pesquisar Consultas":
                                 novo_status = "Otimizado"
                             
                             # Atualiza no banco
-                            conexao = sqlite3.connect('mobilidade_renapsi.db')
+                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                             cursor = conexao.cursor()
                             cursor.execute(
                                 "UPDATE jovens_rotas SET status_rota = ? WHERE id = ?",
@@ -1515,7 +1597,7 @@ elif menu == "Pesquisar Consultas":
                                 st.success("✅ Rota manual salva com sucesso!")
                                 
                                 # Recarrega os dados
-                                conexao = sqlite3.connect('mobilidade_renapsi.db')
+                                conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                                 df_atualizado = pd.read_sql_query(
                                     "SELECT * FROM jovens_rotas WHERE id = ?", 
                                     conexao, 
@@ -1564,7 +1646,7 @@ elif menu == "Pesquisar Consultas":
             col_painel, col_mapa = st.columns([1, 2.8])
 
             with col_painel:
-                st.markdown("<p style='color:#00D4FF;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;'>🗺️ Opções de Trajeto</p>", unsafe_allow_html=True)
+                st.markdown("<p style='color:#444c9b;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;'>🗺️ Opções de Trajeto</p>", unsafe_allow_html=True)
 
                 if st.session_state.get('rota_gerada') and 'rotas' in st.session_state.rota_gerada:
                     abas = st.tabs([r["modal"] for r in st.session_state.rota_gerada["rotas"]])
@@ -1572,25 +1654,26 @@ elif menu == "Pesquisar Consultas":
                         with aba:
                             rt = st.session_state.rota_gerada["rotas"][i]
                             st.markdown(f"""
-                            <div style="background:rgba(13,17,23,0.9);border:1px solid rgba(0,212,255,0.2);
+                            <div style="background:#f8ae28;border:1px solid #E5E7EB;
                                         border-radius:12px;padding:18px;margin-top:8px;
-                                        box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                                        box-shadow:0 2px 4px rgba(0,0,0,0.1);">
                                 <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;">
-                                    <div style="background:linear-gradient(135deg,#00D4FF,#7C3AED);border-radius:50%;
+                                    <div style="background:#FFFFFF;border-radius:50%;
                                                 min-width:40px;height:40px;display:flex;align-items:center;
-                                                justify-content:center;font-weight:800;color:#0A0E1A;font-size:13px;">SP</div>
+                                                justify-content:center;font-weight:800;color:#f8ae28;font-size:13px;
+                                                border:2px solid #FFFFFF;">SP</div>
                                     <div>
-                                        <p style="margin:0;font-weight:700;color:#E2E8F0;font-size:14px;">{rt['trajeto']}</p>
-                                        <p style="margin:4px 0;font-size:12px;color:#64748B;">{rt['bilhete']}</p>
-                                        <p style="margin:4px 0;font-size:12px;color:#A78BFA;font-weight:600;">⏱ {rt['tempo']}</p>
+                                        <p style="margin:0;font-weight:700;color:#FFFFFF;font-size:14px;">{rt['trajeto']}</p>
+                                        <p style="margin:4px 0;font-size:12px;color:#FFFFFF;">{rt['bilhete']}</p>
+                                        <p style="margin:4px 0;font-size:12px;color:#FFFFFF;font-weight:600;">⏱ {rt['tempo']}</p>
                                     </div>
                                 </div>
-                                <div style="background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(124,58,237,0.15));
-                                            border:1px solid rgba(0,212,255,0.3);border-radius:8px;
+                                <div style="background:#FFFFFF;
+                                            border:1px solid #E5E7EB;border-radius:8px;
                                             text-align:center;padding:14px;
-                                            box-shadow:0 0 16px rgba(0,212,255,0.1);">
-                                    <p style="margin:0;color:#94A3B8;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;">VT Diário (Ida + Volta)</p>
-                                    <p style="margin:4px 0 0;color:#00D4FF;font-size:22px;font-weight:800;">R$ {rt['valor_diario']:.2f}</p>
+                                            box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                    <p style="margin:0;color:#666666;font-size:13px;text-transform:uppercase;letter-spacing:0.08em;">VT Diário (Ida + Volta)</p>
+                                    <p style="margin:4px 0 0;color:#f8ae28;font-size:26px;font-weight:800;">R$ {rt['valor_diario']:.2f}</p>
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
@@ -1599,67 +1682,62 @@ elif menu == "Pesquisar Consultas":
 
             with col_mapa:
                 if st.session_state.get('rota_gerada'):
-                    # Extrai coordenadas: [(lat_casa, lon_casa), (lat_trabalho, lon_trabalho)]
                     (lat_c, lon_c), (lat_t, lon_t) = st.session_state.rota_gerada['coords_reais']
-                    
-                    # DEBUG: Mostra coordenadas no console
-                    print(f"\n🗺️ RENDERIZANDO MAPA:")
-                    print(f"   Marcador C (Casa): LAT={lat_c}, LON={lon_c}")
-                    print(f"   Marcador T (Trabalho): LAT={lat_t}, LON={lon_t}")
-                    print(f"   Centro do mapa: LAT={(lat_c + lat_t) / 2}, LON={(lon_c + lon_t) / 2}\n")
                     
                     # Cria mapa centralizado no ponto médio entre Casa e Trabalho
                     m = folium.Map(
-                        location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2],  # [latitude, longitude]
-                        zoom_start=12, 
+                        location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2],
+                        zoom_start=13, 
                         control_scale=True
                     )
-                    folium.TileLayer('CartoDB dark_matter').add_to(m)
+                    
+                    # ── MUDANÇA 1: Estilo Colorido e Detalhado (OpenStreetMap) ──
+                    folium.TileLayer('OpenStreetMap').add_to(m)
 
-                    # Marcador C (CASA) - Azul - COORDENADAS: [latitude, longitude]
+                    # Marcador C (CASA) - Azul
                     folium.Marker(
-                        [lat_c, lon_c],  # [latitude, longitude] da CASA
+                        [lat_c, lon_c],
                         icon=folium.DivIcon(html="""
-                        <div style="background:linear-gradient(135deg,#00D4FF,#0EA5E9);width:44px;height:44px;
-                                    border-radius:50%;border:2px solid rgba(0,212,255,0.6);display:flex;
+                        <div style="background:linear-gradient(135deg,#00D4FF,#0EA5E9);width:36px;height:36px;
+                                    border-radius:50%;border:2px solid rgba(255,255,255,0.8);display:flex;
                                     align-items:center;justify-content:center;font-weight:800;color:#0A0E1A;
-                                    font-size:16px;box-shadow:0 0 16px rgba(0,212,255,0.6);">C</div>
-                    """), 
-                        tooltip=f"🏠 Casa (LAT: {lat_c:.4f}, LON: {lon_c:.4f})"
+                                    font-size:16px;box-shadow:0 0 12px rgba(0,212,255,0.8);">C</div>
+                    """, icon_anchor=(18, 18)), 
+                        tooltip="🏠 Residência"
                     ).add_to(m)
 
-                    # Marcador T (TRABALHO) - Roxo - COORDENADAS: [latitude, longitude]
+                    # Marcador T (TRABALHO) - Roxo
                     folium.Marker(
-                        [lat_t, lon_t],  # [latitude, longitude] do TRABALHO
+                        [lat_t, lon_t],
                         icon=folium.DivIcon(html="""
-                        <div style="background:linear-gradient(135deg,#7C3AED,#A855F7);width:44px;height:44px;
-                                    border-radius:50%;border:2px solid rgba(124,58,237,0.6);display:flex;
+                        <div style="background:linear-gradient(135deg,#7C3AED,#A855F7);width:36px;height:36px;
+                                    border-radius:50%;border:2px solid rgba(255,255,255,0.8);display:flex;
                                     align-items:center;justify-content:center;font-weight:800;color:white;
-                                    font-size:16px;box-shadow:0 0 16px rgba(124,58,237,0.6);">T</div>
-                    """), 
-                        tooltip=f"🏢 Trabalho (LAT: {lat_t:.4f}, LON: {lon_t:.4f})"
+                                    font-size:16px;box-shadow:0 0 12px rgba(124,58,237,0.8);">T</div>
+                    """, icon_anchor=(18, 18)), 
+                        tooltip="🏢 Trabalho"
                     ).add_to(m)
 
                     # Linha conectando Casa e Trabalho
                     folium.PolyLine(
-                        locations=[[lat_c, lon_c], [lat_t, lon_t]],  # [[lat_casa, lon_casa], [lat_trab, lon_trab]]
+                        locations=[[lat_c, lon_c], [lat_t, lon_t]],
                         color="#00D4FF", 
-                        weight=3, 
-                        opacity=0.7,
-                        dash_array="8 4"
+                        weight=4, 
+                        opacity=0.8,
+                        dash_array="8 8"
                     ).add_to(m)
 
-                    st_folium(m, height=500, use_container_width=True)
+                    # ── MUDANÇA 2: Altura aumentada para 700 pixels ──
+                    st_folium(m, height=700, use_container_width=True)
 
     # ── LISTA DE PESQUISA ────────────────────────────────────────────────────
     else:
         st.markdown("""
-        <h1 style="background:linear-gradient(135deg,#00D4FF,#7C3AED);
-                   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+        <h1 style="color:#1E293B;
                    font-size:26px;font-weight:800;margin-bottom:4px;">
             Pesquisar Consultas
         </h1>
-        <p style="color:#64748B;font-size:13px;margin-bottom:20px;">Localize aprendizes por CPF, nome ou matrícula</p>
+        <p style="color:#666666;font-size:13px;margin-bottom:20px;">Localize aprendizes por CPF, nome ou matrícula</p>
         """, unsafe_allow_html=True)
 
         modalidade_pesquisa = st.radio(
@@ -1677,7 +1755,7 @@ elif menu == "Pesquisar Consultas":
                 cpf_busca = st.text_input("CPF (apenas números)", max_chars=11, placeholder="00000000000")
                 if st.form_submit_button("Pesquisar", type="primary"):
                     try:
-                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                         # CPF está encriptado, então buscamos por ID ou nome
                         st.session_state.resultado_busca = pd.read_sql_query(
                             "SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(cpf_busca),))
@@ -1694,7 +1772,7 @@ elif menu == "Pesquisar Consultas":
                 nome_busca = st.text_input("Nome completo", placeholder="Digite o nome...")
                 if st.form_submit_button("Pesquisar", type="primary"):
                     try:
-                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                         st.session_state.resultado_busca = pd.read_sql_query(
                             "SELECT * FROM jovens_rotas WHERE nome LIKE ?", conexao, params=(f"%{nome_busca}%",))
                         if st.session_state.resultado_busca.empty:
@@ -1710,7 +1788,7 @@ elif menu == "Pesquisar Consultas":
                 mat_busca = st.text_input("Matrícula", placeholder="Apenas números")
                 if st.form_submit_button("Pesquisar", type="primary"):
                     try:
-                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                         st.session_state.resultado_busca = pd.read_sql_query(
                             "SELECT * FROM jovens_rotas WHERE matricula = ?", conexao, params=(mat_busca,))
                         if st.session_state.resultado_busca.empty:
@@ -1736,16 +1814,16 @@ elif menu == "Pesquisar Consultas":
                 data_rot       = dados_jovem.get('data_consulta') or "Pendente"
 
                 st.markdown(f"""
-                <div style="background:rgba(13,17,23,0.85);border:1px solid rgba(0,212,255,0.2);
-                            border-left:4px solid #00D4FF;border-radius:12px;padding:20px;
-                            margin-top:16px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                            border-radius:12px;padding:20px;
+                            margin-top:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                        <span style="color:#E2E8F0;font-weight:700;font-size:16px;">#{id_sel} — {nome_jov.upper()}</span>
-                        <span style="background:rgba(59,130,246,0.15);color:#3B82F6;padding:2px 8px;
-                                     border-radius:20px;font-size:10px;font-weight:700;">{status_exib2}</span>
+                        <span style="color:#333333;font-weight:700;font-size:16px;">#{id_sel} — {nome_jov.upper()}</span>
+                        <span style="background:rgba(68,76,155,0.15);color:#444c9b;padding:2px 8px;
+                                     border-radius:20px;font-size:12px;font-weight:700;">{status_exib2}</span>
                     </div>
-                    <p style="margin:3px 0;color:#64748B;font-size:12px;">PRÉ-ADM · Última roteirização: {data_rot}</p>
-                    <p style="margin:3px 0;color:#64748B;font-size:12px;">CPF: {cpf_mask} · Matrícula: {mat_exib}</p>
+                    <p style="margin:3px 0;color:#666666;font-size:14px;">PRÉ-ADM · Última roteirização: {data_rot}</p>
+                    <p style="margin:3px 0;color:#666666;font-size:12px;">CPF: {cpf_mask} · Matrícula: {mat_exib}</p>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -1762,24 +1840,22 @@ elif menu == "Pesquisar Consultas":
 elif menu == "Cadastrar Novo Jovem":
 
     st.markdown("""
-    <h1 style="background:linear-gradient(135deg,#00D4FF,#7C3AED);
-               -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-               font-size:26px;font-weight:800;margin-bottom:4px;">
-        Cadastrar Novo Aprendiz
-    </h1>
-    <p style="color:#64748B;font-size:13px;margin-bottom:20px;">
-        Adicione aprendizes manualmente ou via planilha Excel/CSV
-    </p>
-    <hr style="border-color:rgba(0,212,255,0.1);margin-bottom:20px;">
-    """, unsafe_allow_html=True)
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
+            <svg viewBox="0 0 378 708.82" width="40" height="75">
+              <defs><style>.s1-1{fill:#402fdd;} .s1-1,.s1-2,.s1-3,.s1-4{stroke-width:0px;} .s1-3{fill:#ed9e06;} .s1-4{fill:#231f20;}</style></defs>
+              <g><path class="s1-4" d="m201.23,256.63c8.57,0,8.59-13.95,0-13.95s-8.59,13.95,0,13.95h0Z"/><path class="s1-4" d="m201.23,288.82c8.57,0,8.59-13.95,0-13.95s-8.59,13.95,0,13.95h0Z"/><path class="s1-3" d="m27.95,115.09c-4.81-1.19-7.19-4.51-10.93-9.68-2.67-3.69-15.67-33.45-15.96-36.85-.14-1.68-2.65-9.29.59-10.35,4.11-1.34,9.39,16.78,11.07,19.92-1.85-3.65-6.71-16.39-7.43-18.49-1.42-4.14-2.47-11.71-.94-12.39,4.89-2.18,7.45,5.97,8.28,7.15,1.09,1.54,8.65,16.82,8.65,16.82.04-.02.05-.06.04-.09-2.25-6.72-7.49-14.79-10.33-21.76-1.63-4-1.48-7.65,0-8.57,4.75-2.95,16.1,20.1,17.54,23.6-1.2-3.54-3.73-8.21-4.93-11.75-.56-1.65-3.33-10.55-2.17-12.12,4.47-6.03,7.59,4.26,8.85,7.24.68,1.6,3.68,6.61,4.26,8.22,2.85,7.95,4.64,11.49,8.04,19.17,1.51-3.02,2.54-5.08,4.04-8.1,1.05-2.12,2.22-4.35,4.22-5.68,2-1.32,5.06-1.14,5.73.92.35,1.06-.03,2.29-.35,3.44-1.61,5.53-2.52,11.17-2.7,16.75-.15,4.56,2.15,11.74-1.31,15.19l8.14,11.57-25.53,18.44s-6.87-12.58-6.87-12.58Z"/><path class="s1-2" d="m5.79,62.37c2.67,6.4,5.49,12.73,8.45,18.97.35.72,1.36.09,1.03-.63-2.96-6.25-5.78-12.58-8.45-18.97-.13-.31-.55-.38-.81-.23-.3.18-.35.55-.21.85h0Z"/><path class="s1-2" d="m11.46,52.37c2.97,6.15,5.86,12.33,8.67,18.56.8,1.77,1.59,3.55,2.38,5.34.32.73,1.35.09,1.03-.63-2.76-6.25-5.6-12.46-8.53-18.64-.84-1.75-1.67-3.52-2.52-5.26-.35-.72-1.37-.08-1.03.63h0Z"/><path class="s1-2" d="m21.46,51.11c2.42,5.45,4.84,10.89,7.26,16.34.69,1.56,1.38,3.12,2.08,4.68.33.73,1.35.09,1.03-.63-2.42-5.45-4.84-10.89-7.26-16.34-.69-1.56-1.38-3.12-2.08-4.68-.33-.73-1.35-.09-1.03.63h0Z"/><path class="s1-3" d="m319.04,612.74c6.85,5.73,20.79,22.23,22.92,27.85,7.25,19.13,17.27,49.96,28.72,67.62.2-33.32,2.91-67.81,7.24-99.19-2.33-1.94-5.73-1.1-8.59-1.9-2.47-.69-4.46-2.57-6.35-4.39-3.82-3.68-8.96-15.05-8.96-15.05-11.16,7.22-24.83,18.45-35.99,25.67"/><path class="s1-3" d="m82.53,489.18c2.98,5.85,5.96,11.69,8.95,17.54,1.24,2.42,2.48,4.87,3.05,7.55.75,3.61.24,7.35-.26,11.01-3.08,22.8-4.79,45.82-5.1,68.85,22.78-24.49,31.45-59.7,49.35-88.35-2.32-3.46-6.97-4.51-9.27-7.99-1.04-1.57-1.47-3.48-1.89-5.34-1.23-5.44-2.45-10.86-3.67-16.3-13.35,4.19-26.69,8.38-40.04,12.57-.48.15-1.03.35-1.23.85s.36,1.19.76.85"/><path class="s1-1" d="m158.84,246.8c-31.59-9.26-62.23-24.23-86.25-47.75-21.46-21.01-36.85-48.01-49.67-75.77,14.31-6.57,27.91-14.85,40.47-24.6,2.91,5.74,5.87,11.49,9.71,16.58,4.01,5.33,8.89,9.83,13.74,14.32,27.52,25.51,54.58,51.57,81.17,78.15.98.98,2,2.03,2.36,3.4.31,1.15.11,2.38-.11,3.56-2.08,11.65-4.87,23.17-8.34,34.45-.8-1.13-1.86-2.06-3.06-2.69"/><path class="s1-2" d="m229.82,302.11c12.65,12.48,20.15,36.99,13.32,65.81-.59,2.5,23.42,71.58,44.73,110.05,21.31,38.47,47.52,73.64,73.64,108.66-7.79,5.4-15.71,10.58-23.75,15.55-7.13,4.41-24.21,12.48-24.21,12.48,0,0-76.44-93.06-108.1-169.29-13.55-32.6-33.19-62.28-43.59-96.14.64,2.78,1.27,5.57,1.91,8.35-23.55-5.11-45.97-6.95-68.45-15.94,6.5,47.81,18.15,89.46,36,133.95-18.34,5.57-36.67,11.15-55.01,16.72-14.36-24.69-22.31-52.85-30.02-80.65-9.89-35.68-19.72-73.14-12.65-109.55,1.49-7.67,3.88-15.49,9.02-21.16,9.96-11.02,26.56-10.59,40.86-8.47,15.33,2.27,30.52,5.56,45.45,9.86,5.87,1.69,11.73,3.55,17.18,6.39,5.25,2.74,18.5-7.15,23.66-4.23,20.38,11.5,32.31,15.36,54.43,8.26"/><path class="s1-3" d="m173.64,193.71c3.47-8.21,7.84-16.95,12.4-22.96-5.09,2.88-11.95.3-15.1-4.81s-1.08-16.84,1.29-22.39c2.36-5.55,3.03-10.43,7.66-14.06,2.95-2.32,7.91.93,11.53.23,3.62-.71,7.69.22,10.11,3.15,2.24,2.71,2.68,6.55,2.65,10.15-.04,5.09,3.57,3.76,2.8,8.79-2.12,13.86-8.62,34.1-10.74,47.96-.08.51-.22,1.11-.67,1.31-.32.14-.67.03-.99-.09-6.98-2.42-13.95-4.85-20.94-7.26"/><path class="s1-1" d="m230.92,303.11c-5.51-29.95-11.32-56.94-16.84-86.89-.75-4.08-9.13-28.62-9.13-28.62-9.9,6.51-25.51,3.74-27.1,1.4-2.53-3.72-7.98,10.31-11.8,12.47-6.46,3.67.44,11.7-2.61,18.75-5.22,12.1-7.65,25.29-9.68,38.41-1.53,9.86-2.84,19.76-3.95,29.69-.12,1.03-.23,2.09.05,3.09.45,1.68,1.86,2.85,3.24,3.84,12.7,9.03,28.66,11.29,43.98,11.26,11.35-.02,22.69-1.16,33.83-3.4"/></g>
+            </svg>
+            <h1 style="margin:0; color:#444c9b; font-size:28px;">Cadastrar Novo Jovem</h1>
+        </div>
+        """, unsafe_allow_html=True)
 
     tab_manual, tab_massa = st.tabs(["✍️ Cadastro Manual", "📂 Importação em Massa"])
 
     with tab_manual:
         st.markdown("""
-        <div style="background:rgba(13,17,23,0.7);border:1px solid rgba(0,212,255,0.15);
-                    border-radius:12px;padding:20px;margin-bottom:16px;">
-            <p style="color:#64748B;font-size:12px;margin:0;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;
+                    border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <p style="color:#666666;font-size:12px;margin:0;">
                 Preencha todos os campos. O CPF deve conter 11 dígitos numéricos.
             </p>
         </div>
@@ -1820,11 +1896,11 @@ elif menu == "Cadastrar Novo Jovem":
 
     with tab_massa:
         st.markdown("""
-        <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);
+        <div style="background:rgba(248,174,40,0.1);border:1px solid #E5E7EB;
                     border-radius:12px;padding:16px;margin-bottom:16px;">
-            <p style="color:#94A3B8;font-size:13px;margin:0;">
+            <p style="color:#666666;font-size:13px;margin:0;">
                 💡 A planilha deve conter as colunas:
-                <strong style="color:#00D4FF;">nome, cpf, cep_casa, cep_trabalho, matricula</strong>
+                <strong style="color:#f8ae28;">nome, cpf, cep_casa, cep_trabalho, matricula</strong>
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -1849,7 +1925,7 @@ elif menu == "Cadastrar Novo Jovem":
 
                     if st.button("🚀 Importar para a Base de Dados", type="primary"):
                         with st.spinner("Importando..."):
-                            conexao = sqlite3.connect('mobilidade_renapsi.db')
+                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                             df_limpo = df_upload[['nome','cpf','cep_casa','cep_trabalho','matricula','status_rota']]
                             df_limpo.to_sql('jovens_rotas', conexao, if_exists='append', index=False)
                             conexao.close()
@@ -1867,22 +1943,17 @@ elif menu == "Cadastrar Novo Jovem":
 elif menu == "Banco de Dados":
 
     st.markdown("""
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div>
-            <h1 style="margin:0;font-size:28px;background:linear-gradient(135deg,#00D4FF,#7C3AED);
-                       -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">
-                Gerenciamento de Banco de Dados
-            </h1>
-            <p style="margin:0;color:#64748B;font-size:13px;letter-spacing:0.05em;">
-                Visualize, edite e gerencie todos os registos da tabela jovens_rotas
-            </p>
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
+            <svg viewBox="0 0 603.93 431.92" width="60" height="43">
+              <defs><style>.s3-1{fill:#d42c4d;} .s3-2{fill:#231f20;} .s3-3{fill:#ed9e06;}</style></defs>
+              <g><path class="s3-3" d="M435.68,157.79c-14.38-13.19-35.99-16.6-54.92-11.83-18.92,4.77-35.34,16.81-48.67,31.06-22.83,24.4-38.08,58.56-31.1,91.24s41.76,59.61,73.83,50.23c-13.59,34.44-34.7,71.48-44.18,107.27,49.38,8.4,110.4,2.36,157.74-14-10.43-37.73-15.84-76.84-16.05-115.99-.14-27,2.16-54.26-2.74-80.81s-18.44-53.16-42.24-65.9"/><path d="M448.44,195.49c3.25,14.92,2.29,30.77-2.74,45.38,24.3-11.58,39.67-13.09,35.83-64.93-1.92-25.93-26.05-47.54-52.56-51.27-31.6-4.44-61.47,14.21-90.58,27.74-5.8,2.69-11.99,5.27-18.34,4.82s-12.77-4.95-13.01-11.13c-7.66,14.57-5.11,33.44,6.12,45.24,12.56,13.21,33.12,16.48,51.74,14.33s36.44-8.86,54.83-12.6c10.15-2.06,22.05-2.74,29.27,4.28"/><path class="s3-1" d="M358.23,359.33c-4.64,13.39,8.14,26.63,19.7,34.37,15.91,10.66,35.24,9.55,48.17,6.46,18.81-4.49,22.49-4.98,40.76-20.32,3.34-2.8,9.91-14.32,9.91-14.32,4.25-1.19,60.85-5.94,84.69,6.58,22.31,11.71,40.19,32.29,41.96,57.43,0,0,1.15-4.8,0,0-53.9,1.88-321.41,2.58-392.45,1.31,0,0,.21-17.77,20.37-35.66,29.63-26.3,59.03-36.46,92.57-36.3,12.86.06,25.49.19,34.32.45"/><path class="s3-3" d="M453.18,232.1c1.2-3.27,4.31-5.52,7.58-6.72,8.78-3.2,19.3.38,25.03,7.76,5.73,7.38,6.74,17.87,3.4,26.6-3.09,8.08-10.02,14.86-18.48,16.68-8.46,1.82-18.12-2.01-22.14-9.66"/><path class="s3-3" d="M131.58,119.01c-2-12.26.63-24.74,3.25-36.88,2.09-9.66,4.17-19.31,6.26-28.97,1.67-7.72,3.63-15.97,9.5-21.26s16.97-5.29,20.27,1.89c-13.34,25.91-24.15,53.12-32.23,81.12-2.92-.02-5.83-.04-8.75-.07"/><path class="s3-3" d="M115.62,76.65c-.77-14.86,5.31-29.14,11.73-42.56,2.52-5.26,5.2-10.62,9.51-14.56,4.3-3.94,10.62-6.22,16.1-4.22.66.24,1.32.55,1.79,1.07,1.22,1.34.79,3.43.3,5.17-7.8,27.6-13.85,55.7-18.09,84.06-12.99-10.5-23.97-23.47-32.18-38.01.98-.55,2.41.17,2.56,1.28"/><path class="s3-3" d="M124.86,177.55c11.67-14.04,20-54.48,14.64-71.93s-16.28-32.57-27.01-47.33c-6.55-9.01-13.1-18.02-19.65-27.03-7.64-10.51-18.7-25.49-27.33-29.46-10.43,9.26-7.36,21.07-4.14,28.51,3.22,7.45,8.81,13.56,13.37,20.27,6.06,8.92,10.36,19.04,12.56,29.6,1.62,7.79,2.04,16.23-1.43,23.38-3.47,7.16-11.78,12.41-19.43,10.25-7.92-2.24-12.06-11-13.54-19.1s-1.4-16.73-5.26-24c-5.55-10.43-19.43-15.51-30.4-11.12,11.9,26.61,5.29,58.12,14.19,85.88,5.09,15.89,15.32,30.08,28.78,39.94,3.27,2.4,6.76,4.56,10.57,5.94,16.69,6.05,35.78-3.76,52.77,1.41,3.89-12.36-2.57-2.85,1.32-15.21"/><path class="s3-1" d="M2.36,172.23c35.28-.27,102.3-4.07,137.58-3.28-2.52,66.19,7.33,132.83,28.91,195.45,8.61,24.98,19.61,41.59,30.86,66.44-55.56-1.58-99.86,2.9-148.45.18C14.93,352.15-7.59,258.49,2.36,172.23"/><path class="s3-2" d="M154.01,15.81c-4.83,13.22-9.01,26.67-12.12,40.4-3.09,13.64-5.11,27.48-6.48,41.39-.21,2.11,3.1,2.1,3.3,0,2.73-27.79,8.9-54.68,18.48-80.91.73-2-2.46-2.86-3.18-.88h0Z"/><path class="s3-2" d="M66.11,2.85c16.58,18.05,31.82,37.3,45.55,57.61,6.73,9.95,13.25,20.12,19.08,30.62,2.99,5.38,5.55,10.97,6.9,17,1.36,6.05,1.58,12.3,1.26,18.48-.74,14.24-3.97,28.38-8.93,41.73-.74,1.99,2.45,2.85,3.18.88,4.53-12.18,7.48-24.91,8.7-37.84,1.17-12.47.12-24.7-5.27-36.13-5.25-11.13-12.27-21.62-19.03-31.87-6.79-10.29-13.97-20.33-21.51-30.09-8.72-11.29-17.92-22.21-27.57-32.72-1.44-1.57-3.77.77-2.33,2.33h-.03Z"/><path class="s3-2" d="M58.79,8.1c1.8,5.68,4.92,11.7,10.71,14.14,4.95,2.09,10.85,1.09,14.16-3.3,1.28-1.7-1.59-3.34-2.85-1.67-2.54,3.38-7.7,3.34-11.1,1.4-4.15-2.38-6.35-7.08-7.74-11.45-.64-2.02-3.83-1.16-3.18.88h0Z"/></g>
+            </svg>
+            <h1 style="margin:0; color:#444c9b; font-size:28px;">Banco de Dados</h1>
         </div>
-    </div>
-    <hr style="border-color:rgba(0,212,255,0.1);margin-bottom:20px;">
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
     # Carrega dados do banco
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     df_banco = pd.read_sql_query("SELECT * FROM jovens_rotas", conexao)
     conexao.close()
 
@@ -1897,10 +1968,10 @@ elif menu == "Banco de Dados":
     # ── TAB 1: VISUALIZAR E EDITAR ──
     with tab_visualizar:
         st.markdown("""
-        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
-                    border-radius:14px;padding:20px;margin-bottom:20px;">
-            <h3 style="margin:0 0 4px;color:#00D4FF;">📊 Tabela de Jovens</h3>
-            <p style="color:#94A3B8;font-size:13px;margin:0;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                    border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 4px;color:#444c9b;">📊 Tabela de Jovens</h3>
+            <p style="color:#666666;font-size:13px;margin:0;">
                 Edite os dados diretamente na tabela. Clique em qualquer célula para modificar.
             </p>
         </div>
@@ -1926,7 +1997,7 @@ elif menu == "Banco de Dados":
                     df_editado['cpf'] = df_editado['cpf'].astype(str).str.zfill(11)
                     
                     # Salva no banco de dados
-                    conexao = sqlite3.connect('mobilidade_renapsi.db')
+                    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                     df_editado.to_sql('jovens_rotas', conexao, if_exists='replace', index=False)
                     conexao.close()
 
@@ -1952,10 +2023,10 @@ elif menu == "Banco de Dados":
     # ── TAB 2: ADICIONAR COLUNA ──
     with tab_adicionar_coluna:
         st.markdown("""
-        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
-                    border-radius:14px;padding:20px;margin-bottom:20px;">
-            <h3 style="margin:0 0 4px;color:#00D4FF;">➕ Adicionar Nova Coluna</h3>
-            <p style="color:#94A3B8;font-size:13px;margin:0;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                    border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 4px;color:#444c9b;">➕ Adicionar Nova Coluna</h3>
+            <p style="color:#666666;font-size:13px;margin:0;">
                 Expanda a estrutura da tabela com novas colunas.
             </p>
         </div>
@@ -2002,7 +2073,7 @@ elif menu == "Banco de Dados":
                     st.error("❌ Tipo de dados inválido.")
                 else:
                     try:
-                        conexao = sqlite3.connect('mobilidade_renapsi.db')
+                        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                         cursor = conexao.cursor()
                         # Agora é seguro usar f-string pois validamos rigorosamente
                         cursor.execute(f"ALTER TABLE jovens_rotas ADD COLUMN {nome_coluna} {tipo_coluna}")
@@ -2021,10 +2092,10 @@ elif menu == "Banco de Dados":
     # ── TAB 3: EXCLUIR REGISTRO ──
     with tab_excluir:
         st.markdown("""
-        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(239,68,68,0.3);
-                    border-radius:14px;padding:20px;margin-bottom:20px;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #EF4444;
+                    border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
             <h3 style="margin:0 0 4px;color:#EF4444;">🚨 Excluir Registro</h3>
-            <p style="color:#94A3B8;font-size:13px;margin:0;">
+            <p style="color:#666666;font-size:13px;margin:0;">
                 ⚠️ Esta ação é irreversível. Certifique-se antes de confirmar.
             </p>
         </div>
@@ -2038,7 +2109,7 @@ elif menu == "Banco de Dados":
             st.write("")
             if st.button("🚨 Excluir", type="secondary", use_container_width=True):
                 try:
-                    conexao = sqlite3.connect('mobilidade_renapsi.db')
+                    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                     cursor = conexao.cursor()
                     cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (id_excluir,))
                     conexao.commit()
@@ -2056,10 +2127,10 @@ elif menu == "Banco de Dados":
     # ── TAB 4: BACKUP ──
     with tab_backup:
         st.markdown("""
-        <div style="background:rgba(13,17,23,0.8);border:1px solid rgba(0,212,255,0.15);
-                    border-radius:14px;padding:20px;margin-bottom:20px;">
-            <h3 style="margin:0 0 4px;color:#00D4FF;">💾 Gerenciamento de Backup</h3>
-            <p style="color:#94A3B8;font-size:13px;margin:0;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                    border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 4px;color:#444c9b;">💾 Gerenciamento de Backup</h3>
+            <p style="color:#666666;font-size:13px;margin:0;">
                 Crie e gerencie cópias de segurança do banco de dados.
             </p>
         </div>
@@ -2096,9 +2167,9 @@ elif menu == "Banco de Dados":
 
         # Informações sobre backups
         st.markdown("""
-        <div style="background:rgba(13,17,23,0.6);border:1px solid rgba(0,212,255,0.15);
-                    border-radius:10px;padding:16px;">
-            <p style="color:#94A3B8;font-size:12px;margin:0;">
+        <div style="background:#FFFFFF;border:1px solid #E5E7EB;
+                    border-radius:10px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <p style="color:#666666;font-size:12px;margin:0;">
                 <strong>ℹ️ Informações:</strong><br>
                 • Backups automáticos são criados ao salvar alterações<br>
                 • Você pode criar backups manuais com timestamp<br>
@@ -2117,20 +2188,19 @@ elif menu == "Simulação: Portal do Jovem":
     st.markdown("""
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <div>
-            <h1 style="margin:0;font-size:28px;background:linear-gradient(135deg,#00D4FF,#7C3AED);
-                       -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">
+            <h1 style="margin:0;font-size:28px;color:#1E293B;font-weight:800;">
                 Portal do Jovem - Aceite de Rota
             </h1>
-            <p style="margin:0;color:#64748B;font-size:13px;letter-spacing:0.05em;">
+            <p style="margin:0;color:#666666;font-size:13px;letter-spacing:0.05em;">
                 Simulação da visão que o jovem teria ao receber o link de aceite
             </p>
         </div>
     </div>
-    <hr style="border-color:rgba(0,212,255,0.1);margin-bottom:20px;">
+    <hr style="border-color:#E2E8F0;margin-bottom:20px;">
     """, unsafe_allow_html=True)
 
     # Busca jovens com status Otimizado
-    with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+    with sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')) as conexao:
         df_otimizados = pd.read_sql_query(
             "SELECT id, nome, cep_casa, cep_trabalho FROM jovens_rotas WHERE status_rota = 'Otimizado'",
             conexao
@@ -2148,10 +2218,10 @@ elif menu == "Simulação: Portal do Jovem":
         )
 
         if jovem_selecionado:
-            id_jovem = int(jovem_selecionado.split(" - ")[0])
+            id_jovem = int(float(jovem_selecionado.split(" - ")[0]))
             
             # Busca dados completos do jovem
-            with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+            with sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')) as conexao:
                 df_jovem = pd.read_sql_query(
                     "SELECT * FROM jovens_rotas WHERE id = ?",
                     conexao,
@@ -2195,9 +2265,9 @@ elif menu == "Simulação: Portal do Jovem":
                     rota_principal = rota['rotas'][0]
                     
                     st.markdown("""
-                    <div style="background:rgba(13,17,23,0.9);border:1px solid rgba(0,212,255,0.2);
-                                border-radius:14px;padding:24px;margin-bottom:24px;">
-                        <h3 style="margin:0 0 16px;color:#00D4FF;">🗺️ Sua Rota de Transporte</h3>
+                    <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                                border-radius:14px;padding:24px;margin-bottom:24px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        <h3 style="margin:0 0 16px;color:#444c9b;">🗺️ Sua Rota de Transporte</h3>
                     """, unsafe_allow_html=True)
                     
                     # Origem e Destino
@@ -2261,7 +2331,7 @@ elif menu == "Simulação: Portal do Jovem":
                     
                     with col_nao_optante:
                         if st.button("❌ Não Optante", use_container_width=True, key=f"nao_optante_{id_jovem}"):
-                            with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+                            with sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')) as conexao:
                                 cursor = conexao.cursor()
                                 cursor.execute(
                                     "UPDATE jovens_rotas SET status_rota = 'Não Optante' WHERE id = ?",
@@ -2302,7 +2372,7 @@ elif menu == "Simulação: Portal do Jovem":
                                 if not nome_assinatura.strip():
                                     st.error("⚠️ Digite seu nome completo para assinar")
                                 else:
-                                    with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+                                    with sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')) as conexao:
                                         cursor = conexao.cursor()
                                         cursor.execute("""
                                             UPDATE jovens_rotas 
@@ -2359,7 +2429,7 @@ elif menu == "Simulação: Portal do Jovem":
                                     )
                                     
                                     # Atualiza status
-                                    with sqlite3.connect('mobilidade_renapsi.db') as conexao:
+                                    with sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')) as conexao:
                                         cursor = conexao.cursor()
                                         cursor.execute(
                                             "UPDATE jovens_rotas SET status_rota = 'Contestada' WHERE id = ?",
@@ -2379,3 +2449,49 @@ elif menu == "Simulação: Portal do Jovem":
                 
                 else:
                     st.warning("⚠️ Não foi possível calcular a rota para este jovem")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RODAPÉ INSTITUCIONAL — Aparece em todas as páginas
+# ══════════════════════════════════════════════════════════════════════════════
+st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("<hr style='border-color:#E2E8F0;margin:40px 0 20px;'>", unsafe_allow_html=True)
+
+# ── CSS separado do HTML (resolve o bug do Streamlit) ──
+st.markdown("""
+<style>
+.renapsi-social-link svg { fill: #64748B; transition: fill 0.25s ease; }
+.renapsi-social-link:hover svg { fill: #f8ae28; transform: scale(1.1); }
+.renapsi-social-link { text-decoration: none; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+</style>
+""", unsafe_allow_html=True)
+
+# ── HTML do rodapé (SEM ESPAÇOS NO INÍCIO PARA NÃO BUGAR O MARKDOWN) ──
+st.markdown("""
+<div style="text-align:center; padding:20px 0;">
+<div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-bottom:24px;">
+<span style="color:#64748B; font-size:18px; font-weight:400;">Siga-nos:</span>
+
+<a class="renapsi-social-link" href="https://www.instagram.com/renapsibr/" target="_blank" title="Instagram">
+<svg width="28" height="28" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+</a>
+
+<a class="renapsi-social-link" href="https://www.facebook.com/DemaJovembyRenapsi" target="_blank" title="Facebook">
+<svg width="28" height="28" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+</a>
+
+<a class="renapsi-social-link" href="https://www.linkedin.com/company/renapsibr" target="_blank" title="LinkedIn">
+<svg width="28" height="28" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+</a>
+
+<a class="renapsi-social-link" href="https://www.youtube.com/c/RenapsiBrasil" target="_blank" title="YouTube">
+<svg width="32" height="32" viewBox="0 0 24 24" style="margin-top:-2px;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+</a>
+
+</div>
+<p style="color:#94A3B8; font-size:12px; margin:0; line-height:1.6;">
+Copyright ©️ Renapsi - 2026. Todos os direitos reservados.<br>
+CNPJ 37.381.902/0001-25
+</p>
+</div>
+""", unsafe_allow_html=True)

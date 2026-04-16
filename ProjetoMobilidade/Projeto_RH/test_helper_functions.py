@@ -1,3 +1,4 @@
+import os
 """
 Test for helper functions: obter_status_consulta and verificar_token_usado.
 
@@ -20,7 +21,7 @@ def setup_test_data():
     
     inicializar_banco_completo()
     
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     # Generate unique identifiers to avoid conflicts
@@ -208,3 +209,4 @@ if __name__ == "__main__":
     print("=" * 60)
     
     sys.exit(0 if passed == total else 1)
+

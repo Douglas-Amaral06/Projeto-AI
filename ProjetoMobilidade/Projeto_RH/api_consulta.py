@@ -1,9 +1,10 @@
+import os
 import sqlite3
 import requests
 import time
 
 # 1. Conectando no seu banco de dados
-conexao = sqlite3.connect('mobilidade_renapsi.db')
+conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
 cursor = conexao.cursor()
 
 # 2. Puxando as informações do Porta-Malas

@@ -1,7 +1,8 @@
+import os
 import sqlite3
 
 #  Cria a conexão (se o arquivo não existir, o Python cria ele na hora)
-conexao = sqlite3.connect('mobilidade_renapsi.db')
+conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
 cursor = conexao.cursor()
 
 #  SQL para criar a tabela

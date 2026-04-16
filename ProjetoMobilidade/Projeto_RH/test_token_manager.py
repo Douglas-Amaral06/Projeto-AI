@@ -1,3 +1,4 @@
+import os
 """
 Testes para o módulo token_manager.
 
@@ -22,7 +23,7 @@ def test_gerar_token_basico():
     - Token é armazenado no banco
     """
     # Setup: criar consulta de teste
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     # Inserir consulta de teste
@@ -64,7 +65,7 @@ def test_gerar_token_basico():
         assert 29 <= diferenca.days <= 31, f"Expiração deve ser ~30 dias, é {diferenca.days} dias"
         
         # Verificar que token foi armazenado no banco
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute('''
             SELECT token, consulta_id, created_at, expires_at, used 
@@ -83,7 +84,7 @@ def test_gerar_token_basico():
         
     finally:
         # Cleanup: remover dados de teste
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute("DELETE FROM tokens_assinatura WHERE consulta_id = ?", (consulta_id,))
         cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (consulta_id,))
@@ -109,7 +110,7 @@ def test_gerar_token_unicidade():
     Testa que múltiplos tokens para a mesma consulta são únicos.
     """
     # Setup: criar consulta de teste
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     cursor.execute('''
@@ -135,7 +136,7 @@ def test_gerar_token_unicidade():
         
     finally:
         # Cleanup
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute("DELETE FROM tokens_assinatura WHERE consulta_id = ?", (consulta_id,))
         cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (consulta_id,))
@@ -153,7 +154,7 @@ def test_validar_token_valido():
     - Erro é None
     """
     # Setup: criar consulta e token
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     cursor.execute('''
@@ -190,7 +191,7 @@ def test_validar_token_valido():
         
     finally:
         # Cleanup
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute("DELETE FROM tokens_assinatura WHERE consulta_id = ?", (consulta_id,))
         cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (consulta_id,))
@@ -237,7 +238,7 @@ def test_validar_token_expirado():
     from token_manager import validar_token
     
     # Setup: criar consulta e token expirado
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     cursor.execute('''
@@ -274,7 +275,7 @@ def test_validar_token_expirado():
         
     finally:
         # Cleanup
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute("DELETE FROM tokens_assinatura WHERE consulta_id = ?", (consulta_id,))
         cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (consulta_id,))
@@ -289,7 +290,7 @@ def test_validar_token_usado():
     from token_manager import validar_token
     
     # Setup: criar consulta e token usado
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     cursor.execute('''
@@ -307,7 +308,7 @@ def test_validar_token_usado():
         token = resultado_geracao["token"]
         
         # Marcar token como usado
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute('''
             UPDATE tokens_assinatura 
@@ -328,7 +329,7 @@ def test_validar_token_usado():
         
     finally:
         # Cleanup
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute("DELETE FROM tokens_assinatura WHERE consulta_id = ?", (consulta_id,))
         cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (consulta_id,))
@@ -348,7 +349,7 @@ def test_marcar_token_usado_sucesso():
     from token_manager import marcar_token_usado
     
     # Setup: criar consulta e token
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     cursor.execute('''
@@ -372,7 +373,7 @@ def test_marcar_token_usado_sucesso():
         assert sucesso == True, "marcar_token_usado deve retornar True para token válido"
         
         # Verificar no banco que token foi marcado como usado
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute('''
             SELECT used, used_at 
@@ -395,7 +396,7 @@ def test_marcar_token_usado_sucesso():
         
     finally:
         # Cleanup
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute("DELETE FROM tokens_assinatura WHERE consulta_id = ?", (consulta_id,))
         cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (consulta_id,))
@@ -424,7 +425,7 @@ def test_marcar_token_usado_multiplas_vezes():
     from token_manager import marcar_token_usado
     
     # Setup: criar consulta e token
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     cursor.execute('''
@@ -450,7 +451,7 @@ def test_marcar_token_usado_multiplas_vezes():
         assert sucesso2 == True, "Segunda chamada deve retornar True (token existe)"
         
         # Verificar que token continua marcado como usado
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute('SELECT used FROM tokens_assinatura WHERE token = ?', (token,))
         row = cursor.fetchone()
@@ -461,7 +462,7 @@ def test_marcar_token_usado_multiplas_vezes():
         
     finally:
         # Cleanup
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute("DELETE FROM tokens_assinatura WHERE consulta_id = ?", (consulta_id,))
         cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (consulta_id,))
@@ -485,7 +486,7 @@ def test_limpar_tokens_expirados_remove_apenas_nao_usados():
     import secrets
     
     # Setup: criar consultas de teste
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     # Criar 3 consultas
@@ -552,7 +553,7 @@ def test_limpar_tokens_expirados_remove_apenas_nao_usados():
         assert count_removidos == 1, f"Deve remover exatamente 1 token, removeu {count_removidos}"
         
         # Verificar no banco que apenas o token correto foi removido
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         
         # Token expirado não usado NÃO deve existir
@@ -573,7 +574,7 @@ def test_limpar_tokens_expirados_remove_apenas_nao_usados():
         
     finally:
         # Cleanup
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         cursor.execute("DELETE FROM tokens_assinatura WHERE consulta_id IN (?, ?, ?)", 
                       (consulta_id_1, consulta_id_2, consulta_id_3))
@@ -606,7 +607,7 @@ def test_limpar_tokens_expirados_multiplos():
     import secrets
     
     # Setup: criar consultas e múltiplos tokens expirados não usados
-    conexao = sqlite3.connect('mobilidade_renapsi.db')
+    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
     cursor = conexao.cursor()
     
     consulta_ids = []
@@ -643,7 +644,7 @@ def test_limpar_tokens_expirados_multiplos():
         assert count_removidos >= 5, f"Deve remover pelo menos 5 tokens, removeu {count_removidos}"
         
         # Verificar que todos os tokens foram removidos
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         
         for token in tokens_expirados:
@@ -656,7 +657,7 @@ def test_limpar_tokens_expirados_multiplos():
         
     finally:
         # Cleanup
-        conexao = sqlite3.connect('mobilidade_renapsi.db')
+        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         cursor = conexao.cursor()
         placeholders = ','.join('?' * len(consulta_ids))
         cursor.execute(f"DELETE FROM tokens_assinatura WHERE consulta_id IN ({placeholders})", consulta_ids)
@@ -695,3 +696,4 @@ if __name__ == "__main__":
     test_limpar_tokens_expirados_multiplos()
     
     print("\n✅ Todos os testes passaram!")
+
