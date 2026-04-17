@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import os
 import time
+import datetime
 
 # ─── Configuração da página ───────────────────────────────────────────────────
 st.set_page_config(page_title="RENAPSI — Portal do Candidato", page_icon="📝", layout="centered")
@@ -28,7 +29,8 @@ st.markdown("""
 
 # ─── Função de Banco de Dados ───────────────────────────────────────────────
 def inicializar_tabela_fichas():
-    conexao = sqlite3.connect(DB_PATH)
+    # ── Conexão segura com timeout ──
+    conexao = sqlite3.connect(DB_PATH, timeout=20.0)
     cursor = conexao.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS fichas_cadastrais (
@@ -50,6 +52,7 @@ def inicializar_tabela_fichas():
 
 inicializar_tabela_fichas()
 
+# ── AQUI ESTAVA O ERRO! A função abaixo tinha sumido ──
 def salvar_arquivo(uploaded_file, cpf, tipo_doc):
     if uploaded_file is not None:
         pasta_jovem = os.path.join(UPLOAD_DIR, cpf)
@@ -80,7 +83,7 @@ if 'tem_filhos' not in st.session_state: st.session_state.tem_filhos = 'Não'
 st.subheader("⚠️ Configurações Iniciais")
 col_g, col_ec, col_f = st.columns(3)
 with col_g: st.session_state.genero_selecionado = st.selectbox("Identidade de Gênero:", ["Mulher Cisgênero", "Mulher Transgênero", "Homem Cisgênero", "Homem Transgênero"])
-with col_ec: st.session_state.estado_civil_sel = st.selectbox("Estado Civil:", ["Solteiro(a)", "Casado(a)", "Separado(a)", "Divorciado(a)", "Viúvo(a)"])
+with col_ec: st.session_state.estado_civil_sel = st.selectbox("Estado Civil:", ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)"])
 with col_f: st.session_state.tem_filhos = st.radio("Possui filhos/dependentes?", ["Não", "Sim"])
 
 st.markdown("---")
@@ -94,7 +97,15 @@ with st.form("form_cadastro_jovem"):
         nome = st.text_input("1. Nome Completo *")
         nome_social = st.text_input("2. Nome Social (Opcional)")
         col_dn, col_cpf, col_rg = st.columns(3)
-        dt_nasc = col_dn.date_input("3. Data de Nascimento")
+        
+        # Calendário ajustado para formato brasileiro e limite até 1950
+        dt_nasc = col_dn.date_input(
+            "3. Data de Nascimento *",
+            min_value=datetime.date(1950, 1, 1),
+            max_value=datetime.date.today(),
+            format="DD/MM/YYYY"
+        )
+        
         cpf = col_cpf.text_input("4. CPF (Apenas números) *", max_chars=11)
         rg = col_rg.text_input("5. RG *")
         
@@ -117,14 +128,15 @@ with st.form("form_cadastro_jovem"):
         st.markdown("#### Filiação e Responsáveis")
         nome_mae = st.text_input("15. Nome da Mãe")
         col_m1, col_m2 = st.columns(2)
-        ocup_mae = col_m1.selectbox("16. Ocupação da Mãe", ["Desempregado(a)", "Trabalho Informal", "Trabalho c/ carteira assinada", "Aposentado(a)"])
-        est_mae = col_m2.selectbox("17. Estado Civil da Mãe", ["Solteiro(a)", "Casado(a)", "Separado(a)", "Divorciado(a)", "Viúvo(a)"])
+        ocupacao_mae = col_m1.selectbox("16. Ocupação da Mãe", ["Desempregado(a)", "Trabalho Informal", "Trabalho c/ carteira assinada", "Aposentado(a)"])
+        est_mae = col_m2.selectbox("17. Estado Civil da Mãe", ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "Falecido(a)"])
         
         st.markdown("---")
         nome_pai = st.text_input("18. Nome do Pai")
         col_p1, col_p2 = st.columns(2)
-        ocup_pai = col_p1.selectbox("19. Ocupação do Pai", ["Desempregado(a)", "Trabalho Informal", "Trabalho c/ carteira assinada", "Aposentado(a)"])
-        est_pai = col_p2.selectbox("20. Estado Civil do Pai", ["Solteiro(a)", "Casado(a)", "Separado(a)", "Divorciado(a)", "Viúvo(a)"])
+        
+        ocupacao_pai = col_p1.selectbox("19. Ocupação do Pai", ["Desempregado(a)", "Trabalho Informal", "Trabalho c/ carteira assinada", "Aposentado(a)"])
+        est_pai = col_p2.selectbox("20. Estado Civil do Pai", ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "Falecido(a)"])
 
         st.markdown("---")
         nome_resp = st.text_input("21. Nome do Representante Legal (Se NÃO for pai ou mãe)")
@@ -180,8 +192,8 @@ with st.form("form_cadastro_jovem"):
                     path_cert_dep = salvar_arquivo(doc_cert_dep, cpf, "certidao_dependente") if doc_cert_dep else ""
                     path_vacina_dep = salvar_arquivo(doc_vacina_dep, cpf, "vacina_dependente") if doc_vacina_dep else ""
 
-                    # 2. Salvar no Banco de Dados SQLite
-                    conexao = sqlite3.connect(DB_PATH)
+                    # 2. Salvar no Banco de Dados SQLite (Conexão Segura)
+                    conexao = sqlite3.connect(DB_PATH, timeout=20.0)
                     cursor = conexao.cursor()
                     cursor.execute('''
                         INSERT INTO fichas_cadastrais (

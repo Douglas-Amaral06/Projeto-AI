@@ -273,7 +273,7 @@ st.sidebar.markdown("<p style='color:#1E293B;font-size:13px;text-transform:upper
 
 parametros_url = st.query_params
 pagina_salva = parametros_url.get("menu", "Dashboard Principal")
-opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem", "Banco de Dados", "Simulação: Portal do Jovem"]
+opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem", "🗂️ Triagem de Fichas", "Banco de Dados", "Simulação: Portal do Jovem"]
 indice_padrao = opcoes_menu.index(pagina_salva) if pagina_salva in opcoes_menu else 0
 
 menu = st.sidebar.radio("", opcoes_menu, index=indice_padrao)
@@ -1938,7 +1938,221 @@ elif menu == "Cadastrar Novo Jovem":
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TELA 3 — BANCO DE DADOS
+# TELA 3 — TRIAGEM DE FICHAS
+# ══════════════════════════════════════════════════════════════════════════════
+elif menu == "🗂️ Triagem de Fichas":
+
+    st.markdown("""
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
+        <svg viewBox="0 0 24 24" width="50" height="50" fill="none" stroke="#444c9b" stroke-width="2">
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h1 style="margin:0; color:#444c9b; font-size:28px;">Triagem de Fichas Cadastrais</h1>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
+                border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+        <p style="color:#666666;font-size:14px;margin:0;">
+            Analise as candidaturas do portal do jovem, revise os documentos e integre os aprovados ao sistema de mobilidade.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── FILTROS E PESQUISA ──
+    col_pesquisa, col_status = st.columns([2, 1])
+    
+    with col_pesquisa:
+        filtro_nome = st.text_input("🔍 Pesquisar por Nome ou CPF", placeholder="Digite o nome ou CPF...")
+    
+    with col_status:
+        filtro_status = st.selectbox("Status", ["Pendente", "Aprovado", "Reprovado", "Todos"], index=0)
+
+    st.markdown("<hr style='border-color:#E2E8F0;margin:20px 0;'>", unsafe_allow_html=True)
+
+    # ── BUSCA FICHAS DIRETAMENTE NO BANCO ──
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DB_PATH = os.path.join(BASE_DIR, '..', 'mobilidade_renapsi.db')
+    
+    try:
+        conexao = sqlite3.connect(DB_PATH)
+        query = "SELECT * FROM fichas_cadastrais WHERE 1=1"
+        params = []
+        
+        if filtro_status != "Todos":
+            query += " AND status_aprovacao = ?"
+            params.append(filtro_status)
+            
+        if filtro_nome:
+            query += " AND (nome_completo LIKE ? OR cpf LIKE ?)"
+            params.extend([f"%{filtro_nome}%", f"%{filtro_nome}%"])
+            
+        df_fichas = pd.read_sql_query(query, conexao, params=params)
+        conexao.close()
+    except Exception as e:
+        st.error(f"Erro ao carregar banco de dados: {e}")
+        df_fichas = pd.DataFrame()
+
+    if df_fichas.empty:
+        st.info("📭 Nenhuma ficha encontrada com os filtros selecionados.")
+    else:
+        st.markdown(f"""
+        <div style="background:rgba(68,76,155,0.1);border:1px solid rgba(68,76,155,0.3);
+                    border-radius:10px;padding:12px;margin-bottom:16px;text-align:center;">
+            <p style="color:#444c9b;font-size:14px;margin:0;text-transform:uppercase;font-weight:600;">
+                📋 {len(df_fichas)} ficha(s) encontrada(s)
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── EXIBIÇÃO DE FICHAS (Apenas 1 Loop For) ──
+        for idx, (_, ficha) in enumerate(df_fichas.iterrows()):
+            ficha_id = ficha['id']
+            nome_completo = ficha['nome_completo']
+            cpf_raw = str(ficha['cpf']).zfill(11)
+            cpf_mask = f"***.***.{cpf_raw[6:9]}-{cpf_raw[9:11]}"
+            status_aprovacao = ficha['status_aprovacao']
+            
+            if status_aprovacao == "Aprovado": emoji_status = "✅"
+            elif status_aprovacao == "Reprovado": emoji_status = "❌"
+            else: emoji_status = "⏳"
+
+            with st.expander(f"📋 {nome_completo} | Status: {emoji_status} {status_aprovacao} | CPF: {cpf_mask}", expanded=False):
+                # 4 Colunas corretas
+                col1, col2, col3, col4 = st.columns([1.2, 1.2, 1.5, 1])
+
+                with col1:
+                    st.markdown("""<p style="color:#444c9b;font-size:14px;text-transform:uppercase;font-weight:600;">👤 Pessoais</p>""", unsafe_allow_html=True)
+                    st.write(f"**Nome Social:** {ficha.get('nome_social', 'N/A')}")
+                    st.write(f"**Data de Nasc.:** {ficha.get('data_nascimento', 'N/A')}")
+                    st.write(f"**Gênero:** {ficha.get('identidade_genero', 'N/A')}")
+                    st.write(f"**Raça:** {ficha.get('raca', 'N/A')}")
+                    st.write(f"**Uniforme:** {ficha.get('tamanho_uniforme', 'N/A')}")
+
+                with col2:
+                    st.markdown("""<p style="color:#444c9b;font-size:14px;text-transform:uppercase;font-weight:600;">🏠 Contato/Endereço</p>""", unsafe_allow_html=True)
+                    st.write(f"**CEP:** {ficha.get('cep', 'N/A')}")
+                    st.write(f"**Endereço:** {ficha.get('endereco_completo', 'N/A')}")
+                    st.write(f"**Cidade:** {ficha.get('cidade_estado', 'N/A')}")
+                    
+                    # ── MÁGICA DO WHATSAPP ──
+                    telefone_original = str(ficha.get('tel_jovem', 'N/A'))
+                    if telefone_original != 'N/A' and telefone_original.strip():
+                        # Limpa tudo que não for número (tira parênteses, traços, espaços)
+                        telefone_limpo = ''.join(filter(str.isdigit, telefone_original))
+                        
+                        # Adiciona o código do Brasil (55) se o jovem não tiver colocado
+                        if telefone_limpo and not telefone_limpo.startswith('55'):
+                            telefone_limpo = '55' + telefone_limpo
+                            
+                        link_wpp = f"https://wa.me/{telefone_limpo}"
+                        
+                        st.markdown(f"""
+                            <p style='margin:2px 0; font-size:15px;'>
+                                <strong>Telefone:</strong> {telefone_original} 
+                                <a href='{link_wpp}' target='_blank' style='text-decoration:none; background-color:#25D366; color:white; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:bold; margin-left:8px; display:inline-flex; align-items:center; gap:4px;'>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                                    </svg>
+                                    Conversar
+                                </a>
+                            </p>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.write(f"**Telefone:** {telefone_original}")
+                        
+                    st.write(f"**E-mail:** {ficha.get('email_jovem', 'N/A')}")
+
+                with col3:
+                    st.markdown("""<p style="color:#444c9b;font-size:14px;text-transform:uppercase;font-weight:600;">👨‍👩‍👧 Família</p>""", unsafe_allow_html=True)
+                    st.write(f"**Mãe:** {ficha.get('nome_mae', 'N/A')} ({ficha.get('ocupacao_mae', 'N/A')} - {ficha.get('estado_civil_mae', 'N/A')})")
+                    st.write(f"**Pai:** {ficha.get('nome_pai', 'N/A')} ({ficha.get('ocupacao_pai', 'N/A')} - {ficha.get('estado_civil_pai', 'N/A')})")
+                    if ficha.get('nome_resp'):
+                        st.write(f"**Resp. Legal:** {ficha.get('nome_resp')}")
+                    st.write(f"**Dependentes:** {ficha.get('tem_dependentes', 'N/A')}")
+
+                with col4:
+                    st.markdown("""<p style="color:#444c9b;font-size:14px;text-transform:uppercase;font-weight:600;">📄 Documentos</p>""", unsafe_allow_html=True)
+                    
+                    documentos = [
+                        ('path_comp_residencia', '🏠 Comp. Residência'),
+                        ('path_rg', '🪪 RG'),
+                        ('path_conta_salario', '🏦 Conta Salário'),
+                        ('path_titulo', '🗳️ Título Eleitor'),
+                        ('path_reservista', '⚔️ Reservista'),
+                        ('path_casamento', '💍 Certidão Casamento'),
+                        ('path_cert_nasc_dep', '👶 Cert. Nasc. Dependente'),
+                        ('path_vacina_dep', '💉 Vacina Dependente'),
+                    ]
+                    
+                    for campo_path, label_doc in documentos:
+                        caminho_arquivo = ficha.get(campo_path, '')
+                        if caminho_arquivo and os.path.exists(caminho_arquivo):
+                            with open(caminho_arquivo, 'rb') as f:
+                                arquivo_bytes = f.read()
+                            st.download_button(
+                                label=f"⬇️ {label_doc}",
+                                data=arquivo_bytes,
+                                file_name=os.path.basename(caminho_arquivo),
+                                mime="application/octet-stream",
+                                key=f"dl_{ficha_id}_{campo_path}",
+                                use_container_width=True
+                            )
+
+                st.markdown("<hr style='border-color:#E2E8F0;margin:20px 0;'>", unsafe_allow_html=True)
+
+                # ── BOTÕES DE AÇÃO ──
+                col_reprovar, col_aprovar = st.columns([1, 1])
+
+                with col_reprovar:
+                    if st.button("❌ Reprovar", key=f"reprovar_{ficha_id}", use_container_width=True, type="secondary"):
+                        conn = sqlite3.connect(DB_PATH)
+                        conn.execute("UPDATE fichas_cadastrais SET status_aprovacao = 'Reprovado' WHERE id = ?", (ficha_id,))
+                        conn.commit()
+                        conn.close()
+                        st.success("Ficha Reprovada.")
+                        time.sleep(1)
+                        st.rerun()
+
+                with col_aprovar:
+                    if st.button("✅ Aprovar e Enviar p/ Mobilidade", key=f"aprovar_{ficha_id}", use_container_width=True, type="primary"):
+                        try:
+                            conn = sqlite3.connect(DB_PATH)
+                            conn.execute("UPDATE fichas_cadastrais SET status_aprovacao = 'Aprovado' WHERE id = ?", (ficha_id,))
+                            
+                            cursor = conn.cursor()
+                            cursor.execute("SELECT id FROM jovens_rotas WHERE cpf = ?", (cpf_raw,))
+                            if cursor.fetchone():
+                                st.warning("⚠️ Jovem já existe no painel de mobilidade!")
+                            else:
+                                # ── MÁGICA DO ID: Descobre qual o último ID e soma +1 ──
+                                cursor.execute("SELECT MAX(CAST(id AS INTEGER)) FROM jovens_rotas")
+                                max_id = cursor.fetchone()[0]
+                                novo_id = 1 if max_id is None else int(max_id) + 1
+
+                                conn.execute("""
+                                    INSERT INTO jovens_rotas (id, nome, cpf, email, celular, cep_casa, numero_casa, status_rota)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, 'Aguardando Rota')
+                                """, (
+                                    novo_id,
+                                    nome_completo, 
+                                    cpf_raw, 
+                                    ficha.get('email_jovem', ''), 
+                                    ficha.get('tel_jovem', ''), 
+                                    ficha.get('cep', ''), 
+                                    ficha.get('endereco_completo', '')
+                                ))
+                                st.success("✅ Jovem aprovado e adicionado à fila de roteirização!")
+                            
+                            conn.commit()
+                            conn.close()
+                            time.sleep(2)
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Erro ao aprovar: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TELA 4 — BANCO DE DADOS
 # ══════════════════════════════════════════════════════════════════════════════
 elif menu == "Banco de Dados":
 
@@ -1950,12 +2164,21 @@ elif menu == "Banco de Dados":
             </svg>
             <h1 style="margin:0; color:#444c9b; font-size:28px;">Banco de Dados</h1>
         </div>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
+    # ── CAMINHOS ABSOLUTOS CORRIGIDOS ──
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DB_PATH = os.path.join(BASE_DIR, '..', 'mobilidade_renapsi.db')
+    BACKUP_PATH = os.path.join(BASE_DIR, '..', 'mobilidade_renapsi_backup.db')
 
     # Carrega dados do banco
-    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-    df_banco = pd.read_sql_query("SELECT * FROM jovens_rotas", conexao)
-    conexao.close()
+    try:
+        conexao = sqlite3.connect(DB_PATH)
+        df_banco = pd.read_sql_query("SELECT * FROM jovens_rotas", conexao)
+        conexao.close()
+    except Exception as e:
+        st.error(f"Erro ao carregar banco de dados: {e}")
+        df_banco = pd.DataFrame()
 
     # Tabs para diferentes operações
     tab_visualizar, tab_adicionar_coluna, tab_excluir, tab_backup = st.tabs([
@@ -1977,7 +2200,6 @@ elif menu == "Banco de Dados":
         </div>
         """, unsafe_allow_html=True)
 
-        # Exibe a tabela editável
         df_editado = st.data_editor(
             df_banco,
             use_container_width=True,
@@ -1988,22 +2210,18 @@ elif menu == "Banco de Dados":
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Botão para salvar alterações
         col_save, col_info = st.columns([1, 4])
         with col_save:
             if st.button("💾 Salvar Alterações", type="primary", use_container_width=True):
                 try:
-                    # Força o tipo de dados para CPF (texto)
                     df_editado['cpf'] = df_editado['cpf'].astype(str).str.zfill(11)
                     
-                    # Salva no banco de dados
-                    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+                    conexao = sqlite3.connect(DB_PATH)
                     df_editado.to_sql('jovens_rotas', conexao, if_exists='replace', index=False)
                     conexao.close()
 
-                    # Cria backup automático
                     import shutil
-                    shutil.copy('mobilidade_renapsi.db', 'mobilidade_renapsi_backup.db')
+                    shutil.copy(DB_PATH, BACKUP_PATH)
 
                     st.success("✅ Alterações salvas com sucesso! Backup criado automaticamente.")
                     st.rerun()
@@ -2015,7 +2233,7 @@ elif menu == "Banco de Dados":
             <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
                         border-radius:10px;padding:12px;text-align:center;">
                 <p style="color:#10B981;font-size:12px;margin:0;text-transform:uppercase;">
-                    Total de Registos: <strong>{len(df_editado)}</strong>
+                    Total de Registros: <strong>{len(df_editado)}</strong>
                 </p>
             </div>
             """, unsafe_allow_html=True)
@@ -2042,12 +2260,7 @@ elif menu == "Banco de Dados":
             if not nome_coluna.strip():
                 st.error("❌ Digite um nome para a coluna")
             else:
-                # ─── VALIDAÇÃO DE SEGURANÇA: Previne SQL Injection ───────────────────
-                # SQLite DDL (ALTER TABLE) não suporta parameterized queries,
-                # então validamos rigorosamente o nome da coluna
                 import re
-                
-                # SQL Keywords que não podem ser usados como nomes de coluna
                 SQL_KEYWORDS = {
                     "SELECT", "INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER",
                     "TABLE", "DATABASE", "INDEX", "VIEW", "TRIGGER", "PROCEDURE",
@@ -2062,20 +2275,16 @@ elif menu == "Banco de Dados":
                     "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE", "ATTACH", "DETACH"
                 }
                 
-                # Valida nome da coluna: apenas letras, números e underscore
                 if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', nome_coluna):
                     st.error("❌ Nome da coluna inválido. Use apenas letras, números e underscore (_).")
                 elif len(nome_coluna) > 64:
                     st.error("❌ Nome da coluna muito longo (máximo 64 caracteres).")
                 elif nome_coluna.upper() in SQL_KEYWORDS:
                     st.error(f"❌ '{nome_coluna}' é uma palavra-chave SQL reservada. Escolha outro nome.")
-                elif tipo_coluna not in ["TEXT", "INTEGER", "REAL", "BLOB"]:
-                    st.error("❌ Tipo de dados inválido.")
                 else:
                     try:
-                        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+                        conexao = sqlite3.connect(DB_PATH)
                         cursor = conexao.cursor()
-                        # Agora é seguro usar f-string pois validamos rigorosamente
                         cursor.execute(f"ALTER TABLE jovens_rotas ADD COLUMN {nome_coluna} {tipo_coluna}")
                         conexao.commit()
                         conexao.close()
@@ -2109,15 +2318,14 @@ elif menu == "Banco de Dados":
             st.write("")
             if st.button("🚨 Excluir", type="secondary", use_container_width=True):
                 try:
-                    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+                    conexao = sqlite3.connect(DB_PATH)
                     cursor = conexao.cursor()
                     cursor.execute("DELETE FROM jovens_rotas WHERE id = ?", (id_excluir,))
                     conexao.commit()
                     conexao.close()
                     
-                    # Cria backup automático
                     import shutil
-                    shutil.copy('mobilidade_renapsi.db', 'mobilidade_renapsi_backup.db')
+                    shutil.copy(DB_PATH, BACKUP_PATH)
                     
                     st.success(f"✅ Registro #{id_excluir} excluído com sucesso! Backup criado.")
                     st.rerun()
@@ -2144,37 +2352,35 @@ elif menu == "Banco de Dados":
                     import shutil
                     import datetime
                     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                    backup_name = f"mobilidade_renapsi_backup_{timestamp}.db"
-                    shutil.copy('mobilidade_renapsi.db', backup_name)
-                    st.success(f"✅ Backup criado: {backup_name}")
+                    backup_name = os.path.join(BASE_DIR, '..', f"mobilidade_renapsi_backup_{timestamp}.db")
+                    shutil.copy(DB_PATH, backup_name)
+                    st.success(f"✅ Backup criado na raiz: mobilidade_renapsi_backup_{timestamp}.db")
                 except Exception as e:
                     st.error(f"❌ Erro ao criar backup: {str(e)}")
 
         with col_b2:
-            if st.button("📥 Restaurar Backup", type="secondary", use_container_width=True):
+            if st.button("📥 Restaurar Último Backup Padrão", type="secondary", use_container_width=True):
                 try:
                     import shutil
-                    if os.path.exists('mobilidade_renapsi_backup.db'):
-                        shutil.copy('mobilidade_renapsi_backup.db', 'mobilidade_renapsi.db')
+                    if os.path.exists(BACKUP_PATH):
+                        shutil.copy(BACKUP_PATH, DB_PATH)
                         st.success("✅ Banco restaurado do backup!")
                         st.rerun()
                     else:
-                        st.warning("⚠️ Nenhum backup disponível")
+                        st.warning("⚠️ Nenhum backup padrão disponível")
                 except Exception as e:
                     st.error(f"❌ Erro ao restaurar: {str(e)}")
 
         st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
 
-        # Informações sobre backups
         st.markdown("""
         <div style="background:#FFFFFF;border:1px solid #E5E7EB;
                     border-radius:10px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
             <p style="color:#666666;font-size:12px;margin:0;">
                 <strong>ℹ️ Informações:</strong><br>
-                • Backups automáticos são criados ao salvar alterações<br>
-                • Você pode criar backups manuais com timestamp<br>
-                • O arquivo de backup padrão é: mobilidade_renapsi_backup.db<br>
-                • Restaurar substitui o banco atual pelo backup
+                • Backups automáticos são criados ao salvar alterações ou excluir registros<br>
+                • O arquivo de backup padrão fica na raiz do projeto (mobilidade_renapsi_backup.db)<br>
+                • Restaurar substitui o banco atual pelo backup padrão
             </p>
         </div>
         """, unsafe_allow_html=True)

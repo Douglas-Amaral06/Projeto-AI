@@ -372,3 +372,183 @@ def obter_status_visual(status_rota):
         'Não Optante': '⚪ Não Optante'
     }
     return mapeamento.get(status_rota, status_rota)
+
+
+# ─── FUNÇÕES PARA TRIAGEM DE FICHAS ──────────────────────────────────────────
+
+def obter_fichas_cadastrais(filtro_nome="", filtro_status="Pendente"):
+    """
+    Busca fichas cadastrais com filtros de nome e status.
+    
+    Args:
+        filtro_nome: Filtro por nome completo (LIKE)
+        filtro_status: 'Pendente', 'Aprovado' ou 'Todos'
+    
+    Returns:
+        DataFrame com as fichas encontradas
+    """
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        
+        # Constrói a query dinamicamente
+        query = "SELECT * FROM fichas_cadastrais WHERE 1=1"
+        params = []
+        
+        if filtro_nome.strip():
+            query += " AND nome_completo LIKE ?"
+            params.append(f"%{filtro_nome}%")
+        
+        if filtro_status != "Todos":
+            query += " AND status_aprovacao = ?"
+            params.append(filtro_status)
+        
+        query += " ORDER BY data_cadastro DESC"
+        
+        df = pd.read_sql_query(query, conexao, params=params)
+        conexao.close()
+        
+        return df
+    except Exception as e:
+        logger.exception(f"Erro ao obter fichas cadastrais: {e}")
+        return pd.DataFrame()
+
+
+def aprovar_ficha_e_integrar(ficha_id):
+    """
+    Aprova uma ficha cadastral e integra o candidato à tabela jovens_rotas.
+    Executa em uma única transação.
+    
+    Args:
+        ficha_id: ID da ficha cadastral
+    
+    Returns:
+        Tupla (sucesso: bool, mensagem: str)
+    """
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        
+        # Inicia transação
+        cursor.execute("BEGIN TRANSACTION")
+        
+        # 1. Busca os dados da ficha
+        cursor.execute("SELECT * FROM fichas_cadastrais WHERE id = ?", (ficha_id,))
+        ficha = cursor.fetchone()
+        
+        if not ficha:
+            conexao.rollback()
+            conexao.close()
+            return False, "Ficha não encontrada"
+        
+        # Mapeia os dados da ficha para as colunas
+        ficha_dict = {
+            'id': ficha[0],
+            'nome_completo': ficha[1],
+            'nome_social': ficha[2],
+            'data_nascimento': ficha[3],
+            'cpf': ficha[4],
+            'rg': ficha[5],
+            'identidade_genero': ficha[6],
+            'raca': ficha[7],
+            'estado_civil': ficha[8],
+            'email_jovem': ficha[9],
+            'email_responsavel': ficha[10],
+            'endereco_completo': ficha[11],
+            'cidade_estado': ficha[12],
+            'cep': ficha[13],
+            'tel_jovem': ficha[14],
+            'tel_responsavel': ficha[15],
+            'tamanho_uniforme': ficha[16],
+            'nome_mae': ficha[17],
+            'ocupacao_mae': ficha[18],
+            'estado_civil_mae': ficha[19],
+            'nome_pai': ficha[20],
+            'ocupacao_pai': ficha[21],
+            'estado_civil_pai': ficha[22],
+            'nome_resp': ficha[23],
+            'ocupacao_resp': ficha[24],
+            'estado_civil_resp': ficha[25],
+            'tem_dependentes': ficha[26],
+            'path_comp_residencia': ficha[27],
+            'path_rg': ficha[28],
+            'path_conta_salario': ficha[29],
+            'path_titulo': ficha[30],
+            'path_reservista': ficha[31],
+            'path_casamento': ficha[32],
+            'path_cert_nasc_dep': ficha[33],
+            'path_vacina_dep': ficha[34],
+            'data_cadastro': ficha[35],
+            'status_aprovacao': ficha[36]
+        }
+        
+        # 2. UPDATE: Marca a ficha como Aprovada
+        cursor.execute(
+            "UPDATE fichas_cadastrais SET status_aprovacao = 'Aprovado' WHERE id = ?",
+            (ficha_id,)
+        )
+        
+        # 3. INSERT: Cria registro na tabela jovens_rotas
+        cursor.execute('''
+            INSERT INTO jovens_rotas (
+                nome, cpf, cep_casa, cep_trabalho, email, celular, 
+                matricula, status_rota, data_consulta
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            ficha_dict['nome_completo'],  # nome
+            ficha_dict['cpf'],             # cpf
+            ficha_dict['cep'],             # cep_casa
+            '',                            # cep_trabalho (vazio para edição posterior)
+            ficha_dict['email_jovem'],     # email
+            ficha_dict['tel_jovem'],       # celular
+            '',                            # matricula (vazio)
+            'Aguardando Rota',             # status_rota
+            datetime.datetime.now().isoformat()  # data_consulta
+        ))
+        
+        # Confirma a transação
+        conexao.commit()
+        conexao.close()
+        
+        logger.info(f"Ficha {ficha_id} aprovada e integrada com sucesso")
+        return True, f"✅ {ficha_dict['nome_completo']} foi integrado(a) ao banco de dados da mobilidade com sucesso!"
+        
+    except Exception as e:
+        try:
+            conexao.rollback()
+        except:
+            pass
+        conexao.close()
+        logger.exception(f"Erro ao aprovar ficha: {e}")
+        return False, f"❌ Erro ao aprovar ficha: {str(e)}"
+
+
+def reprovar_ficha(ficha_id, motivo=""):
+    """
+    Marca uma ficha como reprovada.
+    
+    Args:
+        ficha_id: ID da ficha cadastral
+        motivo: Motivo da reprovação (opcional)
+    
+    Returns:
+        Tupla (sucesso: bool, mensagem: str)
+    """
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        
+        cursor.execute(
+            "UPDATE fichas_cadastrais SET status_aprovacao = 'Reprovado' WHERE id = ?",
+            (ficha_id,)
+        )
+        
+        conexao.commit()
+        conexao.close()
+        
+        logger.info(f"Ficha {ficha_id} reprovada")
+        return True, "✅ Ficha reprovada com sucesso"
+        
+    except Exception as e:
+        conexao.close()
+        logger.exception(f"Erro ao reprovar ficha: {e}")
+        return False, f"❌ Erro ao reprovar ficha: {str(e)}"
