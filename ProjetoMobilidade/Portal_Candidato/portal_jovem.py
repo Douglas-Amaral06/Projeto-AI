@@ -80,7 +80,7 @@ if 'estado_civil_sel' not in st.session_state: st.session_state.estado_civil_sel
 if 'tem_filhos' not in st.session_state: st.session_state.tem_filhos = 'Não'
 
 # Lógica fora do form para atualizar as condicionais em tempo real
-st.subheader("⚠️ Configurações Iniciais")
+st.subheader("⚠️ Informações Iniciais")
 col_g, col_ec, col_f = st.columns(3)
 with col_g: st.session_state.genero_selecionado = st.selectbox("Identidade de Gênero:", ["Mulher Cisgênero", "Mulher Transgênero", "Homem Cisgênero", "Homem Transgênero"])
 with col_ec: st.session_state.estado_civil_sel = st.selectbox("Estado Civil:", ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)"])
