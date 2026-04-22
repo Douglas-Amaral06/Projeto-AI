@@ -1029,8 +1029,15 @@ elif menu == "Pesquisar Consultas":
             st.session_state.detalhes_abertos = False
             st.rerun()
             
-        dados_jovem      = st.session_state.resultado_busca.iloc[0]
-        id_selecionado   = int(dados_jovem['id'])  # Garante que é inteiro
+        dados_jovem = st.session_state.resultado_busca.iloc[0]
+        
+        # ── BLINDAGEM CONTRA ID VAZIO ──
+        try:
+            id_selecionado = int(dados_jovem['id'])
+        except (TypeError, ValueError):
+            st.error("⚠️ Este jovem está sem ID no banco de dados! Por favor, vá na aba 'Banco de Dados', adicione um número no campo ID dele e salve.")
+            st.stop()
+            
         nome_jovem       = dados_jovem['nome']
         cpf_cru          = str(dados_jovem['cpf']).zfill(11)
         cep_casa         = dados_jovem['cep_casa']
@@ -1049,11 +1056,13 @@ elif menu == "Pesquisar Consultas":
             <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
                         border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                 <h3 style="margin:0 0 4px;color:#444c9b;">✏️ Editar Dados da Consulta</h3>
-                <p style="color:#666666;font-size:13px;margin:0;">Atualize as informações do funcionário</p>
+                <p style="color:#666666;font-size:13px;margin:0;">Atualize as informações do funcionário e o local de trabalho</p>
             </div>
             """, unsafe_allow_html=True)
 
-            col_e1, col_e2 = st.columns(2)
+            # ── 3 Colunas como você pediu ──
+            col_e1, col_e2, col_e3 = st.columns(3)
+            
             with col_e1:
                 st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>👤 Dados do Funcionário</p>", unsafe_allow_html=True)
                 mat_input    = st.text_input("Matrícula", value=matricula_exib if matricula_exib != 'Não informada' else '')
@@ -1062,18 +1071,18 @@ elif menu == "Pesquisar Consultas":
                 celular_input= st.text_input("Celular", value=celular_jovem or '')
 
             with col_e2:
-                st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏠 Endereço</p>", unsafe_allow_html=True)
-                cep_input = st.text_input("CEP", value=cep_casa)
+                st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏠 Endereço do Funcionário</p>", unsafe_allow_html=True)
+                cep_input = st.text_input("CEP Residencial", value=cep_casa)
                 c_rua, c_num = st.columns([3, 1])
                 
-                # Busca endereço apenas se CEP mudou
+                # Busca endereço
                 end_atual = buscar_endereco_viacep(cep_input)
-                rua_input = c_rua.text_input("Logradouro", value=end_atual.get('completo',''), disabled=True)
+                rua_input = c_rua.text_input("Logradouro", value=end_atual.get('completo','') if isinstance(end_atual, dict) else '', disabled=True)
                 num_input = c_num.text_input("Número", value=numero_casa or '')
 
                 # Coordenadas
                 coord_atual = st.session_state.get('coord_temp', coordenadas_casa)
-                coord_input = st.text_input("Coordenadas", value=coord_atual or '')
+                coord_input = st.text_input("Coordenadas (Opcional)", value=coord_atual or '')
                 
                 if st.button("🔍 Buscar Coordenadas Reais", type="secondary", use_container_width=True):
                     if cep_input and len(cep_input.strip()) == 8:
@@ -1081,188 +1090,170 @@ elif menu == "Pesquisar Consultas":
                         lat, lon = obter_coordenadas_reais(end_completo)
                         if lat is not None and lon is not None:
                             st.session_state.coord_temp = f"{lat}, {lon}"
-                            st.success(f"✅ Coordenadas encontradas: {lat}, {lon}")
+                            st.success(f"✅ Coordenadas: {lat}, {lon}")
                             time.sleep(1)
                             st.rerun()
                         else:
-                            st.warning("⚠️ Não foi possível encontrar as coordenadas. Verifique o CEP e número.")
+                            st.warning("⚠️ Não encontradas. Verifique o CEP.")
                     else:
-                        st.error("❌ Digite um CEP válido (8 dígitos)")
+                        st.error("❌ CEP inválido")
+
+            with col_e3:
+                st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏢 Local de Trabalho</p>", unsafe_allow_html=True)
+                
+                # Dicionário de Unidades (No futuro puxaremos do banco)
+                locais = {
+                    "RENAPSI - SÃO PAULO-SP": {
+                        "endereco": "RUA CINCINATO BRAGA, 388\nBELA VISTA - SÃO PAULO - SP",
+                        "coordenadas": "-23.56774139404297, -46.646541595458984",
+                        "cep": "01333010"
+                    }
+                }
+                
+                local_selecionado = st.selectbox("Selecione o local de trabalho:", list(locais.keys()))
+                loc = locais[local_selecionado]
+                
+                # Card azul claro com os dados da empresa
+                st.markdown(f"""
+                <div style="background-color:#BAE6FD; border-radius:8px; padding:15px; text-align:center; margin-top:5px; border: 1px solid #7DD3FC;">
+                    <p style="color:#0284C7; font-size:12px; font-weight:700; margin:0;">{loc['endereco'].replace(chr(10), '<br>')}</p>
+                    <p style="color:#0284C7; font-size:11px; margin:8px 0 0;">COORDENADAS: {loc['coordenadas']}</p>
+                </div>
+                """, unsafe_allow_html=True)
 
             st.markdown("<br>", unsafe_allow_html=True)
-            col_f, col_c = st.columns(2)
+            col_f, col_c = st.columns([1, 1])
             with col_f:
                 if st.button("Fechar", use_container_width=True):
                     st.session_state.modo_edicao = False
                     st.session_state.pop('coord_temp', None)
                     st.rerun()
             with col_c:
-                if st.button("Confirmar", type="primary", use_container_width=True):
+                if st.button("Confirmar Alterações", type="primary", use_container_width=True):
                     try:
-                        # SEM VALIDAÇÕES - aceita qualquer valor
                         mat_final = str(mat_input) if mat_input else ''
                         email_final = str(email_input) if email_input else ''
                         celular_final = str(celular_input) if celular_input else ''
                         cep_final = str(cep_input) if cep_input else str(cep_casa)
                         num_final = str(num_input) if num_input else ''
                         coord_final = str(coord_input) if coord_input else ''
+                        cep_trab_final = loc['cep']  # Pega o CEP da empresa selecionada
                         
-                        # Debug detalhado
-                        st.write("**Debug - Valores a serem salvos:**")
-                        st.write(f"- ID: {id_selecionado} (tipo: {type(id_selecionado).__name__})")
-                        st.write(f"- Matrícula: '{mat_final}'")
-                        st.write(f"- Email: '{email_final}'")
-                        st.write(f"- Celular: '{celular_final}'")
-                        st.write(f"- CEP: '{cep_final}'")
-                        st.write(f"- Número: '{num_final}'")
-                        st.write(f"- Coordenadas: '{coord_final}'")
-                        
-                        # Atualiza no banco de dados
                         with st.spinner("Salvando no banco de dados..."):
-                            sucesso = atualizar_dados_funcionario(
-                                id_selecionado, 
-                                mat_final, 
-                                email_final, 
-                                celular_final, 
-                                cep_final, 
-                                num_final, 
-                                coord_final
-                            )
-                        
-                        if not sucesso:
-                            st.error(f"❌ Falha ao atualizar registro ID {id_selecionado}")
-                            st.warning("💡 Verifique o console/terminal para detalhes do erro")
+                            # Fazemos o UPDATE direto aqui para garantir que o CEP Trabalho seja atualizado
+                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+                            cursor = conexao.cursor()
+                            cursor.execute('''
+                                UPDATE jovens_rotas 
+                                SET matricula = ?, email = ?, celular = ?, cep_casa = ?, numero_casa = ?, coordenadas = ?, cep_trabalho = ?
+                                WHERE id = ?
+                            ''', (mat_final, email_final, celular_final, cep_final, num_final, coord_final, cep_trab_final, id_selecionado))
+                            conexao.commit()
+                            
+                            # Atualiza a tela
+                            df_atualizado = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_selecionado),))
+                            conexao.close()
+                            
+                        if not df_atualizado.empty:
+                            st.session_state.resultado_busca = df_atualizado
+                            st.session_state.modo_edicao = False
+                            st.session_state.pop('coord_temp', None)
+                            st.session_state.rota_gerada = None # Força o recalculo da rota para a nova empresa
+                            st.session_state.analise_ia = None
+                            
+                            st.success("✅ Dados e Local de Trabalho salvos com sucesso!")
+                            time.sleep(2)
+                            st.rerun()
                         else:
-                            st.success("✅ Atualização executada no banco!")
-                            
-                            # Recarrega os dados do banco
-                            with st.spinner("Recarregando dados..."):
-                                conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                                df_atualizado = pd.read_sql_query(
-                                    "SELECT * FROM jovens_rotas WHERE id = ?", 
-                                    conexao, 
-                                    params=(int(id_selecionado),)
-                                )
-                                conexao.close()
-                            
-                            if not df_atualizado.empty:
-                                # Atualiza o estado com os novos dados
-                                st.session_state.resultado_busca = df_atualizado
-                                st.session_state.modo_edicao = False
-                                st.session_state.pop('coord_temp', None)
-                                
-                                # Limpa cache de rotas
-                                st.session_state.rota_gerada = None
-                                st.session_state.analise_ia = None
-                                
-                                st.success("✅ Dados salvos e recarregados com sucesso!")
-                                time.sleep(2)
-                                st.rerun()
-                            else:
-                                st.error("❌ Erro ao recarregar dados do banco.")
+                            st.error("❌ Erro ao recarregar dados do banco.")
                     except Exception as e:
                         st.error(f"❌ Erro: {str(e)}")
-                        import traceback
-                        st.code(traceback.format_exc())
-
-
 
         # ── MODO VISUALIZAÇÃO ──
         else:
             end_casa_dict = buscar_endereco_viacep(cep_casa)
             end_trab_dict = buscar_endereco_viacep(cep_trab)
 
-            rua_casa         = end_casa_dict.get('rua','N/A') if isinstance(end_casa_dict, dict) else end_casa_dict
+            rua_casa = end_casa_dict.get('rua','N/A') if isinstance(end_casa_dict, dict) else end_casa_dict
             bairro_cidade_casa = f"{end_casa_dict.get('bairro','')} - {end_casa_dict.get('cidade_uf','')}" if isinstance(end_casa_dict, dict) else ""
-            rua_trab         = end_trab_dict.get('rua','N/A') if isinstance(end_trab_dict, dict) else end_trab_dict
+            rua_trab = end_trab_dict.get('rua','N/A') if isinstance(end_trab_dict, dict) else end_trab_dict
             bairro_cidade_trab = f"{end_trab_dict.get('bairro','')} - {end_trab_dict.get('cidade_uf','')}" if isinstance(end_trab_dict, dict) else ""
 
             if not st.session_state.get('rota_gerada'):
-                # Monta endereços completos para geocoding preciso
-                # Formato: "Rua, Bairro, Cidade, Estado, Brasil"
                 endereco_completo_casa = end_casa_dict.get('completo', f"{rua_casa}, São Paulo, SP, Brasil") if isinstance(end_casa_dict, dict) else f"{rua_casa}, São Paulo, SP, Brasil"
                 endereco_completo_trab = end_trab_dict.get('completo', f"{rua_trab}, São Paulo, SP, Brasil") if isinstance(end_trab_dict, dict) else f"{rua_trab}, São Paulo, SP, Brasil"
                 
-                print(f"\n🏠 ENDEREÇO CASA COMPLETO: {endereco_completo_casa}")
-                print(f"🏢 ENDEREÇO TRABALHO COMPLETO: {endereco_completo_trab}\n")
-                
-                rota = motor_de_rotas_gratuito(
-                    endereco_completo_casa,
-                    endereco_completo_trab
-                )
+                rota = motor_de_rotas_gratuito(endereco_completo_casa, endereco_completo_trab)
                 st.session_state.rota_gerada = rota
                 
-                # Análise da IA em background (não bloqueia a UI)
                 if not st.session_state.get('analise_ia'):
                     st.session_state.analise_ia = analisar_rota_com_ia(
-                        rua_casa, rua_trab, rota['distancia_km'],
-                        rota['rotas'], rota['info_tarifas']
+                        rua_casa, rua_trab, rota['distancia_km'], rota['rotas'], rota['info_tarifas']
                     )
 
-            # Botão editar
             col_fill, col_edit_btn = st.columns([11, 1])
             with col_edit_btn:
                 if st.button("✏️", use_container_width=True, help="Editar dados"):
                     st.session_state.modo_edicao = True
                     st.rerun()
 
-            # ── Painel principal do funcionário ──
-            # Define cor baseada no status
+            # Cor status
             if status_rota_raw == "Implantado":
-                status_color = "#10B981"  # Verde
-                status_bg = "16,185,129"
+                status_color, status_bg = "#10B981", "16,185,129"
             elif status_rota_raw == "Otimizado":
-                status_color = "#3B82F6"  # Azul
-                status_bg = "59,130,246"
+                status_color, status_bg = "#3B82F6", "59,130,246"
             elif status_rota_raw == "Contestada":
-                status_color = "#F59E0B"  # Amarelo
-                status_bg = "245,158,11"
-            else:  # Não Optante
-                status_color = "#94A3B8"  # Cinza
-                status_bg = "148,163,184"
-            
-            st.markdown(f"""
-            <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
-                        border-radius:16px;padding:28px;margin-bottom:20px;
-                        box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
-                    <div style="background:linear-gradient(135deg,rgba(68,76,155,0.15),rgba(248,174,40,0.15));
-                                border:1px solid #E5E7EB;border-radius:50%;width:52px;height:52px;
-                                display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>
-                    <div>
-                        <h2 style="margin:0;font-size:22px;color:#333333;">Consulta #{id_selecionado}</h2>
-                        <p style="margin:0;color:#666666;font-size:13px;">RENAPSI · SÃO PAULO · C-T</p>
-                    </div>
-                    <span style="margin-left:auto;background:rgba({status_bg},0.15);
-                                 color:{status_color};padding:6px 14px;border-radius:20px;
-                                 font-size:12px;font-weight:700;border:1px solid {status_color}40;">
-                        {status_exib}
-                    </span>
-                </div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
-                    <div style="border-right:1px solid #E5E7EB;padding-right:20px;">
-                        <p style="color:#444c9b;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Dados do Funcionário</p>
-                        <p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">CPF:</span> {cpf_cru}</p>
-                        <p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">Matrícula:</span> {matricula_exib}</p>
-                        <p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">Nome:</span> {nome_jovem}</p>
-                        {f'<p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">E-mail:</span> {email_jovem}</p>' if email_jovem else ''}
-                        {f'<p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">Celular:</span> {celular_jovem}</p>' if celular_jovem else ''}
-                    </div>
-                    <div style="border-right:1px solid #E5E7EB;padding-right:20px;">
-                        <p style="color:#444c9b;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Endereço Residencial</p>
-                        <span style="background:rgba(16,185,129,0.1);color:#10B981;padding:2px 8px;font-size:12px;border-radius:20px;font-weight:600;">● BAIXO RISCO</span>
-                        <p style="margin:8px 0 5px;font-size:14px;color:#333333;"><span style="color:#666666;">CEP:</span> {cep_casa}</p>
-                        <p style="margin:5px 0;font-size:14px;color:#333333;line-height:1.5;">{rua_casa}{f', {numero_casa}' if numero_casa else ''}<br><span style="color:#666666;">{bairro_cidade_casa}</span></p>
-                    </div>
-                    <div>
-                        <p style="color:#444c9b;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 10px;">Local de Trabalho</p>
-                        <p style="margin:5px 0;font-size:14px;color:#333333;"><span style="color:#666666;">CEP:</span> {cep_trab}</p>
-                        <p style="margin:5px 0;font-size:14px;color:#333333;line-height:1.5;">{rua_trab}<br><span style="color:#666666;">{bairro_cidade_trab}</span></p>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+                status_color, status_bg = "#F59E0B", "245,158,11"
+            else:
+                status_color, status_bg = "#94A3B8", "148,163,184"
 
+            # ── PREPARAÇÃO DAS STRINGS ──
+            linha_num_casa = f', {numero_casa}' if numero_casa else ''
+
+            # ── CARD DO FUNCIONÁRIO — REFATORADO COM COMPONENTES NATIVOS ──
+            with st.container(border=True):
+                # Cabeçalho com ID, título e status
+                col_header_left, col_header_right = st.columns([10, 2])
+                with col_header_left:
+                    st.markdown(f"### 👤 Consulta #{id_selecionado}")
+                    st.caption("RENAPSI · SÃO PAULO · C-T")
+                with col_header_right:
+                    st.markdown(f"""
+                    <div style="background:rgba({status_bg},0.15);color:{status_color};padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid {status_color}40;text-align:center;">
+                        {status_exib}
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                st.divider()
+
+                # Três colunas para os dados
+                col1, col2, col3 = st.columns(3)
+
+                # Coluna 1: Dados do Funcionário
+                with col1:
+                    st.markdown("**Dados do Funcionário**")
+                    st.markdown(f"**CPF:** {cpf_cru}")
+                    st.markdown(f"**Matrícula:** {matricula_exib}")
+                    st.markdown(f"**Nome:** {nome_jovem}")
+                    if email_jovem:
+                        st.markdown(f"**E-mail:** {email_jovem}")
+                    if celular_jovem:
+                        st.markdown(f"**Celular:** {celular_jovem}")
+
+                # Coluna 2: Endereço Residencial
+                with col2:
+                    st.markdown("**Endereço Residencial**")
+                    st.markdown("""
+                    <span style="background:rgba(16,185,129,0.1);color:#10B981;padding:2px 8px;font-size:12px;border-radius:20px;font-weight:600;">● BAIXO RISCO</span>
+                    """, unsafe_allow_html=True)
+                    st.markdown(f"**CEP:** {cep_casa}")
+                    st.markdown(f"{rua_casa}{linha_num_casa}  \n{bairro_cidade_casa}")
+
+                # Coluna 3: Local de Trabalho
+                with col3:
+                    st.markdown("**Local de Trabalho**")
+                    st.markdown(f"**CEP:** {cep_trab}")
+                    st.markdown(f"{rua_trab}  \n{bairro_cidade_trab}")
             # ── Barra de ações ──
             st.markdown("<p style='color:#64748B;font-size:12px;margin-bottom:8px;'>AÇÕES DA CONSULTA</p>", unsafe_allow_html=True)
             col_b1, col_b2, col_b3, col_b4, col_b5, col_fill2 = st.columns([1, 1, 1, 1, 1, 1])
@@ -1752,20 +1743,27 @@ elif menu == "Pesquisar Consultas":
 
         with tab_cpf:
             with st.form(key="form_cpf"):
-                cpf_busca = st.text_input("CPF (apenas números)", max_chars=11, placeholder="00000000000")
+                cpf_busca = st.text_input("CPF", max_chars=14, placeholder="000.000.000-00 ou só números")
                 if st.form_submit_button("Pesquisar", type="primary"):
-                    try:
-                        conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                        # CPF está encriptado, então buscamos por ID ou nome
-                        st.session_state.resultado_busca = pd.read_sql_query(
-                            "SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(cpf_busca),))
-                        if st.session_state.resultado_busca.empty:
-                            st.warning("❌ Nenhum resultado encontrado para este ID")
-                        st.session_state.detalhes_abertos = False
-                        conexao.close()
-                        st.rerun()
-                    except ValueError:
-                        st.error("❌ Digite um ID válido (apenas números)")
+                    if not cpf_busca.strip():
+                        st.warning("⚠️ Digite um CPF para buscar.")
+                    else:
+                        try:
+                            # Tira pontos e traços do que a pessoa digitou
+                            cpf_limpo = ''.join(filter(str.isdigit, cpf_busca))
+                            
+                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+                            # CORRIGIDO: Busca na coluna CPF
+                            st.session_state.resultado_busca = pd.read_sql_query(
+                                "SELECT * FROM jovens_rotas WHERE cpf = ?", conexao, params=(cpf_limpo,))
+                            
+                            if st.session_state.resultado_busca.empty:
+                                st.warning("❌ Nenhum resultado encontrado para este CPF.")
+                            st.session_state.detalhes_abertos = False
+                            conexao.close()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ Erro na busca: {str(e)}")
 
         with tab_nome:
             with st.form(key="form_nome"):
@@ -1847,7 +1845,7 @@ elif menu == "Cadastrar Novo Jovem":
             </svg>
             <h1 style="margin:0; color:#444c9b; font-size:28px;">Cadastrar Novo Jovem</h1>
         </div>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
     tab_manual, tab_massa = st.tabs(["✍️ Cadastro Manual", "📂 Importação em Massa"])
 
@@ -1864,7 +1862,7 @@ elif menu == "Cadastrar Novo Jovem":
         with st.form(key="form_novo_jovem"):
             col_n, col_c, col_m = st.columns([2, 1, 1])
             nome_input      = col_n.text_input("Nome Completo")
-            cpf_input       = col_c.text_input("CPF (11 dígitos)", max_chars=11)
+            cpf_input       = col_c.text_input("CPF (11 dígitos)", max_chars=14)
             matricula_input = col_m.text_input("Matrícula")
 
             col_cep1, col_cep2 = st.columns(2)
@@ -1882,17 +1880,34 @@ elif menu == "Cadastrar Novo Jovem":
                 st.error("❌ CPF deve conter exatamente 11 dígitos numéricos.")
             elif len(set(digitos_cpf)) == 1:
                 st.error("❌ CPF inválido: todos os dígitos são iguais.")
-            elif cpf_ja_existe(cpf_input):
-                st.error(f"❌ CPF {cpf_input} já está cadastrado no sistema.")
+            elif cpf_ja_existe(digitos_cpf):
+                st.error(f"❌ CPF {digitos_cpf} já está cadastrado no sistema.")
             else:
-                with st.spinner("Validando CEPs..."):
+                with st.spinner("Validando CEPs e salvando..."):
                     v_casa = buscar_endereco_viacep(cep_casa_input)
                     v_trab = buscar_endereco_viacep(cep_trab_input)
                     if "inválido" in v_casa.get('completo','').lower() or "inválido" in v_trab.get('completo','').lower():
                         st.error("❌ Um dos CEPs informados é inválido.")
                     else:
-                        inserir_novo_jovem(nome_input, cpf_input, cep_casa_input, cep_trab_input, matricula_input)
-                        st.success(f"✅ {nome_input} (Matrícula: {matricula_input}) cadastrado com sucesso!")
+                        try:
+                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+                            cursor = conexao.cursor()
+                            
+                            # ── GERAÇÃO PERFEITA DE ID (MANUAL) ──
+                            cursor.execute("SELECT MAX(CAST(id AS INTEGER)) FROM jovens_rotas")
+                            max_id = cursor.fetchone()[0]
+                            novo_id = 1 if max_id is None else int(max_id) + 1
+                            
+                            cursor.execute("""
+                                INSERT INTO jovens_rotas (id, nome, cpf, cep_casa, cep_trabalho, matricula, status_rota)
+                                VALUES (?, ?, ?, ?, ?, ?, 'Otimizado')
+                            """, (novo_id, nome_input, digitos_cpf, cep_casa_input, cep_trab_input, matricula_input))
+                            
+                            conexao.commit()
+                            conexao.close()
+                            st.success(f"✅ {nome_input} (Matrícula: {matricula_input}) cadastrado com sucesso! (ID: {novo_id})")
+                        except Exception as e:
+                            st.error(f"❌ Erro ao salvar: {e}")
 
     with tab_massa:
         st.markdown("""
@@ -1925,10 +1940,24 @@ elif menu == "Cadastrar Novo Jovem":
 
                     if st.button("🚀 Importar para a Base de Dados", type="primary"):
                         with st.spinner("Importando..."):
+                            df_limpo = df_upload[['nome','cpf','cep_casa','cep_trabalho','matricula','status_rota']].copy()
+                            
+                            # Limpa os CPFs do Excel
+                            df_limpo['cpf'] = df_limpo['cpf'].astype(str).str.replace(r'\D', '', regex=True).str.zfill(11)
+                            
                             conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                            df_limpo = df_upload[['nome','cpf','cep_casa','cep_trabalho','matricula','status_rota']]
+                            
+                            # ── GERAÇÃO PERFEITA DE ID (EM MASSA) ──
+                            cursor = conexao.cursor()
+                            cursor.execute("SELECT MAX(CAST(id AS INTEGER)) FROM jovens_rotas")
+                            max_id = cursor.fetchone()[0]
+                            start_id = 1 if max_id is None else int(max_id) + 1
+                            
+                            df_limpo.insert(0, 'id', range(start_id, start_id + len(df_limpo)))
+                            
                             df_limpo.to_sql('jovens_rotas', conexao, if_exists='append', index=False)
                             conexao.close()
+                            
                             st.success(f"✅ {len(df_limpo)} aprendizes importados com sucesso!")
                             time.sleep(2)
                             st.rerun()

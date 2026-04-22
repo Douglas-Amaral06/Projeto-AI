@@ -302,11 +302,54 @@ def adicionar_colunas_assinatura():
     except Exception as e:
         logger.exception(f"Erro ao adicionar colunas de assinatura: {e}")
 
+def criar_tabela_locais_trabalho():
+    """Cria a tabela de locais de trabalho (unidades) e insere registro padrão"""
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS locais_trabalho (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome_unidade TEXT NOT NULL UNIQUE,
+                cep TEXT NOT NULL,
+                logradouro TEXT,
+                numero TEXT,
+                bairro TEXT,
+                cidade_uf TEXT,
+                coordenadas TEXT,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Insere registro padrão se não existir
+        cursor.execute("SELECT COUNT(*) FROM locais_trabalho WHERE nome_unidade = 'RENAPSI - SÃO PAULO-SP'")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute('''
+                INSERT INTO locais_trabalho (nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                'RENAPSI - SÃO PAULO-SP',
+                '01333010',
+                'RUA CINCINATO BRAGA',
+                '388',
+                'BELA VISTA',
+                'SÃO PAULO - SP',
+                '-23.56774139404297, -46.646541595458984'
+            ))
+        
+        conexao.commit()
+        conexao.close()
+        logger.info("Tabela locais_trabalho criada/atualizada com sucesso")
+    except Exception as e:
+        logger.exception(f"Erro ao criar tabela de locais de trabalho: {e}")
+
 def inicializar_banco_completo():
     atualizar_banco_geral()
     atualizar_banco_para_contestacoes()
     criar_tabela_tokens()
     adicionar_colunas_assinatura()
+    criar_tabela_locais_trabalho()
 
 def atualizar_consulta_com_assinatura(consulta_id: int, filepath: str, ip_address: str) -> bool:
     try:
@@ -552,3 +595,123 @@ def reprovar_ficha(ficha_id, motivo=""):
         conexao.close()
         logger.exception(f"Erro ao reprovar ficha: {e}")
         return False, f"❌ Erro ao reprovar ficha: {str(e)}"
+
+
+# ─── FUNÇÕES PARA GERENCIAMENTO DE LOCAIS DE TRABALHO ──────────────────────────
+
+def obter_locais_trabalho():
+    """Retorna lista de todos os locais de trabalho cadastrados."""
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        cursor.execute("""
+            SELECT id, nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas
+            FROM locais_trabalho
+            ORDER BY nome_unidade
+        """)
+        locais = []
+        for row in cursor.fetchall():
+            locais.append({
+                'id': row[0],
+                'nome_unidade': row[1],
+                'cep': row[2],
+                'logradouro': row[3],
+                'numero': row[4],
+                'bairro': row[5],
+                'cidade_uf': row[6],
+                'coordenadas': row[7]
+            })
+        conexao.close()
+        return locais
+    except Exception as e:
+        logger.exception(f"Erro ao obter locais de trabalho: {e}")
+        return []
+
+
+def inserir_local_trabalho(nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas=""):
+    """Insere um novo local de trabalho no banco."""
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        cursor.execute("""
+            INSERT INTO locais_trabalho (nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas))
+        conexao.commit()
+        conexao.close()
+        logger.info(f"Local de trabalho '{nome_unidade}' inserido com sucesso")
+        return True
+    except sqlite3.IntegrityError:
+        logger.error(f"Local de trabalho '{nome_unidade}' já existe")
+        return False
+    except Exception as e:
+        logger.exception(f"Erro ao inserir local de trabalho: {e}")
+        return False
+
+
+def obter_local_trabalho_por_id(local_id):
+    """Retorna os dados de um local de trabalho específico."""
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        cursor.execute("""
+            SELECT id, nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas
+            FROM locais_trabalho
+            WHERE id = ?
+        """, (local_id,))
+        row = cursor.fetchone()
+        conexao.close()
+        
+        if row:
+            return {
+                'id': row[0],
+                'nome_unidade': row[1],
+                'cep': row[2],
+                'logradouro': row[3],
+                'numero': row[4],
+                'bairro': row[5],
+                'cidade_uf': row[6],
+                'coordenadas': row[7]
+            }
+        return None
+    except Exception as e:
+        logger.exception(f"Erro ao obter local de trabalho: {e}")
+        return None
+
+
+def atualizar_local_trabalho(local_id, nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas=""):
+    """Atualiza os dados de um local de trabalho."""
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        cursor.execute("""
+            UPDATE locais_trabalho
+            SET nome_unidade = ?, cep = ?, logradouro = ?, numero = ?, bairro = ?, cidade_uf = ?, coordenadas = ?
+            WHERE id = ?
+        """, (nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas, local_id))
+        conexao.commit()
+        sucesso = cursor.rowcount > 0
+        conexao.close()
+        if sucesso:
+            logger.info(f"Local de trabalho ID {local_id} atualizado com sucesso")
+        return sucesso
+    except Exception as e:
+        logger.exception(f"Erro ao atualizar local de trabalho: {e}")
+        return False
+
+
+def deletar_local_trabalho(local_id):
+    """Deleta um local de trabalho do banco."""
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        cursor.execute("DELETE FROM locais_trabalho WHERE id = ?", (local_id,))
+        conexao.commit()
+        sucesso = cursor.rowcount > 0
+        conexao.close()
+        if sucesso:
+            logger.info(f"Local de trabalho ID {local_id} deletado com sucesso")
+        return sucesso
+    except Exception as e:
+        logger.exception(f"Erro ao deletar local de trabalho: {e}")
+        return False
