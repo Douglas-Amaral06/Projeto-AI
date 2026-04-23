@@ -9,7 +9,7 @@ import folium
 from streamlit_folium import st_folium
 from apis import buscar_endereco_viacep, obter_coordenadas_reais, motor_de_rotas_gratuito
 from agente_ia import analisar_rota_com_ia
-from banco_dados import obter_dados_dashboard, obter_status_visual, registrar_contestacao, obter_locais_trabalho, obter_local_trabalho_por_id
+from banco_dados import obter_dados_dashboard, obter_status_visual, registrar_contestacao, obter_locais_trabalho, obter_local_trabalho_por_id, atualizar_status_rota
 from carta_pdf import gerar_carta_pdf
 from email_sender import enviar_carta_por_email
 
@@ -66,9 +66,10 @@ def renderizar_consultas():
         cpf_cru          = str(dados_jovem['cpf']).zfill(11)
         cep_casa         = dados_jovem['cep_casa']
         cep_trab         = dados_jovem['cep_trabalho']
+        cep_curso        = dados_jovem.get('cep_curso', '')
         matricula_exib   = dados_jovem.get('matricula', 'Não informada')
         status_rota_raw  = dados_jovem.get('status_rota', 'Otimizado')
-        status_exib      = obter_status_visual(status_rota_raw)
+        status_curso_raw = dados_jovem.get('status_curso', 'Otimizado')
         email_jovem      = dados_jovem.get('email', '')
         celular_jovem    = dados_jovem.get('celular', '')
         numero_casa      = dados_jovem.get('numero_casa', '')
@@ -83,6 +84,10 @@ def renderizar_consultas():
                 <p style="color:#666666;font-size:13px;margin:0;">Atualize as informações do funcionário e o local de trabalho</p>
             </div>
             """, unsafe_allow_html=True)
+
+            # Detectar contexto ativo
+            modalidade_atual = st.session_state.get('modalidade_pesquisa_radio', 'Trabalho')
+            contexto_ativo = "Trabalho" if "Trabalho" in modalidade_atual else "Curso"
 
             # ── 3 Colunas como você pediu ──
             col_e1, col_e2, col_e3 = st.columns(3)
@@ -123,31 +128,38 @@ def renderizar_consultas():
                         st.error("❌ CEP inválido")
 
             with col_e3:
-                st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏢 Local de Trabalho</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏢 Local de {contexto_ativo}</p>", unsafe_allow_html=True)
                 
-                # ── TAREFA 2: DINAMIZAR LOCAIS DE TRABALHO ──
-                # Busca unidades do banco de dados
-                locais_trabalho = obter_locais_trabalho()
+                # Filtrar locais por contexto usando tipo_local
+                locais_trabalho = obter_locais_trabalho(tipo_local=contexto_ativo)
                 
                 if not locais_trabalho:
-                    st.warning("⚠️ Nenhuma unidade cadastrada no sistema. Vá em 'Gerenciar Unidades' para adicionar.")
+                    st.warning(f"⚠️ Nenhuma unidade de {contexto_ativo} cadastrada no sistema. Vá em 'Gerenciar Unidades' para adicionar.")
                     local_selecionado = None
                 else:
                     # Cria dicionário com nome_unidade como chave
                     dict_locais = {local['nome_unidade']: local for local in locais_trabalho}
                     nomes_unidades = list(dict_locais.keys())
                     
-                    # Selectbox com unidades do banco
+                    # Inicializa session_state para armazenar seleção
+                    if f'local_trabalho_selecionado_{id_selecionado}_{contexto_ativo}' not in st.session_state:
+                        st.session_state[f'local_trabalho_selecionado_{id_selecionado}_{contexto_ativo}'] = None
+                    
+                    # Selectbox com unidades do banco (dinâmico, sem hardcoding)
                     local_selecionado_nome = st.selectbox(
-                        "Selecione o local de trabalho:",
+                        f"Selecione o local de {contexto_ativo}:",
                         nomes_unidades,
-                        key=f"select_local_trabalho_{id_selecionado}"
+                        index=None,  # Sem seleção padrão
+                        placeholder="Escolha uma unidade...",
+                        key=f"select_local_{contexto_ativo}_{id_selecionado}"
                     )
                     
+                    # Armazena seleção em session_state
                     if local_selecionado_nome:
+                        st.session_state[f'local_trabalho_selecionado_{id_selecionado}_{contexto_ativo}'] = local_selecionado_nome
                         local_selecionado = dict_locais[local_selecionado_nome]
                         
-                        # Card azul com dados reais da unidade
+                        # Card azul com dados reais da unidade (100% dinâmico)
                         st.markdown(f"""
                         <div style="background-color:#BAE6FD; border-radius:8px; padding:15px; text-align:center; margin-top:5px; border: 1px solid #7DD3FC;">
                             <p style="color:#0284C7; font-size:12px; font-weight:700; margin:0;">
@@ -162,6 +174,7 @@ def renderizar_consultas():
                         """, unsafe_allow_html=True)
                     else:
                         local_selecionado = None
+                        st.info("ℹ️ Selecione uma unidade para visualizar os dados")
 
             st.markdown("<br>", unsafe_allow_html=True)
             col_f, col_c = st.columns([1, 1])
@@ -173,67 +186,104 @@ def renderizar_consultas():
             with col_c:
                 if st.button("Confirmar Alterações", type="primary", use_container_width=True):
                     try:
-                        if not local_selecionado:
+                        # Valida se uma unidade foi selecionada
+                        local_selecionado_nome = st.session_state.get(f"select_local_{contexto_ativo}_{id_selecionado}")
+                        
+                        if not local_selecionado_nome:
                             st.error("⚠️ Selecione um local de trabalho antes de confirmar.")
                         else:
-                            mat_final = str(mat_input) if mat_input else ''
-                            email_final = str(email_input) if email_input else ''
-                            celular_final = str(celular_input) if celular_input else ''
-                            cep_final = str(cep_input) if cep_input else str(cep_casa)
-                            num_final = str(num_input) if num_input else ''
-                            coord_final = str(coord_input) if coord_input else ''
-                            cep_trab_final = local_selecionado['cep']  # Pega o CEP da unidade selecionada
+                            # Busca a unidade selecionada do banco para garantir dados atualizados
+                            locais_trabalho = obter_locais_trabalho(tipo_local=contexto_ativo)
+                            dict_locais = {local['nome_unidade']: local for local in locais_trabalho}
                             
-                            with st.spinner("Salvando no banco de dados..."):
-                                # Fazemos o UPDATE direto aqui para garantir que o CEP Trabalho seja atualizado
-                                conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', '..', 'mobilidade_renapsi.db'))
-                                cursor = conexao.cursor()
-                                cursor.execute('''
-                                    UPDATE jovens_rotas 
-                                    SET matricula = ?, email = ?, celular = ?, cep_casa = ?, numero_casa = ?, coordenadas = ?, cep_trabalho = ?
-                                    WHERE id = ?
-                                ''', (mat_final, email_final, celular_final, cep_final, num_final, coord_final, cep_trab_final, id_selecionado))
-                                conexao.commit()
-                                
-                                # Atualiza a tela
-                                df_atualizado = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_selecionado),))
-                                conexao.close()
-                                
-                            if not df_atualizado.empty:
-                                st.session_state.resultado_busca = df_atualizado
-                                st.session_state.modo_edicao = False
-                                st.session_state.pop('coord_temp', None)
-                                st.session_state.rota_gerada = None # Força o recalculo da rota para a nova empresa
-                                st.session_state.analise_ia = None
-                                
-                                st.success("✅ Dados e Local de Trabalho salvos com sucesso!")
-                                time.sleep(2)
-                                st.rerun()
+                            if local_selecionado_nome not in dict_locais:
+                                st.error("❌ Unidade selecionada não encontrada no banco de dados.")
                             else:
-                                st.error("❌ Erro ao recarregar dados do banco.")
+                                local_selecionado = dict_locais[local_selecionado_nome]
+                                
+                                # Prepara dados para salvar
+                                mat_final = str(mat_input) if mat_input else ''
+                                email_final = str(email_input) if email_input else ''
+                                celular_final = str(celular_input) if celular_input else ''
+                                cep_final = str(cep_input) if cep_input else str(cep_casa)
+                                num_final = str(num_input) if num_input else ''
+                                coord_final = str(coord_input) if coord_input else ''
+                                
+                                # CEP da unidade selecionada (CRÍTICO: garantir que seja do banco)
+                                cep_local_final = local_selecionado['cep']
+                                
+                                # Determinar qual coluna atualizar baseado no contexto
+                                if contexto_ativo == 'Trabalho':
+                                    coluna_cep = 'cep_trabalho'
+                                else:
+                                    coluna_cep = 'cep_curso'
+                                
+                                with st.spinner("Salvando no banco de dados..."):
+                                    # UPDATE com prepared statement (seguro contra SQL injection)
+                                    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', '..', 'mobilidade_renapsi.db'))
+                                    cursor = conexao.cursor()
+                                    cursor.execute(f'''
+                                        UPDATE jovens_rotas 
+                                        SET matricula = ?, email = ?, celular = ?, cep_casa = ?, numero_casa = ?, coordenadas = ?, {coluna_cep} = ?
+                                        WHERE id = ?
+                                    ''', (mat_final, email_final, celular_final, cep_final, num_final, coord_final, cep_local_final, id_selecionado))
+                                    conexao.commit()
+                                    
+                                    # Recarrega dados atualizados
+                                    df_atualizado = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_selecionado),))
+                                    conexao.close()
+                                
+                                if not df_atualizado.empty:
+                                    st.session_state.resultado_busca = df_atualizado
+                                    st.session_state.modo_edicao = False
+                                    st.session_state.pop('coord_temp', None)
+                                    st.session_state.rota_gerada = None # Força o recalculo da rota para a nova empresa
+                                    st.session_state.analise_ia = None
+                                    
+                                    st.success(f"✅ Dados salvos com sucesso! CEP de {contexto_ativo} atualizado para: {cep_local_final}")
+                                    time.sleep(2)
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Erro ao recarregar dados do banco.")
                     except Exception as e:
-                        st.error(f"❌ Erro: {str(e)}")
+                        st.error(f"❌ Erro ao salvar: {str(e)}")
 
-        # ── MODO VISUALIZAÇÃO ──
+            # ── MODO VISUALIZAÇÃO ──
         else:
             end_casa_dict = buscar_endereco_viacep(cep_casa)
-            end_trab_dict = buscar_endereco_viacep(cep_trab)
+            
+            # Detectar contexto ativo
+            modalidade_atual = st.session_state.get('modalidade_pesquisa_radio', 'Trabalho')
+            contexto_ativo = "Trabalho" if "Trabalho" in modalidade_atual else "Curso"
+            
+            # Obter CEP e status corretos baseado no contexto
+            if contexto_ativo == 'Trabalho':
+                cep_destino = cep_trab
+                status_rota_raw = dados_jovem.get('status_rota', 'Otimizado')
+                sigla_contexto = "C-T"
+            else:  # Curso
+                cep_destino = cep_curso
+                status_rota_raw = dados_jovem.get('status_curso', 'Otimizado')
+                sigla_contexto = "C-C"
+            
+            status_exib = obter_status_visual(status_rota_raw)
+            end_destino_dict = buscar_endereco_viacep(cep_destino)
 
             rua_casa = end_casa_dict.get('rua','N/A') if isinstance(end_casa_dict, dict) else end_casa_dict
             bairro_cidade_casa = f"{end_casa_dict.get('bairro','')} - {end_casa_dict.get('cidade_uf','')}" if isinstance(end_casa_dict, dict) else ""
-            rua_trab = end_trab_dict.get('rua','N/A') if isinstance(end_trab_dict, dict) else end_trab_dict
-            bairro_cidade_trab = f"{end_trab_dict.get('bairro','')} - {end_trab_dict.get('cidade_uf','')}" if isinstance(end_trab_dict, dict) else ""
+            rua_destino = end_destino_dict.get('rua','N/A') if isinstance(end_destino_dict, dict) else end_destino_dict
+            bairro_cidade_destino = f"{end_destino_dict.get('bairro','')} - {end_destino_dict.get('cidade_uf','')}" if isinstance(end_destino_dict, dict) else ""
 
             if not st.session_state.get('rota_gerada'):
                 endereco_completo_casa = end_casa_dict.get('completo', f"{rua_casa}, São Paulo, SP, Brasil") if isinstance(end_casa_dict, dict) else f"{rua_casa}, São Paulo, SP, Brasil"
-                endereco_completo_trab = end_trab_dict.get('completo', f"{rua_trab}, São Paulo, SP, Brasil") if isinstance(end_trab_dict, dict) else f"{rua_trab}, São Paulo, SP, Brasil"
+                endereco_completo_destino = end_destino_dict.get('completo', f"{rua_destino}, São Paulo, SP, Brasil") if isinstance(end_destino_dict, dict) else f"{rua_destino}, São Paulo, SP, Brasil"
                 
-                rota = motor_de_rotas_gratuito(endereco_completo_casa, endereco_completo_trab)
+                rota = motor_de_rotas_gratuito(endereco_completo_casa, endereco_completo_destino)
                 st.session_state.rota_gerada = rota
                 
                 if not st.session_state.get('analise_ia'):
                     st.session_state.analise_ia = analisar_rota_com_ia(
-                        rua_casa, rua_trab, rota['distancia_km'], rota['rotas'], rota['info_tarifas']
+                        rua_casa, rua_destino, rota['distancia_km'], rota['rotas'], rota['info_tarifas']
                     )
 
             col_fill, col_edit_btn = st.columns([11, 1])
@@ -261,7 +311,7 @@ def renderizar_consultas():
                 col_header_left, col_header_right = st.columns([10, 2])
                 with col_header_left:
                     st.markdown(f"### 👤 Consulta #{id_selecionado}")
-                    st.caption("RENAPSI · SÃO PAULO · C-T")
+                    st.caption(f"RENAPSI · SÃO PAULO · { 'C-T' if st.session_state.get('contexto_rota', 'Trabalho') == 'Trabalho' else 'C-C' }")
                 with col_header_right:
                     st.markdown(f"""
                     <div style="background:rgba({status_bg},0.15);color:{status_color};padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid {status_color}40;text-align:center;">
@@ -294,11 +344,12 @@ def renderizar_consultas():
                     st.markdown(f"**CEP:** {cep_casa}")
                     st.markdown(f"{rua_casa}{linha_num_casa}  \n{bairro_cidade_casa}")
 
-                # Coluna 3: Local de Trabalho
+                # Coluna 3: Local de Destino (Trabalho ou Curso)
                 with col3:
-                    st.markdown("**Local de Trabalho**")
-                    st.markdown(f"**CEP:** {cep_trab}")
-                    st.markdown(f"{rua_trab}  \n{bairro_cidade_trab}")
+                    titulo_destino = "Local de Trabalho" if contexto_ativo == 'Trabalho' else "Local de Curso"
+                    st.markdown(f"**{titulo_destino}**")
+                    st.markdown(f"**CEP:** {cep_destino}")
+                    st.markdown(f"{rua_destino}  \n{bairro_cidade_destino}")
 
             st.markdown("<br>", unsafe_allow_html=True)
 

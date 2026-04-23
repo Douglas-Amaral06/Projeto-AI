@@ -11,8 +11,46 @@ load_dotenv()
 DATABASE_FILE = os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')
 logger = logging.getLogger(__name__)
 
+def atualizar_esquema_banco():
+    """Cria as colunas faltantes no banco de dados"""
+    try:
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        
+        # Adiciona coluna tipo_local em locais_trabalho
+        try:
+            cursor.execute("ALTER TABLE locais_trabalho ADD COLUMN tipo_local TEXT DEFAULT 'Trabalho'")
+            logger.info("Coluna tipo_local adicionada em locais_trabalho")
+        except sqlite3.OperationalError:
+            pass  # Coluna já existe
+        
+        # Adiciona coluna cep_curso em jovens_rotas
+        try:
+            cursor.execute("ALTER TABLE jovens_rotas ADD COLUMN cep_curso TEXT")
+            logger.info("Coluna cep_curso adicionada em jovens_rotas")
+        except sqlite3.OperationalError:
+            pass  # Coluna já existe
+        
+        # Adiciona coluna status_curso em jovens_rotas
+        try:
+            cursor.execute("ALTER TABLE jovens_rotas ADD COLUMN status_curso TEXT DEFAULT 'Otimizado'")
+            logger.info("Coluna status_curso adicionada em jovens_rotas")
+        except sqlite3.OperationalError:
+            pass  # Coluna já existe
+        
+        # Atualiza registros existentes com valores padrão
+        cursor.execute("UPDATE locais_trabalho SET tipo_local = 'Trabalho' WHERE tipo_local IS NULL")
+        cursor.execute("UPDATE jovens_rotas SET status_curso = 'Otimizado' WHERE status_curso IS NULL")
+        
+        conexao.commit()
+        conexao.close()
+        logger.info("Esquema do banco atualizado com sucesso")
+    except Exception as e:
+        logger.exception(f"Erro ao atualizar esquema do banco: {e}")
+
 def carregar_dados():
     try:
+        atualizar_esquema_banco()  # Garante que o esquema está atualizado
         conexao = sqlite3.connect(DATABASE_FILE)
         df = pd.read_sql_query("SELECT * FROM jovens_rotas", conexao)
         conexao.close()
@@ -76,7 +114,9 @@ def atualizar_banco_geral():
             ("tipo_bilhete_manual", "TEXT"),
             ("valor_tarifa_manual", "REAL"),
             ("descricao_itinerario_manual", "TEXT"),
-            ("assinatura_digital", "TEXT")
+            ("assinatura_digital", "TEXT"),
+            ("cep_curso", "TEXT"),
+            ("status_curso", "TEXT DEFAULT 'Otimizado'")
         ]
         
         for coluna, tipo in colunas_novas:
@@ -87,6 +127,7 @@ def atualizar_banco_geral():
                 
         cursor.execute("UPDATE jovens_rotas SET status_rota = 'Otimizado' WHERE status_rota IS NULL")
         cursor.execute("UPDATE jovens_rotas SET modo_rota = 'automatica' WHERE modo_rota IS NULL")
+        cursor.execute("UPDATE jovens_rotas SET status_curso = 'Otimizado' WHERE status_curso IS NULL")
         conexao.commit()
         conexao.close()
     except Exception as e:
@@ -312,6 +353,7 @@ def criar_tabela_locais_trabalho():
             CREATE TABLE IF NOT EXISTS locais_trabalho (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nome_unidade TEXT NOT NULL UNIQUE,
+                tipo_local TEXT DEFAULT 'Trabalho',
                 cep TEXT NOT NULL,
                 logradouro TEXT,
                 numero TEXT,
@@ -322,14 +364,24 @@ def criar_tabela_locais_trabalho():
             )
         ''')
         
+        # Adiciona coluna tipo_local se não existir
+        try:
+            cursor.execute("ALTER TABLE locais_trabalho ADD COLUMN tipo_local TEXT DEFAULT 'Trabalho'")
+        except sqlite3.OperationalError:
+            pass  # Coluna já existe
+        
+        # Atualiza registros existentes com tipo_local padrão
+        cursor.execute("UPDATE locais_trabalho SET tipo_local = 'Trabalho' WHERE tipo_local IS NULL")
+        
         # Insere registro padrão se não existir
         cursor.execute("SELECT COUNT(*) FROM locais_trabalho WHERE nome_unidade = 'RENAPSI - SÃO PAULO-SP'")
         if cursor.fetchone()[0] == 0:
             cursor.execute('''
-                INSERT INTO locais_trabalho (nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO locais_trabalho (nome_unidade, tipo_local, cep, logradouro, numero, bairro, cidade_uf, coordenadas)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 'RENAPSI - SÃO PAULO-SP',
+                'Trabalho',
                 '01333010',
                 'RUA CINCINATO BRAGA',
                 '388',
@@ -345,21 +397,32 @@ def criar_tabela_locais_trabalho():
         logger.exception(f"Erro ao criar tabela de locais de trabalho: {e}")
 
 def inicializar_banco_completo():
+    atualizar_esquema_banco()
     atualizar_banco_geral()
     atualizar_banco_para_contestacoes()
     criar_tabela_tokens()
     adicionar_colunas_assinatura()
     criar_tabela_locais_trabalho()
+    adicionar_colunas_assinatura()
+    criar_tabela_locais_trabalho()
 
-def atualizar_consulta_com_assinatura(consulta_id: int, filepath: str, ip_address: str) -> bool:
+def atualizar_consulta_com_assinatura(consulta_id: int, filepath: str, ip_address: str, contexto: str = 'Trabalho') -> bool:
     try:
         timestamp_atual = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         conexao = sqlite3.connect(DATABASE_FILE)
         cursor = conexao.cursor()
         
-        cursor.execute('''
+        # Determinar qual coluna de status atualizar baseado no contexto
+        if contexto == 'Trabalho':
+            coluna_status = 'status_rota'
+        elif contexto == 'Curso':
+            coluna_status = 'status_curso'
+        else:
+            raise ValueError(f"Contexto inválido: {contexto}")
+        
+        cursor.execute(f'''
             UPDATE jovens_rotas 
-            SET status_rota = 'Implantado',
+            SET {coluna_status} = 'Implantado',
                 assinatura_path = ?,
                 assinatura_data = ?,
                 assinatura_ip = ?
@@ -373,7 +436,7 @@ def atualizar_consulta_com_assinatura(consulta_id: int, filepath: str, ip_addres
             
         conexao.commit()
         conexao.close()
-        print(f"✅ Consulta {consulta_id} atualizada com sucesso: status='Implantado'")
+        print(f"✅ Consulta {consulta_id} atualizada com sucesso: {coluna_status}='Implantado' (Contexto: {contexto})")
         return True
     except Exception as e:
         print(f"❌ ERRO na atualização da assinatura: {str(e)}")
@@ -409,7 +472,7 @@ def verificar_token_usado(token: str) -> bool:
 def obter_status_visual(status_rota):
     """Retorna a máscara visual do status"""
     mapeamento = {
-        'Otimizado': '🔵 Aguardando Aceite',
+        'Otimizado': '🔵 Aguardando Assinar',
         'Implantado': '🟢 Assinado/Ativo',
         'Contestada': '🟡 Em Revisão',
         'Não Optante': '⚪ Não Optante'
@@ -599,27 +662,38 @@ def reprovar_ficha(ficha_id, motivo=""):
 
 # ─── FUNÇÕES PARA GERENCIAMENTO DE LOCAIS DE TRABALHO ──────────────────────────
 
-def obter_locais_trabalho():
-    """Retorna lista de todos os locais de trabalho cadastrados."""
+def obter_locais_trabalho(tipo_local=None):
+    """Retorna lista de locais de trabalho filtrados por tipo."""
     try:
         conexao = sqlite3.connect(DATABASE_FILE)
         cursor = conexao.cursor()
-        cursor.execute("""
-            SELECT id, nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas
-            FROM locais_trabalho
-            ORDER BY nome_unidade
-        """)
+        
+        if tipo_local:
+            cursor.execute("""
+                SELECT id, nome_unidade, tipo_local, cep, logradouro, numero, bairro, cidade_uf, coordenadas
+                FROM locais_trabalho
+                WHERE tipo_local = ?
+                ORDER BY nome_unidade
+            """, (tipo_local,))
+        else:
+            cursor.execute("""
+                SELECT id, nome_unidade, tipo_local, cep, logradouro, numero, bairro, cidade_uf, coordenadas
+                FROM locais_trabalho
+                ORDER BY nome_unidade
+            """)
+        
         locais = []
         for row in cursor.fetchall():
             locais.append({
                 'id': row[0],
                 'nome_unidade': row[1],
-                'cep': row[2],
-                'logradouro': row[3],
-                'numero': row[4],
-                'bairro': row[5],
-                'cidade_uf': row[6],
-                'coordenadas': row[7]
+                'tipo_local': row[2],
+                'cep': row[3],
+                'logradouro': row[4],
+                'numero': row[5],
+                'bairro': row[6],
+                'cidade_uf': row[7],
+                'coordenadas': row[8]
             })
         conexao.close()
         return locais
@@ -627,19 +701,19 @@ def obter_locais_trabalho():
         logger.exception(f"Erro ao obter locais de trabalho: {e}")
         return []
 
-
-def inserir_local_trabalho(nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas=""):
+#forçando o BD a criar as colunas
+def inserir_local_trabalho(nome_unidade, cep, logradouro, numero, bairro, cidade_uf, tipo_local='Trabalho', coordenadas=""):
     """Insere um novo local de trabalho no banco."""
     try:
         conexao = sqlite3.connect(DATABASE_FILE)
         cursor = conexao.cursor()
         cursor.execute("""
-            INSERT INTO locais_trabalho (nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas))
+            INSERT INTO locais_trabalho (nome_unidade, tipo_local, cep, logradouro, numero, bairro, cidade_uf, coordenadas)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (nome_unidade, tipo_local, cep, logradouro, numero, bairro, cidade_uf, coordenadas))
         conexao.commit()
         conexao.close()
-        logger.info(f"Local de trabalho '{nome_unidade}' inserido com sucesso")
+        logger.info(f"Local de trabalho '{nome_unidade}' ({tipo_local}) inserido com sucesso")
         return True
     except sqlite3.IntegrityError:
         logger.error(f"Local de trabalho '{nome_unidade}' já existe")
@@ -679,16 +753,16 @@ def obter_local_trabalho_por_id(local_id):
         return None
 
 
-def atualizar_local_trabalho(local_id, nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas=""):
+def atualizar_local_trabalho(local_id, nome_unidade, cep, logradouro, numero, bairro, cidade_uf, tipo_local='Trabalho', coordenadas=""):
     """Atualiza os dados de um local de trabalho."""
     try:
         conexao = sqlite3.connect(DATABASE_FILE)
         cursor = conexao.cursor()
         cursor.execute("""
             UPDATE locais_trabalho
-            SET nome_unidade = ?, cep = ?, logradouro = ?, numero = ?, bairro = ?, cidade_uf = ?, coordenadas = ?
+            SET nome_unidade = ?, tipo_local = ?, cep = ?, logradouro = ?, numero = ?, bairro = ?, cidade_uf = ?, coordenadas = ?
             WHERE id = ?
-        """, (nome_unidade, cep, logradouro, numero, bairro, cidade_uf, coordenadas, local_id))
+        """, (nome_unidade, tipo_local, cep, logradouro, numero, bairro, cidade_uf, coordenadas, local_id))
         conexao.commit()
         sucesso = cursor.rowcount > 0
         conexao.close()
@@ -715,3 +789,32 @@ def deletar_local_trabalho(local_id):
     except Exception as e:
         logger.exception(f"Erro ao deletar local de trabalho: {e}")
         return False
+
+def atualizar_status_rota(id_jovem, novo_status, contexto='Trabalho'):
+    """Atualiza status da rota para o contexto especificado."""
+    try:
+        id_jovem = int(id_jovem)
+        conexao = sqlite3.connect(DATABASE_FILE)
+        cursor = conexao.cursor()
+        
+        if contexto == 'Trabalho':
+            coluna = 'status_rota'
+        elif contexto == 'Curso':
+            coluna = 'status_curso'
+        else:
+            raise ValueError(f"Contexto inválido: {contexto}")
+        
+        query = f"UPDATE jovens_rotas SET {coluna} = ? WHERE id = ?"
+        cursor.execute(query, (novo_status, id_jovem))
+        conexao.commit()
+        sucesso = cursor.rowcount > 0
+        conexao.close()
+        
+        if sucesso:
+            logger.info(f"Status {contexto} atualizado para {novo_status} (ID: {id_jovem})")
+        return sucesso
+    except Exception as e:
+        logger.exception(f"Erro ao atualizar status: {e}")
+        return False
+
+        atualizar_esquema_banco()

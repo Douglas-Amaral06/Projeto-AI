@@ -346,7 +346,8 @@ if menu == "Dashboard Principal":
     tipo_rota = st.radio(
         "Modalidade:",
         ["🏠 Casa × Trabalho", "📚 Casa × Curso", "📊 Gestão de Base", "📧 Envios em Massa"],
-        horizontal=True
+        horizontal=True,
+        key="modalidade_pesquisa_radio"
     )
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -1101,25 +1102,46 @@ elif menu == "Pesquisar Consultas":
             with col_e3:
                 st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏢 Local de Trabalho</p>", unsafe_allow_html=True)
                 
-                # Dicionário de Unidades (No futuro puxaremos do banco)
-                locais = {
-                    "RENAPSI - SÃO PAULO-SP": {
-                        "endereco": "RUA CINCINATO BRAGA, 388\nBELA VISTA - SÃO PAULO - SP",
-                        "coordenadas": "-23.56774139404297, -46.646541595458984",
-                        "cep": "01333010"
-                    }
-                }
+                # ── DINAMIZAR LOCAIS DE TRABALHO DO BANCO ──
+                # Busca unidades do banco de dados (sempre atualizado)
+                locais_trabalho = obter_locais_trabalho()
                 
-                local_selecionado = st.selectbox("Selecione o local de trabalho:", list(locais.keys()))
-                loc = locais[local_selecionado]
-                
-                # Card azul claro com os dados da empresa
-                st.markdown(f"""
-                <div style="background-color:#BAE6FD; border-radius:8px; padding:15px; text-align:center; margin-top:5px; border: 1px solid #7DD3FC;">
-                    <p style="color:#0284C7; font-size:12px; font-weight:700; margin:0;">{loc['endereco'].replace(chr(10), '<br>')}</p>
-                    <p style="color:#0284C7; font-size:11px; margin:8px 0 0;">COORDENADAS: {loc['coordenadas']}</p>
-                </div>
-                """, unsafe_allow_html=True)
+                if not locais_trabalho:
+                    st.warning("⚠️ Nenhuma unidade cadastrada no sistema. Vá em 'Gerenciar Unidades' para adicionar.")
+                    local_selecionado = None
+                else:
+                    # Cria dicionário com nome_unidade como chave
+                    dict_locais = {local['nome_unidade']: local for local in locais_trabalho}
+                    nomes_unidades = list(dict_locais.keys())
+                    
+                    # Selectbox com unidades do banco (dinâmico, sem hardcoding)
+                    local_selecionado_nome = st.selectbox(
+                        "Selecione o local de trabalho:",
+                        nomes_unidades,
+                        index=None,
+                        placeholder="Escolha uma unidade...",
+                        key=f"select_local_trabalho_app_{id_selecionado}"
+                    )
+                    
+                    if local_selecionado_nome:
+                        local_selecionado = dict_locais[local_selecionado_nome]
+                        
+                        # Card azul com dados reais da unidade (100% dinâmico)
+                        st.markdown(f"""
+                        <div style="background-color:#BAE6FD; border-radius:8px; padding:15px; text-align:center; margin-top:5px; border: 1px solid #7DD3FC;">
+                            <p style="color:#0284C7; font-size:12px; font-weight:700; margin:0;">
+                                {local_selecionado['logradouro']}, {local_selecionado['numero']} - {local_selecionado['bairro']}<br>
+                                {local_selecionado['cidade_uf']}
+                            </p>
+                            <p style="color:#0284C7; font-size:11px; margin:8px 0 0;">
+                                CEP: {local_selecionado['cep']}
+                            </p>
+                            {f'<p style="color:#0284C7; font-size:11px; margin:4px 0 0;">COORDENADAS: {local_selecionado["coordenadas"]}</p>' if local_selecionado['coordenadas'] else ''}
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        local_selecionado = None
+                        st.info("ℹ️ Selecione uma unidade para visualizar os dados")
 
             st.markdown("<br>", unsafe_allow_html=True)
             col_f, col_c = st.columns([1, 1])
@@ -1131,43 +1153,61 @@ elif menu == "Pesquisar Consultas":
             with col_c:
                 if st.button("Confirmar Alterações", type="primary", use_container_width=True):
                     try:
-                        mat_final = str(mat_input) if mat_input else ''
-                        email_final = str(email_input) if email_input else ''
-                        celular_final = str(celular_input) if celular_input else ''
-                        cep_final = str(cep_input) if cep_input else str(cep_casa)
-                        num_final = str(num_input) if num_input else ''
-                        coord_final = str(coord_input) if coord_input else ''
-                        cep_trab_final = loc['cep']  # Pega o CEP da empresa selecionada
+                        # Valida se uma unidade foi selecionada
+                        local_selecionado_nome = st.session_state.get(f"select_local_trabalho_app_{id_selecionado}")
                         
-                        with st.spinner("Salvando no banco de dados..."):
-                            # Fazemos o UPDATE direto aqui para garantir que o CEP Trabalho seja atualizado
-                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                            cursor = conexao.cursor()
-                            cursor.execute('''
-                                UPDATE jovens_rotas 
-                                SET matricula = ?, email = ?, celular = ?, cep_casa = ?, numero_casa = ?, coordenadas = ?, cep_trabalho = ?
-                                WHERE id = ?
-                            ''', (mat_final, email_final, celular_final, cep_final, num_final, coord_final, cep_trab_final, id_selecionado))
-                            conexao.commit()
-                            
-                            # Atualiza a tela
-                            df_atualizado = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_selecionado),))
-                            conexao.close()
-                            
-                        if not df_atualizado.empty:
-                            st.session_state.resultado_busca = df_atualizado
-                            st.session_state.modo_edicao = False
-                            st.session_state.pop('coord_temp', None)
-                            st.session_state.rota_gerada = None # Força o recalculo da rota para a nova empresa
-                            st.session_state.analise_ia = None
-                            
-                            st.success("✅ Dados e Local de Trabalho salvos com sucesso!")
-                            time.sleep(2)
-                            st.rerun()
+                        if not local_selecionado_nome:
+                            st.error("⚠️ Selecione um local de trabalho antes de confirmar.")
                         else:
-                            st.error("❌ Erro ao recarregar dados do banco.")
+                            # Busca a unidade selecionada do banco para garantir dados atualizados
+                            locais_trabalho = obter_locais_trabalho()
+                            dict_locais = {local['nome_unidade']: local for local in locais_trabalho}
+                            
+                            if local_selecionado_nome not in dict_locais:
+                                st.error("❌ Unidade selecionada não encontrada no banco de dados.")
+                            else:
+                                local_selecionado = dict_locais[local_selecionado_nome]
+                                
+                                # Prepara dados para salvar
+                                mat_final = str(mat_input) if mat_input else ''
+                                email_final = str(email_input) if email_input else ''
+                                celular_final = str(celular_input) if celular_input else ''
+                                cep_final = str(cep_input) if cep_input else str(cep_casa)
+                                num_final = str(num_input) if num_input else ''
+                                coord_final = str(coord_input) if coord_input else ''
+                                
+                                # CEP da unidade selecionada (CRÍTICO: garantir que seja do banco)
+                                cep_trab_final = local_selecionado['cep']
+                                
+                                with st.spinner("Salvando no banco de dados..."):
+                                    # UPDATE com prepared statement (seguro contra SQL injection)
+                                    conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+                                    cursor = conexao.cursor()
+                                    cursor.execute('''
+                                        UPDATE jovens_rotas 
+                                        SET matricula = ?, email = ?, celular = ?, cep_casa = ?, numero_casa = ?, coordenadas = ?, cep_trabalho = ?
+                                        WHERE id = ?
+                                    ''', (mat_final, email_final, celular_final, cep_final, num_final, coord_final, cep_trab_final, id_selecionado))
+                                    conexao.commit()
+                                    
+                                    # Recarrega dados atualizados
+                                    df_atualizado = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_selecionado),))
+                                    conexao.close()
+                                
+                                if not df_atualizado.empty:
+                                    st.session_state.resultado_busca = df_atualizado
+                                    st.session_state.modo_edicao = False
+                                    st.session_state.pop('coord_temp', None)
+                                    st.session_state.rota_gerada = None # Força o recalculo da rota para a nova empresa
+                                    st.session_state.analise_ia = None
+                                    
+                                    st.success(f"✅ Dados salvos com sucesso! CEP de trabalho atualizado para: {cep_trab_final}")
+                                    time.sleep(2)
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Erro ao recarregar dados do banco.")
                     except Exception as e:
-                        st.error(f"❌ Erro: {str(e)}")
+                        st.error(f"❌ Erro ao salvar: {str(e)}")
 
         # ── MODO VISUALIZAÇÃO ──
         else:
@@ -1216,7 +1256,7 @@ elif menu == "Pesquisar Consultas":
                 col_header_left, col_header_right = st.columns([10, 2])
                 with col_header_left:
                     st.markdown(f"### 👤 Consulta #{id_selecionado}")
-                    st.caption("RENAPSI · SÃO PAULO · C-T")
+                    st.caption ("RENAPSI · SÃO PAULO · { 'C-T' if 'Trabalho' in modalidade_pesquisa else 'C-C'}")
                 with col_header_right:
                     st.markdown(f"""
                     <div style="background:rgba({status_bg},0.15);color:{status_color};padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid {status_color}40;text-align:center;">
@@ -1402,12 +1442,12 @@ elif menu == "Pesquisar Consultas":
                         else:
                             registrar_contestacao(nome=nome_jovem, cid_res="São Paulo", cid_trab="São Paulo", motivo=motivo_input)
                             
-                            # Atualiza status para CONTESTADA
-                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                            cursor = conexao.cursor()
-                            cursor.execute("UPDATE jovens_rotas SET status_rota = 'Contestada' WHERE id = ?", (id_selecionado,))
-                            conexao.commit()
-                            conexao.close()
+                            # Detectar contexto ativo
+                            modalidade_atual = st.session_state.get('modalidade_pesquisa_radio', 'Trabalho')
+                            contexto_ativo = "Trabalho" if "Trabalho" in modalidade_atual else "Curso"
+                            
+                            # Atualiza status para CONTESTADA usando função com contexto
+                            atualizar_status_rota(id_selecionado, 'Contestada', contexto_ativo)
                             
                             st.success("Contestação registrada! Status alterado para CONTESTADA.")
                             st.session_state.modo_contestacao = False
@@ -1471,17 +1511,14 @@ elif menu == "Pesquisar Consultas":
                             else:  # Não Implantada
                                 novo_status = "Otimizado"
                             
-                            # Atualiza no banco
-                            conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                            cursor = conexao.cursor()
-                            cursor.execute(
-                                "UPDATE jovens_rotas SET status_rota = ? WHERE id = ?",
-                                (novo_status, id_selecionado)
-                            )
-                            conexao.commit()
-                            conexao.close()
+                            # Detectar contexto ativo
+                            modalidade_atual = st.session_state.get('modalidade_pesquisa_radio', 'Trabalho')
+                            contexto_ativo = "Trabalho" if "Trabalho" in modalidade_atual else "Curso"
                             
-                            st.success(f"✅ Status alterado para: {novo_status}")
+                            # Atualiza no banco usando a função com contexto
+                            atualizar_status_rota(id_selecionado, novo_status, contexto_ativo)
+                            
+                            st.success(f"✅ Status alterado para: {novo_status} (Contexto: {contexto_ativo})")
                             st.session_state.modo_implantacao = False
                             time.sleep(1)
                             st.rerun()
@@ -1734,7 +1771,8 @@ elif menu == "Pesquisar Consultas":
         modalidade_pesquisa = st.radio(
             "Modalidade:",
             ["🏠 Casa × Trabalho", "📚 Casa × Curso"],
-            horizontal=True
+            horizontal=True,
+            key="modalidade_pesquisa_radio"
         )
 
         st.markdown("<hr style='border-color:rgba(0,212,255,0.1);'>", unsafe_allow_html=True)
@@ -1797,39 +1835,61 @@ elif menu == "Pesquisar Consultas":
                     except Exception as e:
                         st.error(f"❌ Erro na busca: {str(e)}")
 
-        if st.session_state.resultado_busca is not None:
-            if st.session_state.resultado_busca.empty:
-                st.warning("Nenhum aprendiz encontrado.")
-            else:
-                dados_jovem    = st.session_state.resultado_busca.iloc[0]
-                id_sel         = dados_jovem['id']
-                nome_jov       = dados_jovem['nome']
-                cpf_cru2       = str(dados_jovem['cpf']).zfill(11)
-                cpf_mask       = f"***.***.{cpf_cru2[6:9]}-{cpf_cru2[9:11]}"
-                mat_exib       = dados_jovem.get('matricula','Não informada')
-                status_rota_raw2 = dados_jovem.get('status_rota','Otimizado')
-                status_exib2   = obter_status_visual(status_rota_raw2)
-                data_rot       = dados_jovem.get('data_consulta') or "Pendente"
+        if st.session_state.resultado_busca is not None and not st.session_state.resultado_busca.empty:
+            st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
+            st.markdown("<p style='color:#444c9b;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;'>📋 Resultados da Busca</p>", unsafe_allow_html=True)
 
-                st.markdown(f"""
-                <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
-                            border-radius:12px;padding:20px;
-                            margin-top:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                        <span style="color:#333333;font-weight:700;font-size:16px;">#{id_sel} — {nome_jov.upper()}</span>
-                        <span style="background:rgba(68,76,155,0.15);color:#444c9b;padding:2px 8px;
-                                     border-radius:20px;font-size:12px;font-weight:700;">{status_exib2}</span>
+            # --- VÊ QUAL ABA ESTÁ SELECIONADA ---
+            modalidade_atual = st.session_state.get('modalidade_pesquisa_radio', 'Trabalho')
+
+            for _, row in st.session_state.resultado_busca.iterrows():
+                
+                # --- LÓGICA DE SEPARAÇÃO: TRABALHO x CURSO ---
+                if "Trabalho" in modalidade_atual:
+                    status_raw = row.get('status_rota', 'Otimizado')
+                else:
+                    status_raw = row.get('status_curso', 'Otimizado')
+                
+                status_exib = obter_status_visual(status_raw)
+                
+                # Define as cores da bolinha 
+                if status_raw == "Implantado":
+                    status_color, status_bg = "#10B981", "16,185,129"
+                elif status_raw == "Otimizado":
+                    status_color, status_bg = "#3B82F6", "59,130,246"
+                elif status_raw == "Contestada":
+                    status_color, status_bg = "#F59E0B", "245,158,11"
+                else:
+                    status_color, status_bg = "#94A3B8", "148,163,184"
+
+                # Camuflador do CPF
+                cpf_str = str(row['cpf']).zfill(11)
+                cpf_mask = f"***.***.{cpf_str[6:9]}-{cpf_str[9:11]}"
+
+                col_info, col_btn = st.columns([10, 2])
+                with col_info:
+                    st.markdown(f"""
+                    <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:8px;padding:12px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+                            <p style="margin:0;color:#444c9b;font-weight:700;font-size:16px;">
+                                {row['nome']}
+                            </p>
+                            <span style="background:rgba({status_bg},0.15);color:{status_color};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:700;">
+                                {status_exib}
+                            </span>
+                        </div>
+                        <p style="margin:0;color:#666666;font-size:13px;">
+                            PRÉ-ADM · CPF: {cpf_mask} · Matrícula: {row.get('matricula', 'N/A')}
+                        </p>
                     </div>
-                    <p style="margin:3px 0;color:#666666;font-size:14px;">PRÉ-ADM · Última roteirização: {data_rot}</p>
-                    <p style="margin:3px 0;color:#666666;font-size:12px;">CPF: {cpf_mask} · Matrícula: {mat_exib}</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Abrir Consulta →", type="primary"):
-                    st.session_state.detalhes_abertos = True
-                    st.query_params["id_consulta"] = id_sel
-                    st.rerun()
+                    """, unsafe_allow_html=True)
+                with col_btn:
+                    st.write("") # Espaço para alinhar o botãozin
+                    if st.button("Abrir Consulta →", key=f"btn_abrir_{row['id']}", type="primary", use_container_width=True):
+                        st.session_state.resultado_busca = pd.DataFrame([row])
+                        st.session_state.detalhes_abertos = True
+                        st.query_params['id_consulta'] = str(row['id'])
+                        st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -2566,13 +2626,9 @@ elif menu == "Simulação: Portal do Jovem":
                     
                     with col_nao_optante:
                         if st.button("❌ Não Optante", use_container_width=True, key=f"nao_optante_{id_jovem}"):
-                            with sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')) as conexao:
-                                cursor = conexao.cursor()
-                                cursor.execute(
-                                    "UPDATE jovens_rotas SET status_rota = 'Não Optante' WHERE id = ?",
-                                    (id_jovem,)
-                                )
-                                conexao.commit()
+                            # Detectar contexto ativo (se houver)
+                            contexto_ativo = "Trabalho"  # Padrão para Envios em Massa
+                            atualizar_status_rota(id_jovem, 'Não Optante', contexto_ativo)
                             st.success("✅ Status atualizado para 'Não Optante'")
                             time.sleep(2)
                             st.rerun()
@@ -2609,9 +2665,11 @@ elif menu == "Simulação: Portal do Jovem":
                                 else:
                                     with sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')) as conexao:
                                         cursor = conexao.cursor()
-                                        cursor.execute("""
+                                        # Detectar contexto ativo (padrão Trabalho para Envios em Massa)
+                                        contexto_ativo = "Trabalho"
+                                        cursor.execute(f"""
                                             UPDATE jovens_rotas 
-                                            SET status_rota = 'Implantado', 
+                                            SET status_{contexto_ativo.lower() if contexto_ativo == 'Curso' else 'rota'} = 'Implantado', 
                                                 assinatura_digital = ?,
                                                 assinatura_data = ?
                                             WHERE id = ?
@@ -2666,11 +2724,9 @@ elif menu == "Simulação: Portal do Jovem":
                                     # Atualiza status
                                     with sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db')) as conexao:
                                         cursor = conexao.cursor()
-                                        cursor.execute(
-                                            "UPDATE jovens_rotas SET status_rota = 'Contestada' WHERE id = ?",
-                                            (id_jovem,)
-                                        )
-                                        conexao.commit()
+                                        # Detectar contexto ativo (padrão Trabalho para Envios em Massa)
+                                        contexto_ativo = "Trabalho"
+                                        atualizar_status_rota(id_jovem, 'Contestada', contexto_ativo)
                                     
                                     st.success("✅ Contestação registrada! Status atualizado para 'Contestada'")
                                     st.session_state.modo_contestacao_jovem = False

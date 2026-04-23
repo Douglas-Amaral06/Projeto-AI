@@ -35,7 +35,8 @@ def _listar_unidades():
         with st.container(border=True):
             col1, col2 = st.columns([4, 1])
             with col1:
-                st.markdown(f"**{local['nome_unidade']}**")
+                tipo_badge = "🏢 Trabalho" if local.get('tipo_local', 'Trabalho') == 'Trabalho' else "📚 Curso"
+                st.markdown(f"**{local['nome_unidade']}** `{tipo_badge}`")
                 st.caption(f"CEP: {local['cep']}")
                 st.markdown(f"{local['logradouro']}, {local['numero']} - {local['bairro']}")
                 st.caption(f"{local['cidade_uf']}")
@@ -49,64 +50,53 @@ def _listar_unidades():
 
 def _formulario_nova_unidade():
     """Formulário para cadastrar nova unidade."""
-    st.subheader("Cadastrar Nova Unidade")
-
-    # Inicializa estado da sessão
-    if 'coordenadas_temp' not in st.session_state:
-        st.session_state.coordenadas_temp = ''
-
-    with st.form("form_nova_unidade"):
-        nome_unidade = st.text_input("Nome da Unidade", placeholder="Ex: RENAPSI - São Paulo")
-        cep = st.text_input("CEP", placeholder="00000000", max_chars=8)
-
-        if cep and len(cep) == 8:
-            endereco = buscar_endereco_viacep(cep)
-            if isinstance(endereco, dict):
-                logradouro = st.text_input("Logradouro", value=endereco.get('rua', ''), disabled=True)
-                bairro = st.text_input("Bairro", value=endereco.get('bairro', ''), disabled=True)
-                cidade_uf = st.text_input("Cidade/UF", value=endereco.get('cidade_uf', ''), disabled=True)
-            else:
-                st.error("CEP não encontrado")
-                logradouro = st.text_input("Logradouro")
-                bairro = st.text_input("Bairro")
-                cidade_uf = st.text_input("Cidade/UF")
-        else:
-            logradouro = st.text_input("Logradouro")
-            bairro = st.text_input("Bairro")
-            cidade_uf = st.text_input("Cidade/UF")
-
-        numero = st.text_input("Número", placeholder="Ex: 123")
-
-        # Exibe coordenadas armazenadas ou placeholder
-        coordenadas_display = st.session_state.get('coordenadas_temp', '')
-        coordenadas = st.text_input(
-            "Coordenadas (Lat, Long)",
-            value=coordenadas_display,
-            placeholder="Ex: -23.5505, -46.6333",
-            disabled=True
-        )
-
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.form_submit_button("🔍 Buscar Coordenadas Reais", use_container_width=True):
-                if logradouro and numero and cidade_uf:
-                    endereco_completo = f"{logradouro}, {numero}, {cidade_uf}"
-                    coords = obter_coordenadas_reais(endereco_completo)
-                    if coords:
-                        st.session_state.coordenadas_temp = coords
-                        st.success(f"✅ Coordenadas encontradas: {coords}")
-                        st.rerun()
-                    else:
-                        st.error("❌ Não foi possível encontrar as coordenadas. Verifique o endereço.")
-                else:
-                    st.error("⚠️ Preencha logradouro, número e cidade/UF")
-
-        with col2:
-            if st.form_submit_button("🗑️ Limpar Coordenadas", use_container_width=True):
-                st.session_state.coordenadas_temp = ''
-                st.info("✅ Coordenadas limpas")
+    st.subheader("Nova Unidade / Polo de Ensino")
+    
+    nome_unidade = st.text_input("Nome do Local (Ex: Polo Centro, SAMS Club)")
+    
+    # ── SELETOR DE TRABALHO OU CURSO ──
+    tipo_local_input = st.radio("Tipo de Localidade:", ["Trabalho", "Curso"], horizontal=True)
+    
+    cep = st.text_input("CEP", max_chars=8)
+    
+    col1, col2 = st.columns(2)
+    with col1: logradouro = st.text_input("Logradouro (Rua, Av)")
+    with col2: numero = st.text_input("Número")
+    
+    bairro = st.text_input("Bairro")
+    cidade_uf = st.text_input("Cidade/UF")
+    
+    coords = st.session_state.get('coordenadas_temp', '')
+    st.text_input("Coordenadas (Lat, Lon)", value=coords, disabled=True)
+    
+    if st.button("🔍 Buscar Coordenadas Reais", type="secondary"):
+        if cep and numero:
+            end_completo = f"CEP {cep}, {numero}, Brasil"
+            lat, lon = obter_coordenadas_reais(end_completo)
+            if lat and lon:
+                st.session_state.coordenadas_temp = f"{lat}, {lon}"
+                st.success(f"✅ Coordenadas: {lat}, {lon}")
+                time.sleep(1)
                 st.rerun()
+            else:
+                st.error("❌ Coordenadas não encontradas.")
+        else:
+            st.warning("⚠️ Preencha CEP e Número.")
+
+    if st.button("💾 Salvar Localidade", type="primary"):
+        if not nome_unidade or not cep or not logradouro or not numero:
+            st.error("⚠️ Preencha todos os campos obrigatórios")
+        else:
+            inserir_local_trabalho(
+                nome_unidade=nome_unidade, cep=cep, logradouro=logradouro, 
+                numero=numero, bairro=bairro, cidade_uf=cidade_uf, 
+                coordenadas=coords, tipo_local=tipo_local_input
+            )
+            st.success(f"✅ Unidade '{nome_unidade}' ({tipo_local_input}) cadastrada com sucesso!")
+            if 'coordenadas_temp' in st.session_state:
+                del st.session_state.coordenadas_temp
+            time.sleep(2)
+            st.rerun()
 
         with col3:
             if st.form_submit_button("💾 Salvar Unidade", use_container_width=True, type="primary"):
@@ -121,9 +111,10 @@ def _formulario_nova_unidade():
                         numero=numero,
                         bairro=bairro,
                         cidade_uf=cidade_uf,
+                        tipo_local=tipo_local_input,
                         coordenadas=coords
                     )
-                    st.success(f"✅ Unidade '{nome_unidade}' cadastrada com sucesso!")
+                    st.success(f"✅ Unidade '{nome_unidade}' ({tipo_local_input}) cadastrada com sucesso!")
                     if 'coordenadas_temp' in st.session_state:
                         del st.session_state.coordenadas_temp
                     st.rerun()
