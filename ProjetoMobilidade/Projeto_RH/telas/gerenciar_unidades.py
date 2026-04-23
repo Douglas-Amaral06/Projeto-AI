@@ -3,6 +3,7 @@
 import streamlit as st
 import sqlite3
 import os
+import time
 from apis import buscar_endereco_viacep, obter_coordenadas_reais
 from banco_dados import inserir_local_trabalho, obter_locais_trabalho
 
@@ -50,6 +51,10 @@ def _formulario_nova_unidade():
     """Formulário para cadastrar nova unidade."""
     st.subheader("Cadastrar Nova Unidade")
 
+    # Inicializa estado da sessão
+    if 'coordenadas_temp' not in st.session_state:
+        st.session_state.coordenadas_temp = ''
+
     with st.form("form_nova_unidade"):
         nome_unidade = st.text_input("Nome da Unidade", placeholder="Ex: RENAPSI - São Paulo")
         cep = st.text_input("CEP", placeholder="00000000", max_chars=8)
@@ -72,11 +77,19 @@ def _formulario_nova_unidade():
 
         numero = st.text_input("Número", placeholder="Ex: 123")
 
-        coordenadas = st.text_input("Coordenadas (Lat, Long)", placeholder="Ex: -23.5505, -46.6333", disabled=True)
+        # Exibe coordenadas armazenadas ou placeholder
+        coordenadas_display = st.session_state.get('coordenadas_temp', '')
+        coordenadas = st.text_input(
+            "Coordenadas (Lat, Long)",
+            value=coordenadas_display,
+            placeholder="Ex: -23.5505, -46.6333",
+            disabled=True
+        )
 
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
+        
         with col1:
-            if st.form_submit_button("🔍 Corrigir Endereço", use_container_width=True):
+            if st.form_submit_button("🔍 Buscar Coordenadas Reais", use_container_width=True):
                 if logradouro and numero and cidade_uf:
                     endereco_completo = f"{logradouro}, {numero}, {cidade_uf}"
                     coords = obter_coordenadas_reais(endereco_completo)
@@ -84,13 +97,21 @@ def _formulario_nova_unidade():
                         st.session_state.coordenadas_temp = coords
                         st.success(f"✅ Coordenadas encontradas: {coords}")
                         st.rerun()
+                    else:
+                        st.error("❌ Não foi possível encontrar as coordenadas. Verifique o endereço.")
                 else:
-                    st.error("Preencha logradouro, número e cidade/UF")
+                    st.error("⚠️ Preencha logradouro, número e cidade/UF")
 
         with col2:
+            if st.form_submit_button("🗑️ Limpar Coordenadas", use_container_width=True):
+                st.session_state.coordenadas_temp = ''
+                st.info("✅ Coordenadas limpas")
+                st.rerun()
+
+        with col3:
             if st.form_submit_button("💾 Salvar Unidade", use_container_width=True, type="primary"):
                 if not nome_unidade or not cep or not logradouro or not numero:
-                    st.error("Preencha todos os campos obrigatórios")
+                    st.error("⚠️ Preencha todos os campos obrigatórios")
                 else:
                     coords = st.session_state.get('coordenadas_temp', '')
                     inserir_local_trabalho(

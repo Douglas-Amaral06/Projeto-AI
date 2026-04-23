@@ -273,7 +273,7 @@ st.sidebar.markdown("<p style='color:#1E293B;font-size:13px;text-transform:upper
 
 parametros_url = st.query_params
 pagina_salva = parametros_url.get("menu", "Dashboard Principal")
-opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem", "🗂️ Triagem de Fichas", "Banco de Dados", "Simulação: Portal do Jovem"]
+opcoes_menu = ["Dashboard Principal", "Pesquisar Consultas", "Cadastrar Novo Jovem", "🗂️ Triagem de Fichas", "Banco de Dados", "🏢 Gerenciar Unidades", "Simulação: Portal do Jovem"]
 indice_padrao = opcoes_menu.index(pagina_salva) if pagina_salva in opcoes_menu else 0
 
 menu = st.sidebar.radio("", opcoes_menu, index=indice_padrao)
@@ -2684,6 +2684,164 @@ elif menu == "Simulação: Portal do Jovem":
                 
                 else:
                     st.warning("⚠️ Não foi possível calcular a rota para este jovem")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TELA 5 — GERENCIAR UNIDADES
+# ══════════════════════════════════════════════════════════════════════════════
+elif menu == "🏢 Gerenciar Unidades":
+
+    st.markdown("""
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div>
+            <h1 style="margin:0;font-size:28px;color:#1E293B;font-weight:800;">
+                🏢 Gerenciar Unidades de Trabalho
+            </h1>
+            <p style="margin:0;color:#666666;font-size:13px;letter-spacing:0.05em;">
+                Cadastre e gerencie os locais de trabalho (unidades) da organização
+            </p>
+        </div>
+    </div>
+    <hr style="border-color:#E2E8F0;margin-bottom:20px;">
+    """, unsafe_allow_html=True)
+
+    tab1, tab2 = st.tabs(["📋 Listar Unidades", "➕ Cadastrar Nova Unidade"])
+
+    with tab1:
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;
+                    border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 4px;color:#444c9b;">📋 Unidades Cadastradas</h3>
+            <p style="color:#64748B;font-size:14px;margin:0;">
+                Lista de todos os locais de trabalho registrados no sistema
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        locais = obter_locais_trabalho()
+
+        if not locais:
+            st.info("📭 Nenhuma unidade cadastrada ainda. Comece criando uma nova unidade!")
+        else:
+            for local in locais:
+                with st.container(border=True):
+                    col1, col2 = st.columns([4, 1])
+                    with col1:
+                        st.markdown(f"""
+                        <div style="background:#FFFFFF;border-radius:8px;padding:12px;">
+                            <p style="margin:0 0 8px;color:#444c9b;font-size:18px;font-weight:700;">
+                                {local['nome_unidade']}
+                            </p>
+                            <p style="margin:0 0 4px;color:#666666;font-size:14px;">
+                                📍 {local['logradouro']}, {local['numero']} - {local['bairro']}
+                            </p>
+                            <p style="margin:0 0 4px;color:#666666;font-size:14px;">
+                                {local['cidade_uf']}
+                            </p>
+                            <p style="margin:0;color:#94A3B8;font-size:13px;">
+                                CEP: {local['cep']}
+                            </p>
+                            {f'<p style="margin:4px 0 0;color:#64748B;font-size:13px;">📍 Coordenadas: {local["coordenadas"]}</p>' if local['coordenadas'] else ''}
+                        </div>
+                        """, unsafe_allow_html=True)
+                    with col2:
+                        if st.button("🗑️", key=f"del_{local['id']}", help="Deletar unidade"):
+                            try:
+                                conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
+                                cursor = conexao.cursor()
+                                cursor.execute("DELETE FROM locais_trabalho WHERE id = ?", (local['id'],))
+                                conexao.commit()
+                                conexao.close()
+                                st.success("✅ Unidade deletada com sucesso!")
+                                time.sleep(1)
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"❌ Erro ao deletar: {str(e)}")
+
+    with tab2:
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;
+                    border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin:0 0 4px;color:#444c9b;">➕ Cadastrar Nova Unidade</h3>
+            <p style="color:#64748B;font-size:14px;margin:0;">
+                Preencha os dados para registrar um novo local de trabalho
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.form("form_nova_unidade"):
+            nome_unidade = st.text_input(
+                "Nome da Unidade",
+                placeholder="Ex: RENAPSI - São Paulo",
+                key="nome_unidade_form"
+            )
+            cep = st.text_input(
+                "CEP",
+                placeholder="00000000",
+                max_chars=8,
+                key="cep_form"
+            )
+
+            # Busca endereço automaticamente
+            logradouro = ""
+            bairro = ""
+            cidade_uf = ""
+
+            if cep and len(cep) == 8:
+                endereco = buscar_endereco_viacep(cep)
+                if isinstance(endereco, dict):
+                    logradouro = st.text_input("Logradouro", value=endereco.get('rua', ''), disabled=True, key="logradouro_form")
+                    bairro = st.text_input("Bairro", value=endereco.get('bairro', ''), disabled=True, key="bairro_form")
+                    cidade_uf = st.text_input("Cidade/UF", value=endereco.get('cidade_uf', ''), disabled=True, key="cidade_uf_form")
+                else:
+                    st.error("❌ CEP não encontrado")
+                    logradouro = st.text_input("Logradouro", key="logradouro_form_manual")
+                    bairro = st.text_input("Bairro", key="bairro_form_manual")
+                    cidade_uf = st.text_input("Cidade/UF", key="cidade_uf_form_manual")
+            else:
+                logradouro = st.text_input("Logradouro", key="logradouro_form_manual2")
+                bairro = st.text_input("Bairro", key="bairro_form_manual2")
+                cidade_uf = st.text_input("Cidade/UF", key="cidade_uf_form_manual2")
+
+            numero = st.text_input(
+                "Número",
+                placeholder="Ex: 123",
+                key="numero_form"
+            )
+
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                if st.form_submit_button("🔍 Corrigir Endereço", use_container_width=True):
+                    if logradouro and numero and cidade_uf:
+                        endereco_completo = f"{logradouro}, {numero}, {cidade_uf}"
+                        coords = obter_coordenadas_reais(endereco_completo)
+                        if coords:
+                            st.session_state.coordenadas_temp = coords
+                            st.success(f"✅ Coordenadas encontradas: {coords}")
+                            st.rerun()
+                    else:
+                        st.error("⚠️ Preencha logradouro, número e cidade/UF")
+
+            with col_btn2:
+                if st.form_submit_button("💾 Salvar Unidade", use_container_width=True, type="primary"):
+                    if not nome_unidade or not cep or not logradouro or not numero:
+                        st.error("⚠️ Preencha todos os campos obrigatórios")
+                    else:
+                        coords = st.session_state.get('coordenadas_temp', '')
+                        inserir_local_trabalho(
+                            nome_unidade=nome_unidade,
+                            cep=cep,
+                            logradouro=logradouro,
+                            numero=numero,
+                            bairro=bairro,
+                            cidade_uf=cidade_uf,
+                            coordenadas=coords
+                        )
+                        st.success(f"✅ Unidade '{nome_unidade}' cadastrada com sucesso!")
+                        if 'coordenadas_temp' in st.session_state:
+                            del st.session_state.coordenadas_temp
+                        time.sleep(1)
+                        st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
