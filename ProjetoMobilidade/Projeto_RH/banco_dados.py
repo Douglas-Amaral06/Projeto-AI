@@ -701,7 +701,6 @@ def obter_locais_trabalho(tipo_local=None):
         logger.exception(f"Erro ao obter locais de trabalho: {e}")
         return []
 
-#forçando o BD a criar as colunas
 def inserir_local_trabalho(nome_unidade, cep, logradouro, numero, bairro, cidade_uf, tipo_local='Trabalho', coordenadas=""):
     """Insere um novo local de trabalho no banco."""
     try:
@@ -790,6 +789,7 @@ def deletar_local_trabalho(local_id):
         logger.exception(f"Erro ao deletar local de trabalho: {e}")
         return False
 
+
 def atualizar_status_rota(id_jovem, novo_status, contexto='Trabalho'):
     """Atualiza status da rota para o contexto especificado."""
     try:
@@ -816,5 +816,3 @@ def atualizar_status_rota(id_jovem, novo_status, contexto='Trabalho'):
     except Exception as e:
         logger.exception(f"Erro ao atualizar status: {e}")
         return False
-
-        atualizar_esquema_banco()
