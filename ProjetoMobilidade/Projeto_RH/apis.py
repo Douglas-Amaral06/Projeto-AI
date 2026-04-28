@@ -103,28 +103,28 @@ def motor_de_rotas_gratuito(end_casa, end_trab):
     TARIFA_METRO_VT = 5.92
     TARIFA_INTEGRACAO_VT = 11.32
     
-    # Gerando as 3 opções de Rota baseadas na distância real
+    # 3 Opções de rotas (simuladas)
     rotas = [
         {
             "modal": "🚌 Apenas Ônibus",
             "trajeto": "Ônibus Municipal (SPTrans)",
             "valor_diario": TARIFA_ONIBUS_VT * 2,
             "tempo": f"{int((tempo_carro_vazio * 2.5) + 15)} min",
-            "bilhete": "Crédito Eletrônico VT (Ônibus)"
+            "bilhete": "SPTrans VT (Ônibus)"
         },
         {
             "modal": "🚇 Apenas Metrô/CPTM",
             "trajeto": "Sistema Metroferroviário",
             "valor_diario": TARIFA_METRO_VT * 2,
             "tempo": f"{int((tempo_carro_vazio * 0.8) + 20)} min",
-            "bilhete": "Crédito Eletrônico VT (Metrô)"
+            "bilhete": "SPTrans VT (Metrô)"
         },
         {
             "modal": "🔄 Integração",
             "trajeto": "Ônibus + Metrô/CPTM",
             "valor_diario": TARIFA_INTEGRACAO_VT * 2,
             "tempo": f"{int((tempo_carro_vazio * 1.2) + 10)} min",
-            "bilhete": "Integração Ônibus+Metrô VT"
+            "bilhete": "SPTtrans VT (Integração Ônibus+Metrô)"
         }
     ]
 

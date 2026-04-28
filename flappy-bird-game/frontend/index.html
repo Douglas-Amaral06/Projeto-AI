@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Flappy Bird Game - Clone em HTML5 Canvas">
+  <title>Flappy Bird - Space Edition</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="game-wrapper">
+      <!-- Canvas do jogo -->
+      <canvas id="gameCanvas" width="400" height="600"></canvas>
+    </div>
+
+    <!-- Modal de Game Over -->
+    <div id="gameOverModal" class="modal hidden">
+      <div class="modal-content">
+        <h1>Game Over</h1>
+        <div class="final-score">
+          <p>Pontuação Final</p>
+          <p class="score-value" id="finalScore">0</p>
+        </div>
+
+        <div class="player-input">
+          <label for="playerName">Seu Nome:</label>
+          <input 
+            type="text" 
+            id="playerName" 
+            placeholder="Digite seu nome (máx 20 caracteres)" 
+            maxlength="20"
+          >
+        </div>
+
+        <div class="button-group">
+          <button id="saveScoreBtn" class="btn btn-primary">Salvar Pontuação</button>
+          <button id="restartBtn" class="btn btn-secondary">Jogar Novamente</button>
+        </div>
+
+        <!-- Ranking -->
+        <div id="rankingContainer" class="ranking-container hidden">
+          <h2>🏆 Top 10 Pontuações</h2>
+          <table class="ranking-table">
+            <thead>
+              <tr>
+                <th>Posição</th>
+                <th>Nome</th>
+                <th>Pontuação</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody id="rankingBody">
+              <!-- Preenchido dinamicamente -->
+            </tbody>
+          </table>
+          <button id="playAgainBtn" class="btn btn-primary">Jogar Novamente</button>
+        </div>
+
+        <!-- Loading state -->
+        <div id="loadingState" class="loading-state hidden">
+          <p>Salvando pontuação...</p>
+          <div class="spinner"></div>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorState" class="error-state hidden">
+          <p id="errorMessage"></p>
+          <button id="retryBtn" class="btn btn-secondary">Tentar Novamente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="api.js"></script>
+  <script src="entities.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

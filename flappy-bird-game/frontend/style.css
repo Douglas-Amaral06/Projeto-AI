@@ -1,0 +1,362 @@
+/* Reset e estilos globais */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Container principal */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+}
+
+/* Wrapper do jogo */
+.game-wrapper {
+  position: relative;
+  width: 400px;
+  height: 600px;
+  background: #000;
+  border: 3px solid #00ff00;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 40px rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Canvas */
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #0a0e27 0%, #1a1f3a 50%, #0f1428 100%);
+}
+
+/* Modal de Game Over */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #1a1f3a 0%, #0f1428 100%);
+  border: 2px solid #00ff00;
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), 0 0 60px rgba(0, 0, 0, 0.8);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-content h1 {
+  color: #ff0000;
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 30px;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.modal-content h2 {
+  color: #00ff00;
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+/* Pontuação final */
+.final-score {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+}
+
+.final-score p {
+  color: #00ff00;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.final-score .score-value {
+  color: #ffff00;
+  font-size: 48px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+}
+
+/* Input do jogador */
+.player-input {
+  margin-bottom: 30px;
+}
+
+.player-input label {
+  display: block;
+  color: #00ff00;
+  font-size: 14px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.player-input input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #00ff00;
+  border-radius: 6px;
+  background: rgba(0, 255, 0, 0.1);
+  color: #00ff00;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.player-input input:focus {
+  outline: none;
+  border-color: #ffff00;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+  background: rgba(255, 255, 0, 0.05);
+}
+
+.player-input input::placeholder {
+  color: rgba(0, 255, 0, 0.5);
+}
+
+/* Botões */
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #00ff00;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-primary {
+  background: #00ff00;
+  color: #000;
+}
+
+.btn-primary:hover {
+  background: #00dd00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #00ff00;
+}
+
+.btn-secondary:hover {
+  background: rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* Ranking */
+.ranking-container {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #00ff00;
+}
+
+.ranking-container.hidden {
+  display: none;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 12px;
+}
+
+.ranking-table thead {
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.ranking-table th {
+  color: #00ff00;
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #00ff00;
+  font-weight: bold;
+}
+
+.ranking-table td {
+  color: #00ff00;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.ranking-table tbody tr:hover {
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.ranking-table tbody tr.current-player {
+  background: rgba(255, 255, 0, 0.1);
+}
+
+.ranking-table tbody tr.current-player td {
+  color: #ffff00;
+  font-weight: bold;
+}
+
+/* Loading state */
+.loading-state {
+  text-align: center;
+  padding: 20px;
+}
+
+.loading-state.hidden {
+  display: none;
+}
+
+.loading-state p {
+  color: #00ff00;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 255, 0, 0.2);
+  border-top: 3px solid #00ff00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.error-state {
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #ff0000;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.error-state.hidden {
+  display: none;
+}
+
+.error-state p {
+  color: #ff0000;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* Responsividade para mobile */
+@media (max-width: 480px) {
+  .game-wrapper {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    aspect-ratio: 400 / 600;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .modal-content h1 {
+    font-size: 36px;
+  }
+
+  .final-score .score-value {
+    font-size: 36px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .ranking-table {
+    font-size: 11px;
+  }
+
+  .ranking-table th,
+  .ranking-table td {
+    padding: 6px 8px;
+  }
+}
+
+/* Animação de piscar para o menu */
+@keyframes blink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0.3;
+  }
+}
+
+.blinking {
+  animation: blink 1s infinite;
+}

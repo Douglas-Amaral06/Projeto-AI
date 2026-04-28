@@ -2592,7 +2592,7 @@ elif menu == "Simulação: Portal do Jovem":
                                 border:1px solid rgba(0,212,255,0.3);border-radius:16px;padding:24px;margin-bottom:24px;">
                         <h2 style="margin:0 0 8px;color:#00D4FF;font-size:22px;">👤 {nome_jovem}</h2>
                         <p style="color:#94A3B8;font-size:14px;margin:0;">
-                            Olá! Sua rota de Vale-Transporte foi calculada e está pronta para aceite.
+                            Olá! Sua rota de Vale-Transporte foi calculada e está pronta para que aceite.
                         </p>
                     </div>
                     """, unsafe_allow_html=True)
