@@ -18,14 +18,17 @@ saudacoes = ["*Douglas RH Jovem Renapsi*, Olá jovem, bom dia.", "*Douglas RH Jo
     "*Douglas RH Jovem Renapsi* - Olá jovem, como tem sido sua semana?"
 ]
 corpos = [
-    "Gostaria de saber se já está com o cartão TOP em mãos, ou conseguiu fazer a solicitação da via do bilhete, aguardo retorno.",
-    "Você já tem o cartão TOP em mãos? Se não, conseguiu solicitar a via do bilhete? Fico no aguardo do seu retorno.",
-    "Estou entrando em contato para verificar se você já recebeu o cartão TOP ou se conseguiu solicitar a via do bilhete. Aguardo seu retorno.",
-    "Gostaria de confirmar se você já tem o cartão TOP em mãos ou se conseguiu solicitar a via do bilhete. Fico no aguardo do seu retorno.",
-    "Gostaria de saber se você já recebeu o cartão TOP ou se conseguiu solicitar a via do bilhete. Aguardo seu retorno para dar continuidade ao processo.",
-    "Quero saber se você já tem o cartão TOP em mãos ou se conseguiu solicitar a via do bilhete. Fico no aguardo do seu retorno para dar continuidade ao processo.",
-    "Fico entrando em contato para verificar se você já recebeu o cartão TOP ou se conseguiu solicitar a via do bilhete. Aguardo seu retorno para dar continuidade ao processo.",
-    "Quero confirmar se você já tem o cartão TOP em mãos ou se conseguiu solicitar a via do bilhete. Fico no aguardo do seu retorno para dar continuidade ao processo.",
+    "Gostaria que você me enviasse a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Peço que me envie a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Solicito que me envie a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Peço para que me envie a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Aqui solicito que me envie a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Por gentileza, me envie a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Peço encarecidamente que me envie a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Peço que me encaminhe a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Solicito que você me encaminhe a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Jovem, peço que me encaminhe a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
+    "Por gentileza, me encaminhe a sua operadora e o número do seu bilhete de transporte (vinculado ao seu CPF). Além disso, peço que assine sua roteirização para a implantação da rota de trabalho/curso. Caso já tenha assinado, pode desconsiderar esta parte.Vale ressaltar que, caso o envio das informações solicitadas não seja feito até o dia 11/05, o benefício será cortado. Faltas decorrentes da ausência do vale-transporte não serão abonadas.",
 ]
 
 print(f"🚀 Iniciando disparo em massa: {len(numeros)} contatos.")
@@ -42,7 +45,7 @@ for numero in numeros:
     contador += 1 
     msg = f"{random.choice(saudacoes)} {random.choice(corpos)}"
     
-    print(f"[{contador}/32] Tentando enviar para: {numero_limpo}")
+    print(f"[{contador}/352] Tentando enviar para: {numero_limpo}")
     
     try:
         # Envia a mensagem instantaneamente (sem agendamento)
