@@ -1,3 +1,12 @@
 .env
 log_robo.txt
 cpf_reais.txt
+*.db
+*.log
+*_backup.db
+# Arquivos com dados sensíveis
+ProjetoMobilidade/Projeto_RH/.env
+ProjetoMobilidade/mobilidade_renapsi.db
+ProjetoMobilidade/mobilidade_renapsi_backup.db
+ProjetoCapta/cpfs_reaiscc.txt
+ProjetoCapta/log_roboCC.txt

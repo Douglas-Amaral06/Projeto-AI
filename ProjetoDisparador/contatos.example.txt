@@ -1,0 +1,5 @@
+# Arquivo de exemplo - substitua pelos números reais
+# Formato: um número por linha (com código do país)
+5511999999999
+5511988888888
+5511977777777

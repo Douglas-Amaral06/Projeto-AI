@@ -12,3 +12,13 @@ PyWhatKit_DB.csv
 PyWhatKit_DB.xlsx
 contatos_reais2.txt
 contatos2.txt
+
+# Arquivos com dados reais dos jovens (NUNCA COMMITAR)
+contatos.txt
+PyWhatKit_DB.txt
+historico_envios.txt
+
+# Arquivos de build
+build/
+dist/
+*.spec

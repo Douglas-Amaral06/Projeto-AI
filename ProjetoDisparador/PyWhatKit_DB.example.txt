@@ -1,0 +1,14 @@
+# Arquivo de exemplo - Log de mensagens enviadas pelo PyWhatKit
+# Este arquivo é gerado automaticamente pelo sistema
+# Formato: Data, Hora, Número, Mensagem
+
+Date: 11/3/2026
+Time: 9:39
+Phone Number: +5511999999999
+Message: Exemplo de mensagem enviada pelo sistema
+--------------------
+Date: 11/3/2026
+Time: 9:40
+Phone Number: +5511988888888
+Message: Outra mensagem de exemplo
+--------------------

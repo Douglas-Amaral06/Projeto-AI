@@ -1,0 +1,7 @@
+# Arquivo de exemplo - Histórico de envios
+# Este arquivo registra todas as tentativas de envio
+# Formato: HH:MM:SS - Tentativa enviada para: +55XXXXXXXXXXX
+
+09:39:17 - Tentativa enviada para: +5511999999999
+09:40:12 - Tentativa enviada para: +5511988888888
+09:41:22 - Tentativa enviada para: +5511977777777
