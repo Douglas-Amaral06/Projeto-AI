@@ -21,3 +21,6 @@ fpdf2>=2.7.0
 
 # Google Generative AI
 google-generativeai>=0.3.0
+
+# Password hashing
+werkzeug>=3.0.0
