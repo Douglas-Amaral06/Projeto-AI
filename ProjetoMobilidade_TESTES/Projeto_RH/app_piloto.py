@@ -54,15 +54,14 @@ st.set_page_config(page_title="RENAPSI â€” Mobilidade", page_icon="ðŸš�
 def safe_sql_query(query, conexao, params=None, default_value=None):
     """
     Executa query SQL com tratamento de erros robusto.
-    Retorna DataFrame vazio ou valor padrÃ£o se a tabela nÃ£o existir.
+    Retorna DataFrame vazio ou valor padrão se a tabela não existir.
     """
     try:
         if params:
-            return safe_sql_query(query, conexao, params=params)
+            return pd.read_sql_query(query, conexao, params=params)
         else:
-            return safe_sql_query(query, conexao)
-    except (sqlite3.OperationalError, pd.errors.DatabaseError) as e:
-        # Tabela nÃ£o existe ou erro de SQL
+            return pd.read_sql_query(query, conexao)
+    except (sqlite3.OperationalError, pd.errors.DatabaseError):
         if default_value is not None:
             return default_value
         return pd.DataFrame()
