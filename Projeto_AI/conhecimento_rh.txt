@@ -1,0 +1,58 @@
+VALE-TRANSPORTE - BASE DE CONHECIMENTO RENAPSI
+
+=== RECARGA DO VALE-TRANSPORTE / BILHETE / cartão de transporte / cartão ===
+
+Como solicitar recarga:
+- A recarga do vale-transporte deve ser solicitada até o dia 20 de cada mês.
+- O pedido é feito através do sistema interno de RH ou diretamente com o supervisor.
+- O valor da recarga é calculado com base nos dias úteis do mês seguinte.
+- A recarga é creditada automaticamente no cartão até o dia 5 do mês seguinte.
+
+Prazo de processamento:
+- Solicitações feitas até o dia 20: crédito no dia 5 do mês seguinte.
+- Solicitações após o dia 20: crédito apenas no mês subsequente.
+
+=== CONSULTA DE SALDO (VALOR DO CARTÃO / BILHETE) ===
+
+Como consultar o saldo:
+- Pelo aplicativo do cartão de transporte (TOP, BOM, etc).
+- Nas máquinas de recarga disponíveis nas estações.
+- Ligando para a central de atendimento do cartão.
+- O saldo é atualizado em tempo real após cada viagem.
+
+Saldo mínimo:
+- Recomenda-se manter sempre saldo para pelo menos 2 viagens.
+- Caso o saldo esteja zerado, solicite recarga emergencial ao RH.
+
+=== BLOQUEIO E DESBLOQUEIO ===
+
+Motivos de bloqueio:
+- Perda ou roubo do cartão.
+- Suspeita de uso indevido.
+- Desligamento do colaborador.
+
+Como desbloquear:
+- Em caso de bloqueio por engano, entre em contato com o RH imediatamente.
+- Apresente documento de identificação e comprovante de vínculo.
+- O desbloqueio é processado em até 24 horas úteis.
+
+Cartão perdido ou roubado:
+- Bloqueie imediatamente pelo aplicativo ou central de atendimento.
+- Registre um boletim de ocorrência se for roubo.
+- Solicite a segunda via ao RH com o protocolo do bloqueio.
+- A segunda via é emitida em até 7 dias úteis.
+
+=== DÚVIDAS FREQUENTES ===
+
+Posso emprestar meu cartão?
+- Não. O vale-transporte é pessoal e intransferível.
+- O uso indevido pode resultar em advertência ou bloqueio definitivo.
+
+O que fazer se o crédito não aparecer?
+- Aguarde até 48 horas após a data prevista.
+- Verifique se a solicitação foi feita dentro do prazo.
+- Entre em contato com o RH com o número do cartão e data da solicitação.
+
+Posso usar o vale-transporte nos finais de semana?
+- Sim, o crédito pode ser usado em qualquer dia da semana.
+- O vale-transporte é destinado ao deslocamento casa-trabalho-casa.
