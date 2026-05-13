@@ -727,14 +727,21 @@ button[data-testid="baseButton-secondary"] {
         background: linear-gradient(135deg, #444c9b 0%, #363d7f 100%) !important;
         border: none !important;
         color: #FFFFFF !important;
-        font-size: 20px !important;
+        font-size: 16px !important;
         border-radius: 8px !important;
         box-shadow: 0 4px 12px rgba(68,76,155,0.3) !important;
         transition: all 0.3s ease !important;
 }
+.stButton > button[kind="secondary"] p,
+.stButton > button[kind="secondary"] span,
+.stButton > button[kind="secondary"] div,
+.stButton > button[kind="secondary"] * {
+        color: #FFFFFF !important;
+}
 .stButton > button[kind="secondary"]:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 20px rgba(68,76,155,0.4) !important;
+        background: linear-gradient(135deg, #5560b8 0%, #444c9b 100%) !important;
 }
 
 /* ── Botões padrão (sem type) — Tema claro ── */
@@ -743,9 +750,14 @@ button[data-testid="baseButton-minimal"] {
         background: #FFFFFF !important;
         border: 1px solid #E5E7EB !important;
         color: #333333 !important;
-        font-size: 20px !important;
+        font-size: 16px !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
+}
+.stButton > button:not([kind]) p,
+.stButton > button:not([kind]) span,
+.stButton > button:not([kind]) * {
+        color: #333333 !important;
 }
 .stButton > button:not([kind]):hover,
 button[data-testid="baseButton-minimal"]:hover {
@@ -753,6 +765,28 @@ button[data-testid="baseButton-minimal"]:hover {
         box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
         background: #F8FAFC !important;
         transform: translateY(-2px) !important;
+}
+
+/* ── Corrige caption/legenda ── */
+.stCaption p, [data-testid="stCaptionContainer"] p,
+small, .stMarkdown small {
+        color: #64748B !important;
+        background: transparent !important;
+}
+
+/* ── Corrige fundo escuro em containers ── */
+[data-testid="stVerticalBlock"] > div,
+[data-testid="column"] > div {
+        background: transparent !important;
+}
+
+/* ── Corrige texto em st.caption ── */
+div[data-testid="stCaptionContainer"] {
+        background: transparent !important;
+}
+div[data-testid="stCaptionContainer"] p {
+        color: #64748B !important;
+        background: transparent !important;
 }
 
 /* ── Tabs com animação ── */
@@ -1275,37 +1309,92 @@ if menu == "🏠 Dashboard Principal":
         # ── KPI Cards CLICÁVEIS ──
         col_k1, col_k2, col_k3, col_k4 = st.columns(4)
         
+        kpi_css = """
+        <style>
+        /* ── KPI Cards ── */
+        .kpi-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 20px 16px 14px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+        }
+        .kpi-icon  { font-size: 26px; margin-bottom: 4px; }
+        .kpi-value { font-size: 28px; font-weight: 800; color: #1E293B; margin: 4px 0; }
+        .kpi-label { font-size: 13px; font-weight: 600; color: #64748B;
+                     text-transform: uppercase; letter-spacing: 0.06em; }
+        .kpi-sub   { font-size: 12px; color: #94A3B8; margin-top: 6px; }
+
+        /* ── Força botões secundários com fundo branco e texto escuro ── */
+        .stButton > button[kind="secondary"] {
+            background: #FFFFFF !important;
+            color: #1E293B !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+        }
+        .stButton > button[kind="secondary"]:hover {
+            background: #F8FAFC !important;
+            border-color: #444c9b !important;
+            color: #444c9b !important;
+        }
+        /* ── Corrige caption/legenda abaixo dos botões ── */
+        .stCaption, [data-testid="stCaptionContainer"] p {
+            color: #64748B !important;
+            background: transparent !important;
+            font-size: 12px !important;
+        }
+        </style>
+        """
+        st.markdown(kpi_css, unsafe_allow_html=True)
+
         with col_k1:
-            if st.button(f"📊 {total_consultas}\nTotal de Consultas", 
-                        help="Clique para ver detalhes das consultas",
-                        use_container_width=True):
-                st.query_params["menu"] = "🔍 Pesquisar Consultas"
-                st.rerun()
-            st.caption("Rotas únicas no período")
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-icon">📊</div>
+                <div class="kpi-value">{total_consultas}</div>
+                <div class="kpi-label">Total de Consultas</div>
+                <div class="kpi-sub">Rotas únicas no período</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col_k2:
-            if st.button(f"⏱️ {sla_medio:.2f}s\nSLA Médio", 
-                        help="Tempo médio de resposta do sistema",
-                        use_container_width=True):
-                st.info(f"**SLA Médio:** {sla_medio:.2f} segundos\n\n"
-                       f"Tempo médio de processamento das rotas no período selecionado.")
-            st.caption("Tempo de resposta")
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-icon">⏱️</div>
+                <div class="kpi-value">{sla_medio:.2f}s</div>
+                <div class="kpi-label">SLA Médio</div>
+                <div class="kpi-sub">Tempo de resposta</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col_k3:
-            if st.button(f"⚠️ {total_contestacoes}\nContestações", 
-                        help="Clique para ver detalhes das contestações",
-                        use_container_width=True):
-                st.query_params["menu"] = "💾 Banco de Dados"
-                st.rerun()
-            st.caption("Total no período")
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-icon">⚠️</div>
+                <div class="kpi-value">{total_contestacoes}</div>
+                <div class="kpi-label">Contestações</div>
+                <div class="kpi-sub">Total no período</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col_k4:
-            if st.button(f"✅ {total_implantados}\nImplantações", 
-                        help="Funcionários com VT ativo",
-                        use_container_width=True):
-                st.query_params["menu"] = "💾 Banco de Dados"
-                st.rerun()
-            st.caption("Ativos no momento")
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-icon">✅</div>
+                <div class="kpi-value">{total_implantados}</div>
+                <div class="kpi-label">Implantações</div>
+                <div class="kpi-sub">Ativos no momento</div>
+            </div>
+            """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
