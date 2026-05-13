@@ -63,7 +63,9 @@ def salvar_log(pergunta, resposta):
 
 @st.cache_resource(show_spinner="🔄 Carregando Base de Conhecimento...")
 def inicializar_rag():
-    loader = TextLoader("conhecimento_rh.txt", encoding="utf-8")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    caminho_txt = os.path.join(base_dir, "conhecimento_rh.txt")
+    loader = TextLoader(caminho_txt, encoding="utf-8")
     documentos = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=150, length_function=len)
     chunks = text_splitter.split_documents(documentos)
