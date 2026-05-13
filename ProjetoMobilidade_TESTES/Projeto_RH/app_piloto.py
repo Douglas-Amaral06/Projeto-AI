@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import sqlite3
 import pandas as pd
 import requests
@@ -20,7 +20,7 @@ from agente_ia import *
 from carta_pdf import gerar_carta_pdf
 from email_sender import enviar_carta_por_email
 
-# Imports dos módulos de telas melhoradas
+# Imports dos mÃ³dulos de telas melhoradas
 from telas.triagem import renderizar_triagem
 from telas.banco_dados import renderizar_banco_dados
 from telas.gerenciar_unidades import renderizar_gerenciar_unidades
@@ -29,7 +29,7 @@ from telas.registro_funcionario_avancado import renderizar_registro_funcionario_
 from telas.relatorios_analytics import renderizar_relatorios_analytics
 from telas.auditoria_compliance import renderizar_auditoria_compliance
 
-# Imports para exportação de relatórios
+# Imports para exportaÃ§Ã£o de relatÃ³rios
 try:
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment
@@ -41,34 +41,34 @@ try:
 except ImportError:
     pass
 
-# ─── Carrega variáveis de ambiente ───────────────────────────────────────────
+# â”€â”€â”€ Carrega variÃ¡veis de ambiente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 load_dotenv()
 
-# ─── Configuração da página ───────────────────────────────────────────────────
-st.set_page_config(page_title="RENAPSI — Mobilidade", page_icon="🚇", layout="wide")
+# â”€â”€â”€ ConfiguraÃ§Ã£o da pÃ¡gina â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+st.set_page_config(page_title="RENAPSI â€” Mobilidade", page_icon="ðŸš‡", layout="wide")
 
-# ══════════════════════════════════════════════════════════════════════════════
-# FUNÇÕES AUXILIARES DE MÁSCARA E VALIDAÇÃO
-# ══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# FUNÃ‡Ã•ES AUXILIARES DE MÃSCARA E VALIDAÃ‡ÃƒO
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 def safe_sql_query(query, conexao, params=None, default_value=None):
     """
     Executa query SQL com tratamento de erros robusto.
-    Retorna DataFrame vazio ou valor padrão se a tabela não existir.
+    Retorna DataFrame vazio ou valor padrÃ£o se a tabela nÃ£o existir.
     """
     try:
         if params:
-            return pd.read_sql_query(query, conexao, params=params)
+            return safe_sql_query(query, conexao, params=params)
         else:
-            return pd.read_sql_query(query, conexao)
+            return safe_sql_query(query, conexao)
     except (sqlite3.OperationalError, pd.errors.DatabaseError) as e:
-        # Tabela não existe ou erro de SQL
+        # Tabela nÃ£o existe ou erro de SQL
         if default_value is not None:
             return default_value
         return pd.DataFrame()
 
 def aplicar_mascara_cpf(cpf):
-    """Aplica máscara no CPF: 000.000.000-00"""
+    """Aplica mÃ¡scara no CPF: 000.000.000-00"""
     cpf_limpo = ''.join(filter(str.isdigit, cpf))
     if len(cpf_limpo) <= 3:
         return cpf_limpo
@@ -80,7 +80,7 @@ def aplicar_mascara_cpf(cpf):
         return f"{cpf_limpo[:3]}.{cpf_limpo[3:6]}.{cpf_limpo[6:9]}-{cpf_limpo[9:11]}"
 
 def aplicar_mascara_cep(cep):
-    """Aplica máscara no CEP: 00000-000"""
+    """Aplica mÃ¡scara no CEP: 00000-000"""
     cep_limpo = ''.join(filter(str.isdigit, cep))
     if len(cep_limpo) <= 5:
         return cep_limpo
@@ -88,7 +88,7 @@ def aplicar_mascara_cep(cep):
         return f"{cep_limpo[:5]}-{cep_limpo[5:8]}"
 
 def aplicar_mascara_celular(celular):
-    """Aplica máscara no celular: (00) 00000-0000"""
+    """Aplica mÃ¡scara no celular: (00) 00000-0000"""
     cel_limpo = ''.join(filter(str.isdigit, celular))
     if len(cel_limpo) <= 2:
         return f"({cel_limpo}" if cel_limpo else ""
@@ -111,7 +111,7 @@ def validar_cpf_completo(cpf):
 def validar_email_formato(email):
     """Valida formato de e-mail"""
     if not email:
-        return True  # E-mail é opcional
+        return True  # E-mail Ã© opcional
     import re
     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(email_regex, email) is not None
@@ -119,20 +119,20 @@ def validar_email_formato(email):
 def validar_celular_formato(celular):
     """Valida formato de celular brasileiro"""
     if not celular:
-        return True  # Celular é opcional
+        return True  # Celular Ã© opcional
     cel_limpo = ''.join(filter(str.isdigit, celular))
     return len(cel_limpo) == 11 and cel_limpo[2] == '9'
 
 def mostrar_campo_obrigatorio(label):
-    """Retorna label com indicador visual de campo obrigatório"""
+    """Retorna label com indicador visual de campo obrigatÃ³rio"""
     return f"{label} <span style='color:#EF4444;font-weight:700;'>*</span>"
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SISTEMA DE AUTENTICAÇÃO — SESSÃO PERSISTENTE (SOBREVIVE AO F5)
-# ══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# SISTEMA DE AUTENTICAÃ‡ÃƒO â€” SESSÃƒO PERSISTENTE (SOBREVIVE AO F5)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 def _criar_tabela_sessoes():
-    """Cria tabela de sessões ativas no banco."""
+    """Cria tabela de sessÃµes ativas no banco."""
     try:
         conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         conn.execute('''
@@ -168,7 +168,7 @@ def _criar_sessao(user_id, username, role):
     return token
 
 def _validar_token(token):
-    """Valida token no banco. Retorna dict do usuário ou None."""
+    """Valida token no banco. Retorna dict do usuÃ¡rio ou None."""
     if not token:
         return None
     try:
@@ -200,7 +200,7 @@ def _revogar_token(token):
         pass
 
 def _limpar_sessoes_expiradas():
-    """Remove sessões expiradas do banco."""
+    """Remove sessÃµes expiradas do banco."""
     try:
         conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         conn.execute("DELETE FROM sessoes_ativas WHERE expira_em < ?", (datetime.datetime.now().isoformat(),))
@@ -259,13 +259,13 @@ def _renderizar_tela_login():
         """, unsafe_allow_html=True)
 
         with st.form("form_login_principal", clear_on_submit=False):
-            username_input = st.text_input("Usuário", placeholder="Digite seu usuário")
+            username_input = st.text_input("UsuÃ¡rio", placeholder="Digite seu usuÃ¡rio")
             password_input = st.text_input("Senha", type="password", placeholder="Digite sua senha")
             submitted = st.form_submit_button("Entrar", type="primary", width="stretch")
 
         if submitted:
             if not username_input.strip() or not password_input.strip():
-                st.error("⚠️ Preencha usuário e senha.")
+                st.error("âš ï¸ Preencha usuÃ¡rio e senha.")
             else:
                 usuario = verificar_credenciais(username_input, password_input)
                 if usuario:
@@ -279,16 +279,16 @@ def _renderizar_tela_login():
                     
                     st.rerun()
                 else:
-                    st.error("❌ Usuário ou senha incorretos.")
+                    st.error("âŒ UsuÃ¡rio ou senha incorretos.")
 
         st.markdown("""
         <p style="color:#94A3B8 !important;font-size:12px !important;text-align:center;margin-top:24px;">
-            🔒 Acesso restrito a funcionários autorizados
+            ðŸ”’ Acesso restrito a funcionÃ¡rios autorizados
         </p>
         """, unsafe_allow_html=True)
 
 def _renderizar_tela_troca_senha_obrigatoria():
-    """Tela de troca de senha obrigatória para primeiro acesso."""
+    """Tela de troca de senha obrigatÃ³ria para primeiro acesso."""
     st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -304,23 +304,23 @@ def _renderizar_tela_troca_senha_obrigatoria():
         st.markdown("""
         <div style="background:#FEF3C7;border:1px solid #FCD34D;border-left:4px solid #F59E0B;
                     border-radius:12px;padding:20px;margin:40px 0 24px;">
-            <h3 style="margin:0 0 8px;color:#92400E;">🔐 Troca de Senha Obrigatória</h3>
+            <h3 style="margin:0 0 8px;color:#92400E;">ðŸ” Troca de Senha ObrigatÃ³ria</h3>
             <p style="color:#78350F;font-size:14px;margin:0;">
-                Por segurança, você deve alterar sua senha padrão antes de acessar o sistema.
+                Por seguranÃ§a, vocÃª deve alterar sua senha padrÃ£o antes de acessar o sistema.
             </p>
         </div>
         """, unsafe_allow_html=True)
 
         with st.form("form_troca_senha", clear_on_submit=True):
-            nova_senha = st.text_input("Nova Senha", type="password", placeholder="Mínimo 8 caracteres")
+            nova_senha = st.text_input("Nova Senha", type="password", placeholder="MÃ­nimo 8 caracteres")
             confirmar_senha = st.text_input("Confirmar Nova Senha", type="password", placeholder="Repita a senha")
             submitted = st.form_submit_button("Alterar Senha", type="primary", width="stretch")
 
         if submitted:
             if len(nova_senha) < 8:
-                st.error("⚠️ A senha deve ter pelo menos 8 caracteres.")
+                st.error("âš ï¸ A senha deve ter pelo menos 8 caracteres.")
             elif nova_senha != confirmar_senha:
-                st.error("⚠️ As senhas não coincidem.")
+                st.error("âš ï¸ As senhas nÃ£o coincidem.")
             else:
                 usuario_dados = st.session_state.get("usuario_dados", {})
                 sucesso, msg = trocar_senha_usuario(usuario_dados["id"], nova_senha)
@@ -333,7 +333,7 @@ def _renderizar_tela_troca_senha_obrigatoria():
                 else:
                     st.error(msg)
 
-        if st.button("🚪 Sair", width="stretch"):
+        if st.button("ðŸšª Sair", width="stretch"):
             _token_atual = st.session_state.get("auth_token", "")
             if _token_atual:
                 _revogar_token(_token_atual)
@@ -342,40 +342,40 @@ def _renderizar_tela_troca_senha_obrigatoria():
             st.rerun()
 
 def _renderizar_tela_registro_funcionario():
-    """Painel de gestão de usuários — acesso exclusivo Admin."""
+    """Painel de gestÃ£o de usuÃ¡rios â€” acesso exclusivo Admin."""
     usuario_logado = st.session_state.get("usuario_dados", {})
     if usuario_logado.get("role") != "admin":
-        st.error("🚫 Acesso negado.")
+        st.error("ðŸš« Acesso negado.")
         st.stop()
 
     st.markdown("""
     <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:4px solid #444c9b;
                 border-radius:14px;padding:24px;margin-bottom:24px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-        <h3 style="margin:0 0 4px;color:#444c9b;">👥 Registro de Funcionário</h3>
+        <h3 style="margin:0 0 4px;color:#444c9b;">ðŸ‘¥ Registro de FuncionÃ¡rio</h3>
         <p style="color:#64748B;font-size:14px;margin:0;">
             Gerencie os acessos ao sistema. Apenas o administrador pode criar ou remover logins.
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-    with st.expander("➕ Criar novo acesso", expanded=True):
+    with st.expander("âž• Criar novo acesso", expanded=True):
         with st.form("form_criar_usuario", clear_on_submit=True):
             col1, col2 = st.columns(2)
             with col1:
-                novo_username = st.text_input("Usuário", placeholder="Ex: FUNC_JOAO01")
+                novo_username = st.text_input("UsuÃ¡rio", placeholder="Ex: FUNC_JOAO01")
                 novo_role = st.selectbox("Perfil de acesso", ["funcionario", "admin"], index=0)
             with col2:
-                nova_senha = st.text_input("Senha", type="password", placeholder="Mínimo 8 caracteres")
+                nova_senha = st.text_input("Senha", type="password", placeholder="MÃ­nimo 8 caracteres")
                 confirmar_senha = st.text_input("Confirmar senha", type="password", placeholder="Repita a senha")
             criar = st.form_submit_button("Criar Acesso", type="primary", width="stretch")
 
         if criar:
             if not novo_username.strip():
-                st.error("⚠️ O campo Usuário é obrigatório.")
+                st.error("âš ï¸ O campo UsuÃ¡rio Ã© obrigatÃ³rio.")
             elif len(nova_senha) < 8:
-                st.error("⚠️ A senha deve ter pelo menos 8 caracteres.")
+                st.error("âš ï¸ A senha deve ter pelo menos 8 caracteres.")
             elif nova_senha != confirmar_senha:
-                st.error("⚠️ As senhas não coincidem.")
+                st.error("âš ï¸ As senhas nÃ£o coincidem.")
             else:
                 sucesso, msg = criar_usuario(
                     username=novo_username,
@@ -390,29 +390,29 @@ def _renderizar_tela_registro_funcionario():
                     st.error(msg)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#1E293B;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:12px;'>Usuários cadastrados</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#1E293B;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:12px;'>UsuÃ¡rios cadastrados</p>", unsafe_allow_html=True)
 
     df_usuarios = listar_usuarios()
     if df_usuarios.empty:
-        st.info("Nenhum usuário cadastrado.")
+        st.info("Nenhum usuÃ¡rio cadastrado.")
     else:
         for _, row in df_usuarios.iterrows():
             col_info, col_badge, col_btn = st.columns([6, 2, 2])
             with col_info:
                 criado_em = str(row.get("criado_em", ""))[:16]
-                criado_por = row.get("criado_por", "—")
+                criado_por = row.get("criado_por", "â€”")
                 st.markdown(f"""
                 <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:8px;
                             padding:12px 16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
                     <p style="margin:0;color:#1E293B;font-weight:700;font-size:15px;">{row['username']}</p>
-                    <p style="margin:4px 0 0;color:#64748B;font-size:13px;">Criado em {criado_em} · por {criado_por}</p>
+                    <p style="margin:4px 0 0;color:#64748B;font-size:13px;">Criado em {criado_em} Â· por {criado_por}</p>
                 </div>
                 """, unsafe_allow_html=True)
             with col_badge:
                 if row["role"] == "admin":
-                    badge_color, badge_bg, badge_label = "#444c9b", "rgba(68,76,155,0.1)", "🛡️ Admin"
+                    badge_color, badge_bg, badge_label = "#444c9b", "rgba(68,76,155,0.1)", "ðŸ›¡ï¸ Admin"
                 else:
-                    badge_color, badge_bg, badge_label = "#10B981", "rgba(16,185,129,0.1)", "👤 Funcionário"
+                    badge_color, badge_bg, badge_label = "#10B981", "rgba(16,185,129,0.1)", "ðŸ‘¤ FuncionÃ¡rio"
                 st.markdown(f"""
                 <div style="background:{badge_bg};color:{badge_color};border:1px solid {badge_color}40;
                             border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;
@@ -421,7 +421,7 @@ def _renderizar_tela_registro_funcionario():
             with col_btn:
                 eh_proprio = row["username"] == usuario_logado.get("username")
                 if not eh_proprio:
-                    if st.button("🗑️ Remover", key=f"del_user_{row['id']}", width="stretch"):
+                    if st.button("ðŸ—‘ï¸ Remover", key=f"del_user_{row['id']}", width="stretch"):
                         sucesso, msg = excluir_usuario(
                             user_id=int(row["id"]),
                             solicitante_username=usuario_logado.get("username", "")
@@ -434,22 +434,22 @@ def _renderizar_tela_registro_funcionario():
                 else:
                     st.markdown("<p style='color:#94A3B8;font-size:12px;text-align:center;margin-top:12px;'>(sua conta)</p>", unsafe_allow_html=True)
 
-# ── Inicializa banco e tabela de sessões ──────────────────────────────────────
+# â”€â”€ Inicializa banco e tabela de sessÃµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 inicializar_banco_completo()
 _criar_tabela_sessoes()
 _limpar_sessoes_expiradas()
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SISTEMA DE PERSISTÊNCIA DE SESSÃO COM COOKIES (SOBREVIVE AO F5)
-# ══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# SISTEMA DE PERSISTÃŠNCIA DE SESSÃƒO COM COOKIES (SOBREVIVE AO F5)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 import streamlit.components.v1 as components
 
 def _inject_cookie_manager():
-    """Injeta JavaScript para gerenciar cookies de autenticação"""
+    """Injeta JavaScript para gerenciar cookies de autenticaÃ§Ã£o"""
     components.html("""
     <script>
-    // Funções para gerenciar cookies
+    // FunÃ§Ãµes para gerenciar cookies
     function setCookie(name, value, days) {
         const d = new Date();
         d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -472,7 +472,7 @@ def _inject_cookie_manager():
         document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     }
     
-    // Expõe funções globalmente
+    // ExpÃµe funÃ§Ãµes globalmente
     window.renapiAuth = {
         setToken: (token) => setCookie('renapsi_auth_token', token, 1),
         getToken: () => getCookie('renapsi_auth_token'),
@@ -482,7 +482,7 @@ def _inject_cookie_manager():
     // Envia token atual para o Streamlit se existir
     const currentToken = getCookie('renapsi_auth_token');
     if (currentToken) {
-        // Salva no sessionStorage para recuperação rápida
+        // Salva no sessionStorage para recuperaÃ§Ã£o rÃ¡pida
         sessionStorage.setItem('renapsi_token_cache', currentToken);
     }
     </script>
@@ -510,15 +510,15 @@ def _clear_token_from_cookie():
     </script>
     """, height=0)
 
-# ── Injeta gerenciador de cookies ────────────────────────────────────────────
+# â”€â”€ Injeta gerenciador de cookies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _inject_cookie_manager()
 
-# ── Restaura sessão após F5 usando banco de dados ────────────────────────────
+# â”€â”€ Restaura sessÃ£o apÃ³s F5 usando banco de dados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if not st.session_state.get("usuario_logado"):
     # Tenta recuperar token do session_state primeiro
     token_restore = st.session_state.get("auth_token", "")
     
-    # Se não tem no session_state, busca todas as sessões ativas do banco
+    # Se nÃ£o tem no session_state, busca todas as sessÃµes ativas do banco
     if not token_restore:
         try:
             conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
@@ -544,32 +544,32 @@ if not st.session_state.get("usuario_logado"):
             st.session_state["usuario_logado"] = True
             st.session_state["usuario_dados"] = usuario_recuperado
             st.session_state["auth_token"] = token_restore
-            # Salva no cookie para próximas sessões
+            # Salva no cookie para prÃ³ximas sessÃµes
             _save_token_to_cookie(token_restore)
         else:
-            # Token inválido ou expirado - limpa tudo
+            # Token invÃ¡lido ou expirado - limpa tudo
             st.session_state.pop("auth_token", None)
             _clear_token_from_cookie()
 
-# ── Portão de entrada: exige login ───────────────────────────────────────────
+# â”€â”€ PortÃ£o de entrada: exige login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if not st.session_state.get("usuario_logado"):
     _renderizar_tela_login()
     st.stop()
 
-# ── Verifica se precisa trocar senha (primeiro acesso) ───────────────────────
+# â”€â”€ Verifica se precisa trocar senha (primeiro acesso) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _usuario_atual = st.session_state.get("usuario_dados", {})
 if _usuario_atual.get("deve_trocar_senha", 0) == 1:
     _renderizar_tela_troca_senha_obrigatoria()
     st.stop()
 
-# ── A partir daqui o usuário está autenticado e com senha válida ─────────────
+# â”€â”€ A partir daqui o usuÃ¡rio estÃ¡ autenticado e com senha vÃ¡lida â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _usuario_atual = st.session_state.get("usuario_dados", {})
 _role_atual = _usuario_atual.get("role", "funcionario")
 
-# ── CORREÇÃO FORÇADA: LETRAS BRANCAS NOS BOTÕES ──
+# â”€â”€ CORREÃ‡ÃƒO FORÃ‡ADA: LETRAS BRANCAS NOS BOTÃ•ES â”€â”€
 st.markdown("""
 <style>
-/* Força qualquer texto dentro dos botões azuis (secondary) e laranjas (primary) a ficar branco */
+/* ForÃ§a qualquer texto dentro dos botÃµes azuis (secondary) e laranjas (primary) a ficar branco */
 .stButton > button[kind="secondary"] p,
 .stButton > button[kind="secondary"] span,
 .stButton > button[kind="secondary"] div,
@@ -581,21 +581,21 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ─── CSS Global — Tema Claro Institucional RENAPSI ───────────────────────────
+# â”€â”€â”€ CSS Global â€” Tema Claro Institucional RENAPSI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.markdown("""
 <style>
-/* ── Reset ── */
+/* â”€â”€ Reset â”€â”€ */
 #MainMenu {visibility: hidden;}
 footer     {visibility: hidden;}
 header     {visibility: hidden;}
 
-/* ── Fundo principal — Branco puro ── */
+/* â”€â”€ Fundo principal â€” Branco puro â”€â”€ */
 .stApp {
         background: #FFFFFF !important;
         font-size: 18px !important;
 }
 
-/* ── Sidebar — Branco/Cinza gelo ── */
+/* â”€â”€ Sidebar â€” Branco/Cinza gelo â”€â”€ */
 [data-testid="stSidebar"] {
         background: #F8FAFC !important;
         border-right: 1px solid #E2E8F0 !important;
@@ -609,7 +609,7 @@ header     {visibility: hidden;}
         color: #333333 !important;
         font-size: 19px !important;
 }
-/* ── Menu de navegação interativo e profissional ── */
+/* â”€â”€ Menu de navegaÃ§Ã£o interativo e profissional â”€â”€ */
 [data-testid="stSidebar"] .stRadio [data-testid="stMarkdownContainer"] p {
         color: #64748B !important;
         font-size: 18px !important;
@@ -628,7 +628,7 @@ header     {visibility: hidden;}
         border-left: 3px solid #f8ae28 !important;
         box-shadow: 0 2px 8px rgba(248,174,40,0.15) !important;
 }
-/* ── Item de menu selecionado ── */
+/* â”€â”€ Item de menu selecionado â”€â”€ */
 [data-testid="stSidebar"] .stRadio [role="radiogroup"] label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p {
         background: linear-gradient(135deg, rgba(68,76,155,0.1) 0%, rgba(54,61,127,0.1) 100%) !important;
         color: #444c9b !important;
@@ -636,7 +636,7 @@ header     {visibility: hidden;}
         border-left: 3px solid #444c9b !important;
         box-shadow: 0 2px 8px rgba(68,76,155,0.15) !important;
 }
-/* ── Ícones dos menus com animação ── */
+/* â”€â”€ Ãcones dos menus com animaÃ§Ã£o â”€â”€ */
 [data-testid="stSidebar"] .stRadio p::before {
         display: inline-block !important;
         margin-right: 8px !important;
@@ -646,7 +646,7 @@ header     {visibility: hidden;}
         transform: scale(1.2) rotate(5deg) !important;
 }
 
-/* ── KPI cards — Fundo branco com sombra suave e gradiente ── */
+/* â”€â”€ KPI cards â€” Fundo branco com sombra suave e gradiente â”€â”€ */
 div[data-testid="metric-container"] {
         background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%) !important;
         border: 1px solid #E2E8F0 !important;
@@ -682,17 +682,17 @@ div[data-testid="metric-container"] [data-testid="stMetricDelta"] svg {
         display: none !important;
 }
 
-/* ── Headings — Cinza escuro ── */
+/* â”€â”€ Headings â€” Cinza escuro â”€â”€ */
 h1, h2, h3 { color: #1E293B !important; font-size: 1.5em !important; }
 h4          { color: #333333 !important; font-size: 1.3em !important; }
 
-/* ── Texto geral — Cinza escuro para contraste ── */
+/* â”€â”€ Texto geral â€” Cinza escuro para contraste â”€â”€ */
 p, span, div, label, input, textarea, select {
         color: #333333 !important;
         font-size: 19px !important;
 }
 
-/* ── Botões primários — Laranja RENAPSI com gradiente ── */
+/* â”€â”€ BotÃµes primÃ¡rios â€” Laranja RENAPSI com gradiente â”€â”€ */
 .stButton > button[kind="primary"],
 button[data-testid="baseButton-primary"] {
         background: linear-gradient(135deg, #f8ae28 0%, #e09a1f 100%) !important;
@@ -728,7 +728,7 @@ button[data-testid="baseButton-primary"]:hover {
         transform: translateY(0px) !important;
 }
 
-/* ── Botões secundários — Azul RENAPSI com gradiente ── */
+/* â”€â”€ BotÃµes secundÃ¡rios â€” Azul RENAPSI com gradiente â”€â”€ */
 .stButton > button[kind="secondary"],
 button[data-testid="baseButton-secondary"] {
         background: linear-gradient(135deg, #444c9b 0%, #363d7f 100%) !important;
@@ -744,7 +744,7 @@ button[data-testid="baseButton-secondary"] {
         box-shadow: 0 6px 20px rgba(68,76,155,0.4) !important;
 }
 
-/* ── Botões padrão (sem type) — Tema claro ── */
+/* â”€â”€ BotÃµes padrÃ£o (sem type) â€” Tema claro â”€â”€ */
 .stButton > button:not([kind]),
 button[data-testid="baseButton-minimal"] {
         background: #FFFFFF !important;
@@ -762,7 +762,7 @@ button[data-testid="baseButton-minimal"]:hover {
         transform: translateY(-2px) !important;
 }
 
-/* ── Tabs com animação ── */
+/* â”€â”€ Tabs com animaÃ§Ã£o â”€â”€ */
 .stTabs [data-baseweb="tab-list"] {
         background: #F8FAFC;
         border-radius: 10px;
@@ -785,7 +785,7 @@ button[data-testid="baseButton-minimal"]:hover {
         box-shadow: 0 2px 8px rgba(248,174,40,0.3) !important;
 }
 
-/* ── Inputs com foco suave ── */
+/* â”€â”€ Inputs com foco suave â”€â”€ */
 .stTextInput > div > div > input,
 .stNumberInput > div > div > input,
 .stTextArea > div > div > textarea,
@@ -804,7 +804,7 @@ button[data-testid="baseButton-minimal"]:hover {
         transform: scale(1.01) !important;
 }
 
-/* ── Dataframe ── */
+/* â”€â”€ Dataframe â”€â”€ */
 .stDataFrame {
         border: 1px solid #E2E8F0 !important;
         border-radius: 10px !important;
@@ -812,7 +812,7 @@ button[data-testid="baseButton-minimal"]:hover {
         box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
 }
 
-/* ── Expander com animação ── */
+/* â”€â”€ Expander com animaÃ§Ã£o â”€â”€ */
 [data-testid="stExpander"] details summary {
         background: linear-gradient(135deg, #444c9b 0%, #363d7f 100%) !important;
         border-radius: 8px !important;
@@ -826,7 +826,7 @@ button[data-testid="baseButton-minimal"]:hover {
         outline: none !important;
         box-shadow: 0 4px 12px rgba(68,76,155,0.3) !important;
 }
-/* Força TODOS os textos e ícones do summary a ficarem brancos */
+/* ForÃ§a TODOS os textos e Ã­cones do summary a ficarem brancos */
 [data-testid="stExpander"] details summary *,
 [data-testid="stExpander"] details summary p,
 [data-testid="stExpander"] details summary span,
@@ -837,14 +837,14 @@ button[data-testid="baseButton-minimal"]:hover {
         fill: #FFFFFF !important;
         font-weight: 600 !important;
 }
-/* Garante que o conteúdo que abre embaixo continue com fundo branco */
+/* Garante que o conteÃºdo que abre embaixo continue com fundo branco */
 [data-testid="stExpander"] {
         background-color: #FFFFFF !important;
         border: 1px solid #E5E7EB !important;
         border-radius: 8px !important;
 }
 
-/* ── Skeleton Loading Animation ── */
+/* â”€â”€ Skeleton Loading Animation â”€â”€ */
 @keyframes skeleton-loading {
         0% { background-position: -200px 0; }
         100% { background-position: calc(200px + 100%) 0; }
@@ -855,7 +855,7 @@ button[data-testid="baseButton-minimal"]:hover {
         animation: skeleton-loading 1.5s ease-in-out infinite !important;
 }
 
-/* ── Toast Notifications ── */
+/* â”€â”€ Toast Notifications â”€â”€ */
 .stAlert {
         border-radius: 10px !important;
         border-left: 4px solid !important;
@@ -867,7 +867,7 @@ button[data-testid="baseButton-minimal"]:hover {
         to { transform: translateX(0); opacity: 1; }
 }
 
-/* ── Badges e Tags ── */
+/* â”€â”€ Badges e Tags â”€â”€ */
 .badge {
         display: inline-block !important;
         padding: 4px 12px !important;
@@ -894,7 +894,7 @@ button[data-testid="baseButton-minimal"]:hover {
         color: white !important;
 }
 
-/* ── Modal Backdrop Blur ── */
+/* â”€â”€ Modal Backdrop Blur â”€â”€ */
 .modal-backdrop {
         backdrop-filter: blur(8px) !important;
         background: rgba(0,0,0,0.5) !important;
@@ -905,7 +905,7 @@ button[data-testid="baseButton-minimal"]:hover {
         to { opacity: 1; }
 }
 
-/* ── Micro-interações nos cards ── */
+/* â”€â”€ Micro-interaÃ§Ãµes nos cards â”€â”€ */
 .card {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         cursor: pointer !important;
@@ -918,7 +918,7 @@ button[data-testid="baseButton-minimal"]:hover {
         transform: translateY(-4px) scale(1.01) !important;
 }
 
-/* ── Progress Bar Animado ── */
+/* â”€â”€ Progress Bar Animado â”€â”€ */
 .stProgress > div > div > div {
         background: linear-gradient(90deg, #f8ae28, #e09a1f, #f8ae28) !important;
         background-size: 200% 100% !important;
@@ -930,7 +930,7 @@ button[data-testid="baseButton-minimal"]:hover {
         100% { background-position: 0% 50%; }
 }
 
-/* ── Scrollbar customizada ── */
+/* â”€â”€ Scrollbar customizada â”€â”€ */
 ::-webkit-scrollbar {
         width: 10px !important;
         height: 10px !important;
@@ -947,7 +947,7 @@ button[data-testid="baseButton-minimal"]:hover {
         background: linear-gradient(135deg, #e09a1f 0%, #c8891b 100%) !important;
 }
 
-/* ── Pulse Animation para notificações ── */
+/* â”€â”€ Pulse Animation para notificaÃ§Ãµes â”€â”€ */
 @keyframes pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
@@ -956,7 +956,7 @@ button[data-testid="baseButton-minimal"]:hover {
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
 }
 
-/* ── Fade In Animation ── */
+/* â”€â”€ Fade In Animation â”€â”€ */
 @keyframes fadeInUp {
         from {
                 opacity: 0;
@@ -971,7 +971,7 @@ button[data-testid="baseButton-minimal"]:hover {
         animation: fadeInUp 0.5s ease !important;
 }
 
-/* ── Spinner Loading ── */
+/* â”€â”€ Spinner Loading â”€â”€ */
 @keyframes spin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
@@ -987,13 +987,13 @@ button[data-testid="baseButton-minimal"]:hover {
 
 }
 
-/* ── Divider ── */
+/* â”€â”€ Divider â”€â”€ */
 hr { border-color: #E2E8F0 !important; }
 
-/* ── Spinner ── */
+/* â”€â”€ Spinner â”€â”€ */
 .stSpinner > div { border-top-color: #f8ae28 !important; }
 
-/* ── Scrollbar ── */
+/* â”€â”€ Scrollbar â”€â”€ */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #F8FAFC; }
 ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
@@ -1001,7 +1001,7 @@ hr { border-color: #E2E8F0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Modo Fullscreen ───────────────────────────────────────────────────────────
+# â”€â”€ Modo Fullscreen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if st.session_state.get('modo_fullscreen', False):
     st.markdown("""
     <style>
@@ -1011,7 +1011,7 @@ if st.session_state.get('modo_fullscreen', False):
     #MainMenu { visibility: hidden !important; }
     footer { visibility: hidden !important; }
     
-    /* Expande o conteúdo para ocupar toda a tela */
+    /* Expande o conteÃºdo para ocupar toda a tela */
     .main .block-container {
         max-width: 100% !important;
         padding-left: 2rem !important;
@@ -1020,10 +1020,10 @@ if st.session_state.get('modo_fullscreen', False):
     </style>
     """, unsafe_allow_html=True)
 
-# ─── Inicialização do Banco de Dados ──────────────────────────────────────────
+# â”€â”€â”€ InicializaÃ§Ã£o do Banco de Dados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 inicializar_banco_completo()
 
-# ─── Sidebar ──────────────────────────────────────────────────────────────────
+# â”€â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.sidebar.markdown("""
 <style>
 [data-testid="stSidebar"] img {
@@ -1038,7 +1038,7 @@ _logo_path = os.path.join(os.path.dirname(__file__), "logo_renapsi.png")
 if os.path.exists(_logo_path):
     st.sidebar.image(_logo_path, width="stretch")
 else:
-    st.sidebar.markdown("### 🏢 RENAPSI")
+    st.sidebar.markdown("### ðŸ¢ RENAPSI")
 
 st.sidebar.markdown(
         "<p style='color:#64748B;font-size:13px;text-align:center;letter-spacing:0.1em;margin-top:-8px;'>SISTEMA DE MOBILIDADE URBANA</p>",
@@ -1046,10 +1046,10 @@ st.sidebar.markdown(
 )
 st.sidebar.markdown("---")
 
-# ── Busca Global Rápida ───────────────────────────────────────────────────────
-st.sidebar.markdown("<p style='color:#1E293B;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;'>🔍 Busca Rápida</p>", unsafe_allow_html=True)
+# â”€â”€ Busca Global RÃ¡pida â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+st.sidebar.markdown("<p style='color:#1E293B;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;'>ðŸ” Busca RÃ¡pida</p>", unsafe_allow_html=True)
 busca_global = st.sidebar.text_input(
-    "Buscar funcionário",
+    "Buscar funcionÃ¡rio",
     placeholder="Nome, CPF ou ID...",
     key="busca_global_sidebar",
     label_visibility="collapsed"
@@ -1064,7 +1064,7 @@ if busca_global and len(busca_global) >= 3:
             WHERE nome LIKE ? OR cpf LIKE ? OR CAST(id AS TEXT) LIKE ?
             LIMIT 5
         """
-        df_busca = pd.read_sql_query(query_busca, conexao_busca, params=(f"%{busca_global}%", f"%{busca_global}%", f"%{busca_global}%"))
+        df_busca = safe_sql_query(query_busca, conexao_busca, params=(f"%{busca_global}%", f"%{busca_global}%", f"%{busca_global}%"))
         conexao_busca.close()
         
         if not df_busca.empty:
@@ -1077,7 +1077,7 @@ if busca_global and len(busca_global) >= 3:
                     help=f"CPF: {cpf_mask} | Status: {row['status_rota'] or 'Pendente'}",
                     use_container_width=True
                 ):
-                    st.query_params["menu"] = "🔍 Pesquisar Consultas"
+                    st.query_params["menu"] = "ðŸ” Pesquisar Consultas"
                     st.query_params["id_consulta"] = str(row['id'])
                     st.session_state.resultado_busca = df_busca[df_busca['id'] == row['id']]
                     st.rerun()
@@ -1088,9 +1088,9 @@ if busca_global and len(busca_global) >= 3:
 
 st.sidebar.markdown("---")
 
-# ── Badge do usuário logado ───────────────────────────────────────────────────
+# â”€â”€ Badge do usuÃ¡rio logado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _username_exib = _usuario_atual.get("username", "")
-_badge_label = "🛡️ Admin" if _role_atual == "admin" else "👤 Funcionário"
+_badge_label = "ðŸ›¡ï¸ Admin" if _role_atual == "admin" else "ðŸ‘¤ FuncionÃ¡rio"
 _badge_color = "#444c9b" if _role_atual == "admin" else "#10B981"
 st.sidebar.markdown(f"""
 <div style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:8px;
@@ -1100,25 +1100,25 @@ st.sidebar.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-st.sidebar.markdown("<p style='color:#1E293B;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;'>Navegação</p>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='color:#1E293B;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;'>NavegaÃ§Ã£o</p>", unsafe_allow_html=True)
 
 parametros_url = st.query_params
-pagina_salva = parametros_url.get("menu", "🏠 Dashboard Principal")
+pagina_salva = parametros_url.get("menu", "ðŸ  Dashboard Principal")
 opcoes_menu = [
-    "🏠 Dashboard Principal", 
-    "🔍 Pesquisar Consultas", 
-    "➕ Cadastrar Novo Jovem", 
-    "🗂️ Triagem de Fichas", 
-    "💾 Banco de Dados", 
-    "🏢 Gerenciar Unidades", 
-    "🌐 Simulação: Portal do Jovem"
+    "ðŸ  Dashboard Principal", 
+    "ðŸ” Pesquisar Consultas", 
+    "âž• Cadastrar Novo Jovem", 
+    "ðŸ—‚ï¸ Triagem de Fichas", 
+    "ðŸ’¾ Banco de Dados", 
+    "ðŸ¢ Gerenciar Unidades", 
+    "ðŸŒ SimulaÃ§Ã£o: Portal do Jovem"
 ]
 if _role_atual == "admin":
-    opcoes_menu.extend(["📊 Relatórios e Analytics", "🔍 Auditoria e Compliance", "👥 Registro de Funcionário"])
+    opcoes_menu.extend(["ðŸ“Š RelatÃ³rios e Analytics", "ðŸ” Auditoria e Compliance", "ðŸ‘¥ Registro de FuncionÃ¡rio"])
 
 indice_padrao = opcoes_menu.index(pagina_salva) if pagina_salva in opcoes_menu else 0
 
-menu = st.sidebar.radio("Navegação", opcoes_menu, index=indice_padrao, label_visibility="collapsed")
+menu = st.sidebar.radio("NavegaÃ§Ã£o", opcoes_menu, index=indice_padrao, label_visibility="collapsed")
 
 # Reseta estado ao mudar de menu
 if st.query_params.get("menu") != menu:
@@ -1135,8 +1135,8 @@ st.query_params["menu"] = menu
 
 st.sidebar.markdown("---")
 
-# ── Botão de logout ───────────────────────────────────────────────────────────
-if st.sidebar.button("🚪 Sair", width="stretch"):
+# â”€â”€ BotÃ£o de logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+if st.sidebar.button("ðŸšª Sair", width="stretch"):
     _token_atual = st.session_state.get("auth_token", "")
     if _token_atual:
         _revogar_token(_token_atual)
@@ -1152,35 +1152,35 @@ if st.sidebar.button("🚪 Sair", width="stretch"):
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(
-        "<p style='color:#334155;font-size:14px;text-align:center;'>Copyright ©️ Renapsi - 2026. Todos os direitos reservados. CNPJ 37.381.902/0001-25.</p>",
+        "<p style='color:#334155;font-size:14px;text-align:center;'>Copyright Â©ï¸ Renapsi - 2026. Todos os direitos reservados. CNPJ 37.381.902/0001-25.</p>",
         unsafe_allow_html=True
 )
 
-# ── Selo de Conformidade LGPD ──
+# â”€â”€ Selo de Conformidade LGPD â”€â”€
 st.sidebar.markdown("""
 <div style="background:#FFFFFF;border:1px solid #E2E8F0;
                 border-radius:10px;padding:14px;margin-top:16px;text-align:center;
                 box-shadow:0 2px 4px rgba(0,0,0,0.05);">
         <p style="color:#f8ae28;font-size:15px;font-weight:600;margin:0 0 8px;letter-spacing:0.05em;">
-            🔒 PRIVACIDADE ASSEGURADA
+            ðŸ”’ PRIVACIDADE ASSEGURADA
         </p>
         <p style="color:#64748B;font-size:14px;line-height:1.4;margin:0;">
-            Conformidade com <strong>LGPD</strong>. Dados de colaboradores (CPF, Morada, E-mail) são processados localmente e armazenados de forma segura. Nenhuma informação pessoal sensível é partilhada com APIs externas sem anonimização.
+            Conformidade com <strong>LGPD</strong>. Dados de colaboradores (CPF, Morada, E-mail) sÃ£o processados localmente e armazenados de forma segura. Nenhuma informaÃ§Ã£o pessoal sensÃ­vel Ã© partilhada com APIs externas sem anonimizaÃ§Ã£o.
         </p>
 </div>
 """, unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA 0 — DASHBOARD PRINCIPAL
-# ══════════════════════════════════════════════════════════════════════════════
-if menu == "🏠 Dashboard Principal":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA 0 â€” DASHBOARD PRINCIPAL
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+if menu == "ðŸ  Dashboard Principal":
 
-        meses_pt = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+        meses_pt = ["Janeiro","Fevereiro","MarÃ§o","Abril","Maio","Junho",
                     "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]
         mes_atual = meses_pt[datetime.datetime.now().month - 1]
         ano_atual = datetime.datetime.now().year
 
-        # ── Cabeçalho com modo tela cheia ──
+        # â”€â”€ CabeÃ§alho com modo tela cheia â”€â”€
         col_header, col_actions = st.columns([8, 4])
         with col_header:
             st.markdown("""
@@ -1194,7 +1194,7 @@ if menu == "🏠 Dashboard Principal":
                 </svg>
                 <div>
                     <h1 style="margin:0; color:#444c9b; font-size:28px;">Dashboard de Mobilidade</h1>
-                    <p style="margin:4px 0 0; color:#64748B; font-size:14px;">Visão geral do sistema de transporte</p>
+                    <p style="margin:4px 0 0; color:#64748B; font-size:14px;">VisÃ£o geral do sistema de transporte</p>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -1202,53 +1202,53 @@ if menu == "🏠 Dashboard Principal":
         with col_actions:
             col_btn1, col_btn2, col_btn3 = st.columns(3)
             with col_btn1:
-                if st.button("📊", help="Exportar relatório em Excel", width="stretch", key="btn_excel_dash"):
+                if st.button("ðŸ“Š", help="Exportar relatÃ³rio em Excel", width="stretch", key="btn_excel_dash"):
                     st.session_state.exportar_excel = True
             with col_btn2:
-                if st.button("📄", help="Exportar relatório em PDF", width="stretch", key="btn_pdf_dash"):
+                if st.button("ðŸ“„", help="Exportar relatÃ³rio em PDF", width="stretch", key="btn_pdf_dash"):
                     st.session_state.exportar_pdf = True
             with col_btn3:
                 modo_fullscreen = st.session_state.get('modo_fullscreen', False)
-                if st.button("🖥️" if not modo_fullscreen else "↩️", 
+                if st.button("ðŸ–¥ï¸" if not modo_fullscreen else "â†©ï¸", 
                            help="Modo tela cheia" if not modo_fullscreen else "Sair do modo tela cheia",
                            width="stretch", key="btn_fullscreen_dash"):
                     st.session_state.modo_fullscreen = not modo_fullscreen
                     st.rerun()
 
-        # ── Filtro de Período e Modalidade ──
+        # â”€â”€ Filtro de PerÃ­odo e Modalidade â”€â”€
         col_filtro1, col_filtro2, col_filtro3 = st.columns([2, 3, 7])
         with col_filtro1:
             periodo_selecionado = st.selectbox(
-                "📅 Período:",
-                ["Últimos 7 dias", "Últimos 30 dias", "Últimos 90 dias", "Último ano", "Tudo"],
+                "ðŸ“… PerÃ­odo:",
+                ["Ãšltimos 7 dias", "Ãšltimos 30 dias", "Ãšltimos 90 dias", "Ãšltimo ano", "Tudo"],
                 index=st.session_state.get('periodo_index', 1),
                 key="filtro_periodo_dashboard"
             )
-            st.session_state.periodo_index = ["Últimos 7 dias", "Últimos 30 dias", "Últimos 90 dias", "Último ano", "Tudo"].index(periodo_selecionado)
+            st.session_state.periodo_index = ["Ãšltimos 7 dias", "Ãšltimos 30 dias", "Ãšltimos 90 dias", "Ãšltimo ano", "Tudo"].index(periodo_selecionado)
         
         with col_filtro2:
             tipo_rota = st.selectbox(
-                "🎯 Visualização:",
-                ["🏠 Casa × Trabalho", "📚 Casa × Curso", "📊 Gestão de Base", "📧 Envios em Massa"],
+                "ðŸŽ¯ VisualizaÃ§Ã£o:",
+                ["ðŸ  Casa Ã— Trabalho", "ðŸ“š Casa Ã— Curso", "ðŸ“Š GestÃ£o de Base", "ðŸ“§ Envios em Massa"],
                 key="modalidade_pesquisa_select"
             )
 
-        # Calcula data de início baseado no período
+        # Calcula data de inÃ­cio baseado no perÃ­odo
         data_fim = datetime.datetime.now()
-        if periodo_selecionado == "Últimos 7 dias":
+        if periodo_selecionado == "Ãšltimos 7 dias":
             data_inicio = data_fim - datetime.timedelta(days=7)
-        elif periodo_selecionado == "Últimos 30 dias":
+        elif periodo_selecionado == "Ãšltimos 30 dias":
             data_inicio = data_fim - datetime.timedelta(days=30)
-        elif periodo_selecionado == "Últimos 90 dias":
+        elif periodo_selecionado == "Ãšltimos 90 dias":
             data_inicio = data_fim - datetime.timedelta(days=90)
-        elif periodo_selecionado == "Último ano":
+        elif periodo_selecionado == "Ãšltimo ano":
             data_inicio = data_fim - datetime.timedelta(days=365)
         else:  # Tudo
             data_inicio = datetime.datetime(2020, 1, 1)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ── Busca dados com filtro de período ──
+        # â”€â”€ Busca dados com filtro de perÃ­odo â”€â”€
         conexao_dash = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         
         try:
@@ -1259,27 +1259,27 @@ if menu == "🏠 Dashboard Principal":
                 FROM jovens_rotas
                 WHERE data_consulta >= '{data_inicio.strftime("%Y-%m-%d")}'
             """
-            df_dash = pd.read_sql_query(query_periodo, conexao_dash)
+            df_dash = safe_sql_query(query_periodo, conexao_dash)
             
             total_consultas = int(df_dash.iloc[0]['total']) if not df_dash.empty else 0
             sla_medio = float(df_dash.iloc[0]['sla_medio'] or 0) if not df_dash.empty else 0
             
-            # Total de implantados ATUAL (independente do período de consulta)
+            # Total de implantados ATUAL (independente do perÃ­odo de consulta)
             query_implantados = "SELECT COUNT(*) as total FROM jovens_rotas WHERE status_rota = 'Implantado'"
-            df_implantados = pd.read_sql_query(query_implantados, conexao_dash)
+            df_implantados = safe_sql_query(query_implantados, conexao_dash)
             total_implantados = int(df_implantados.iloc[0]['total']) if not df_implantados.empty else 0
             
-            # Contestações no período
+            # ContestaÃ§Ãµes no perÃ­odo
             query_contest = f"""
                 SELECT COUNT(*) as total
                 FROM contestacoes
                 WHERE data_geracao >= '{data_inicio.strftime("%Y-%m-%d")}'
             """
-            df_contest = pd.read_sql_query(query_contest, conexao_dash)
+            df_contest = safe_sql_query(query_contest, conexao_dash)
             total_contestacoes = int(df_contest.iloc[0]['total']) if not df_contest.empty else 0
         except (sqlite3.OperationalError, pd.errors.DatabaseError) as e:
-            # Tabela não existe ou está vazia - valores padrão
-            st.info("📊 Banco de dados vazio. Cadastre novos jovens para visualizar estatísticas.")
+            # Tabela nÃ£o existe ou estÃ¡ vazia - valores padrÃ£o
+            st.info("ðŸ“Š Banco de dados vazio. Cadastre novos jovens para visualizar estatÃ­sticas.")
             total_consultas = 0
             sla_medio = 0
             total_implantados = 0
@@ -1287,59 +1287,59 @@ if menu == "🏠 Dashboard Principal":
         
         conexao_dash.close()
 
-        # ── KPI Cards CLICÁVEIS ──
+        # â”€â”€ KPI Cards CLICÃVEIS â”€â”€
         col_k1, col_k2, col_k3, col_k4 = st.columns(4)
         
         with col_k1:
-            if st.button(f"📊 {total_consultas}\nTotal de Consultas", 
+            if st.button(f"ðŸ“Š {total_consultas}\nTotal de Consultas", 
                         help="Clique para ver detalhes das consultas",
                         use_container_width=True):
-                st.query_params["menu"] = "🔍 Pesquisar Consultas"
+                st.query_params["menu"] = "ðŸ” Pesquisar Consultas"
                 st.rerun()
-            st.caption("Rotas únicas no período")
+            st.caption("Rotas Ãºnicas no perÃ­odo")
         
         with col_k2:
-            if st.button(f"⏱️ {sla_medio:.2f}s\nSLA Médio", 
-                        help="Tempo médio de resposta do sistema",
+            if st.button(f"â±ï¸ {sla_medio:.2f}s\nSLA MÃ©dio", 
+                        help="Tempo mÃ©dio de resposta do sistema",
                         use_container_width=True):
-                st.info(f"**SLA Médio:** {sla_medio:.2f} segundos\n\n"
-                       f"Tempo médio de processamento das rotas no período selecionado.")
+                st.info(f"**SLA MÃ©dio:** {sla_medio:.2f} segundos\n\n"
+                       f"Tempo mÃ©dio de processamento das rotas no perÃ­odo selecionado.")
             st.caption("Tempo de resposta")
         
         with col_k3:
-            if st.button(f"⚠️ {total_contestacoes}\nContestações", 
-                        help="Clique para ver detalhes das contestações",
+            if st.button(f"âš ï¸ {total_contestacoes}\nContestaÃ§Ãµes", 
+                        help="Clique para ver detalhes das contestaÃ§Ãµes",
                         use_container_width=True):
-                st.query_params["menu"] = "💾 Banco de Dados"
+                st.query_params["menu"] = "ðŸ’¾ Banco de Dados"
                 st.rerun()
-            st.caption("Total no período")
+            st.caption("Total no perÃ­odo")
         
         with col_k4:
-            if st.button(f"✅ {total_implantados}\nImplantações", 
-                        help="Funcionários com VT ativo",
+            if st.button(f"âœ… {total_implantados}\nImplantaÃ§Ãµes", 
+                        help="FuncionÃ¡rios com VT ativo",
                         use_container_width=True):
-                st.query_params["menu"] = "💾 Banco de Dados"
+                st.query_params["menu"] = "ðŸ’¾ Banco de Dados"
                 st.rerun()
             st.caption("Ativos no momento")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # ALERTAS VISUAIS PARA TAREFAS PENDENTES
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         try:
             _conn_alertas = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
             
-            # Conta fichas pendentes de aprovação
-            _df_fichas_pendentes = pd.read_sql_query("""
+            # Conta fichas pendentes de aprovaÃ§Ã£o
+            _df_fichas_pendentes = safe_sql_query("""
                 SELECT COUNT(*) as total
                 FROM fichas_cadastrais
                 WHERE status_aprovacao = 'Pendente'
             """, _conn_alertas)
             _total_fichas_pendentes = int(_df_fichas_pendentes.iloc[0]['total']) if not _df_fichas_pendentes.empty else 0
             
-            # Conta contestações pendentes
-            _df_contest_pendentes = pd.read_sql_query("""
+            # Conta contestaÃ§Ãµes pendentes
+            _df_contest_pendentes = safe_sql_query("""
                 SELECT COUNT(*) as total
                 FROM contestacoes
                 WHERE status = 'Pendente'
@@ -1348,7 +1348,7 @@ if menu == "🏠 Dashboard Principal":
             
             _conn_alertas.close()
         except (sqlite3.OperationalError, pd.errors.DatabaseError):
-            # Tabelas não existem ainda
+            # Tabelas nÃ£o existem ainda
             _total_fichas_pendentes = 0
             _total_contest_pendentes = 0
             
@@ -1363,9 +1363,9 @@ if menu == "🏠 Dashboard Principal":
                         <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.4);
                                     border-left:4px solid #F59E0B;border-radius:12px;padding:16px 20px;margin-bottom:16px;
                                     cursor:pointer;transition:all 0.2s;" 
-                             onclick="window.location.href='?menu=🗂️ Triagem de Fichas'">
+                             onclick="window.location.href='?menu=ðŸ—‚ï¸ Triagem de Fichas'">
                             <div style="display:flex;align-items:center;gap:12px;">
-                                <span style="font-size:28px;">📋</span>
+                                <span style="font-size:28px;">ðŸ“‹</span>
                                 <div style="flex:1;">
                                     <p style="margin:0;color:#F59E0B;font-weight:700;font-size:16px;">
                                         {_total_fichas_pendentes} Ficha(s) para Aprovar
@@ -1374,12 +1374,12 @@ if menu == "🏠 Dashboard Principal":
                                         Candidaturas aguardando triagem
                                     </p>
                                 </div>
-                                <span style="color:#F59E0B;font-size:20px;">→</span>
+                                <span style="color:#F59E0B;font-size:20px;">â†’</span>
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
                         if st.button("Ver Fichas Pendentes", key="btn_fichas_pendentes", use_container_width=True):
-                            st.query_params["menu"] = "🗂️ Triagem de Fichas"
+                            st.query_params["menu"] = "ðŸ—‚ï¸ Triagem de Fichas"
                             st.rerun()
                 
                 if _total_contest_pendentes > 0:
@@ -1390,31 +1390,31 @@ if menu == "🏠 Dashboard Principal":
                                     cursor:pointer;transition:all 0.2s;"
                              onclick="window.location.href='?menu=Banco de Dados'">
                             <div style="display:flex;align-items:center;gap:12px;">
-                                <span style="font-size:28px;">⚠️</span>
+                                <span style="font-size:28px;">âš ï¸</span>
                                 <div style="flex:1;">
                                     <p style="margin:0;color:#EF4444;font-weight:700;font-size:16px;">
-                                        {_total_contest_pendentes} Contestação(ões) Pendente(s)
+                                        {_total_contest_pendentes} ContestaÃ§Ã£o(Ãµes) Pendente(s)
                                     </p>
                                     <p style="margin:4px 0 0;color:#991B1B;font-size:13px;">
-                                        Requer análise e tratativa
+                                        Requer anÃ¡lise e tratativa
                                     </p>
                                 </div>
-                                <span style="color:#EF4444;font-size:20px;">→</span>
+                                <span style="color:#EF4444;font-size:20px;">â†’</span>
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
-                        if st.button("Ver Contestações", key="btn_contestacoes_pendentes", use_container_width=True):
-                            st.query_params["menu"] = "💾 Banco de Dados"
+                        if st.button("Ver ContestaÃ§Ãµes", key="btn_contestacoes_pendentes", use_container_width=True):
+                            st.query_params["menu"] = "ðŸ’¾ Banco de Dados"
                             st.rerun()
         except Exception as e:
             pass  # Silenciosamente ignora erros nos alertas
 
-        # ══════════════════════════════════════════════════════════════════════════
-        # ALERTA DE RENOVAÇÃO DE VT — Implantados há mais de 12 meses
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        # ALERTA DE RENOVAÃ‡ÃƒO DE VT â€” Implantados hÃ¡ mais de 12 meses
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         try:
             _conn_renov = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-            _df_renov = pd.read_sql_query("""
+            _df_renov = safe_sql_query("""
                 SELECT id, nome, assinatura_data
                 FROM jovens_rotas
                 WHERE status_rota = 'Implantado'
@@ -1439,13 +1439,13 @@ if menu == "🏠 Dashboard Principal":
                 <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.4);
                             border-left:4px solid #F59E0B;border-radius:12px;padding:16px 20px;margin-bottom:20px;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                        <span style="font-size:20px;">⚠️</span>
+                        <span style="font-size:20px;">âš ï¸</span>
                         <p style="margin:0;color:#F59E0B;font-weight:700;font-size:15px;">
-                            {len(_para_renovar)} funcionário(s) com VT para renovar (implantado há +12 meses)
+                            {len(_para_renovar)} funcionÃ¡rio(s) com VT para renovar (implantado hÃ¡ +12 meses)
                         </p>
                     </div>
                     <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                        {''.join([f"""<span style="background:rgba(245,158,11,0.15);color:#92400E;border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;">#{p['id']} {p['nome'].split()[0]} · {p['meses']}m</span>""" for p in _para_renovar[:10]])}
+                        {''.join([f"""<span style="background:rgba(245,158,11,0.15);color:#92400E;border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;">#{p['id']} {p['nome'].split()[0]} Â· {p['meses']}m</span>""" for p in _para_renovar[:10]])}
                         {f'<span style="color:#94A3B8;font-size:12px;padding:3px 6px;">+{len(_para_renovar)-10} mais...</span>' if len(_para_renovar) > 10 else ''}
                     </div>
                 </div>
@@ -1453,17 +1453,17 @@ if menu == "🏠 Dashboard Principal":
         except Exception:
             pass
 
-        # ══════════════════════════════════════════════════════════════════════════
-        # ══════════════════════════════════════════════════════════════════════════
-        # ROI DASHBOARD — ANÁLISE FINANCEIRA
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        # ROI DASHBOARD â€” ANÃLISE FINANCEIRA
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
         # Busca total de jovens na base
         conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         df_jovens = safe_sql_query("SELECT COUNT(*) as total FROM jovens_rotas", conexao)
         total_jovens = df_jovens.iloc[0]['total'] if not df_jovens.empty else 0
 
-        # ── Custo real de VT: soma os valores reais do banco ──
+        # â”€â”€ Custo real de VT: soma os valores reais do banco â”€â”€
         try:
             df_custo_real = safe_sql_query("""
                 SELECT
@@ -1487,7 +1487,7 @@ if menu == "🏠 Dashboard Principal":
         CUSTO_MANUAL_DIARIO = 15.00
         DIAS_UTEIS_MES = 22
 
-        # Cálculos
+        # CÃ¡lculos
         custo_manual_mes = CUSTO_MANUAL_DIARIO * DIAS_UTEIS_MES * total_jovens
         custo_otimizado_mes = CUSTO_OTIMIZADO_DIARIO * DIAS_UTEIS_MES * total_jovens
         economia_mes = custo_manual_mes - custo_otimizado_mes
@@ -1495,14 +1495,14 @@ if menu == "🏠 Dashboard Principal":
 
         # Badge de fonte dos dados (calculado antes do HTML)
         if _qtd_com_valor > 0:
-            _badge_roi = f'<span style="background:rgba(16,185,129,0.15);color:#10B981;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;">✅ Tarifa real do banco · {_qtd_com_valor} registros · média R${CUSTO_OTIMIZADO_DIARIO:.2f}/dia</span>'
+            _badge_roi = f'<span style="background:rgba(16,185,129,0.15);color:#10B981;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;">âœ… Tarifa real do banco Â· {_qtd_com_valor} registros Â· mÃ©dia R${CUSTO_OTIMIZADO_DIARIO:.2f}/dia</span>'
         else:
-            _badge_roi = '<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;">⚠️ Usando estimativa de mercado (R$11,32/dia)</span>'
+            _badge_roi = '<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;">âš ï¸ Usando estimativa de mercado (R$11,32/dia)</span>'
 
         st.markdown(f"""
         <div style="background:#FFFFFF;border:1px solid #E2E8F0;
                     border-radius:14px;padding:24px;margin-bottom:8px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-            <h3 style="margin:0 0 4px;color:#f8ae28;">💰 Análise de ROI — Retorno sobre Investimento</h3>
+            <h3 style="margin:0 0 4px;color:#f8ae28;">ðŸ’° AnÃ¡lise de ROI â€” Retorno sobre Investimento</h3>
             <p style="color:#64748B;font-size:15px;margin:0;">
                 Comparativo de custos: Mobilidade Manual vs. Otimizada
             </p>
@@ -1510,7 +1510,7 @@ if menu == "🏠 Dashboard Principal":
         """, unsafe_allow_html=True)
         st.markdown(f'<p style="margin:0 0 20px;">{_badge_roi}</p>', unsafe_allow_html=True)
 
-        # Blocos de métricas financeiras
+        # Blocos de mÃ©tricas financeiras
         col_roi1, col_roi2, col_roi3 = st.columns(3)
 
         with col_roi1:
@@ -1518,13 +1518,13 @@ if menu == "🏠 Dashboard Principal":
             <div style="background:linear-gradient(135deg,rgba(239,68,68,0.1),rgba(239,68,68,0.05));
                         border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;text-align:center;">
                 <p style="color:#EF4444;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
-                    Custo Manual (Mês)
+                    Custo Manual (MÃªs)
                 </p>
                 <p style="color:#E2E8F0;font-size:36px;font-weight:800;margin:0;">
                     R$ {custo_manual_mes:,.2f}
                 </p>
                 <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
-                    {total_jovens} jovens × R${CUSTO_MANUAL_DIARIO:.2f}/dia × {DIAS_UTEIS_MES} dias
+                    {total_jovens} jovens Ã— R${CUSTO_MANUAL_DIARIO:.2f}/dia Ã— {DIAS_UTEIS_MES} dias
                 </p>
             </div>
             """, unsafe_allow_html=True)
@@ -1534,13 +1534,13 @@ if menu == "🏠 Dashboard Principal":
             <div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(16,185,129,0.05));
                         border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:20px;text-align:center;">
                 <p style="color:#10B981;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
-                    Custo Otimizado (Mês)
+                    Custo Otimizado (MÃªs)
                 </p>
                 <p style="color:#E2E8F0;font-size:36px;font-weight:800;margin:0;">
                     R$ {custo_otimizado_mes:,.2f}
                 </p>
                 <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
-                    {total_jovens} jovens × R${CUSTO_OTIMIZADO_DIARIO:.2f}/dia × {DIAS_UTEIS_MES} dias
+                    {total_jovens} jovens Ã— R${CUSTO_OTIMIZADO_DIARIO:.2f}/dia Ã— {DIAS_UTEIS_MES} dias
                 </p>
             </div>
             """, unsafe_allow_html=True)
@@ -1556,37 +1556,37 @@ if menu == "🏠 Dashboard Principal":
                     R$ {economia_mes:,.2f}
                 </p>
                 <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
-                    Redução de {percentual_economia:.1f}% nos custos
+                    ReduÃ§Ã£o de {percentual_economia:.1f}% nos custos
                 </p>
             </div>
             """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Gráfico de distribuição modal
+        # GrÃ¡fico de distribuiÃ§Ã£o modal
         col_chart1, col_chart2 = st.columns([1.5, 1])
 
         with col_chart1:
             st.markdown("""
             <p style="color:#94A3B8;font-size:15px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">
-                Distribuição Modal das Rotas
+                DistribuiÃ§Ã£o Modal das Rotas
                 <span style="color:#64748B;font-size:12px;font-weight:normal;margin-left:8px;">
-                    ℹ️ Hover sobre o gráfico para ver detalhes
+                    â„¹ï¸ Hover sobre o grÃ¡fico para ver detalhes
                 </span>
             </p>
             """, unsafe_allow_html=True)
             
-            # ── Dados REAIS do banco ──
+            # â”€â”€ Dados REAIS do banco â”€â”€
             try:
                 _conn_modal = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                _df_modal = pd.read_sql_query("""
+                _df_modal = safe_sql_query("""
                     SELECT
                         CASE
                             WHEN modo_rota = 'manual' THEN 'Manual'
-                            WHEN tipo_bilhete_manual LIKE '%Integra%' THEN 'Integração'
-                            WHEN tipo_bilhete_manual LIKE '%Metro%' OR tipo_bilhete_manual LIKE '%Metrô%' THEN 'Metrô'
-                            WHEN status_rota = 'Implantado' THEN 'Integração'
-                            ELSE 'Ônibus'
+                            WHEN tipo_bilhete_manual LIKE '%Integra%' THEN 'IntegraÃ§Ã£o'
+                            WHEN tipo_bilhete_manual LIKE '%Metro%' OR tipo_bilhete_manual LIKE '%MetrÃ´%' THEN 'MetrÃ´'
+                            WHEN status_rota = 'Implantado' THEN 'IntegraÃ§Ã£o'
+                            ELSE 'Ã”nibus'
                         END as modal,
                         COUNT(*) as qtd
                     FROM jovens_rotas
@@ -1599,7 +1599,7 @@ if menu == "🏠 Dashboard Principal":
                 modais = _df_modal['modal'].tolist()
                 percentuais = _df_modal['qtd'].tolist()
             except Exception:
-                modais = ['Integração', 'Ônibus', 'Metrô']
+                modais = ['IntegraÃ§Ã£o', 'Ã”nibus', 'MetrÃ´']
                 percentuais = [40, 35, 25]
 
             cores_modais = ['#f8ae28', '#444c9b', '#64748B', '#10B981']
@@ -1616,7 +1616,7 @@ if menu == "🏠 Dashboard Principal":
                 textinfo='label+percent',
                 textfont=dict(size=14, color='#FFFFFF', family='Arial'),
                 hovertemplate='<b>%{label}</b><br>' +
-                             'Quantidade: %{value} funcionários<br>' +
+                             'Quantidade: %{value} funcionÃ¡rios<br>' +
                              'Percentual: %{percent}<br>' +
                              '<extra></extra>',
                 marker=dict(line=dict(color='#FFFFFF', width=2))
@@ -1664,7 +1664,7 @@ if menu == "🏠 Dashboard Principal":
                     <p style="color:#f8ae28;font-size:28px;font-weight:800;margin:0;">{total_jovens}</p>
                 </div>
                 <div>
-                    <p style="color:#666666;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Dias Úteis/Mês</p>
+                    <p style="color:#666666;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Dias Ãšteis/MÃªs</p>
                     <p style="color:#444c9b;font-size:28px;font-weight:800;margin:0;">{DIAS_UTEIS_MES}</p>
                 </div>
                 <div>
@@ -1676,21 +1676,21 @@ if menu == "🏠 Dashboard Principal":
 
         st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
 
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # NOVOS COMPONENTES DO DASHBOARD
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
-        # ── 1. GRÁFICO DE LINHA TEMPORAL - Evolução de Implantações por Mês (COLAPSÁVEL) ──
-        with st.expander("📈 Ver Evolução de Implantações por Mês", expanded=False):
+        # â”€â”€ 1. GRÃFICO DE LINHA TEMPORAL - EvoluÃ§Ã£o de ImplantaÃ§Ãµes por MÃªs (COLAPSÃVEL) â”€â”€
+        with st.expander("ðŸ“ˆ Ver EvoluÃ§Ã£o de ImplantaÃ§Ãµes por MÃªs", expanded=False):
             st.markdown("""
             <p style="color:#64748B;font-size:14px;margin:0 0 16px;">
-                Acompanhe o crescimento mensal de funcionários com VT ativo
+                Acompanhe o crescimento mensal de funcionÃ¡rios com VT ativo
             </p>
             """, unsafe_allow_html=True)
             
             try:
                 _conn_evolucao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                _df_evolucao = pd.read_sql_query("""
+                _df_evolucao = safe_sql_query("""
                     SELECT 
                         strftime('%Y-%m', assinatura_data) as mes,
                         COUNT(*) as total
@@ -1704,7 +1704,7 @@ if menu == "🏠 Dashboard Principal":
                 _conn_evolucao.close()
                 
                 if not _df_evolucao.empty:
-                    # Converte para formato de data legível
+                    # Converte para formato de data legÃ­vel
                     _df_evolucao['mes_label'] = pd.to_datetime(_df_evolucao['mes']).dt.strftime('%b/%Y')
                     
                     fig_evolucao = px.line(
@@ -1717,11 +1717,11 @@ if menu == "🏠 Dashboard Principal":
                     fig_evolucao.update_traces(
                         line=dict(color='#10B981', width=3),
                         marker=dict(size=10, color='#10B981', line=dict(color='#FFFFFF', width=2)),
-                        hovertemplate='<b>%{x}</b><br>Implantações: %{y}<extra></extra>'
+                        hovertemplate='<b>%{x}</b><br>ImplantaÃ§Ãµes: %{y}<extra></extra>'
                     )
                     fig_evolucao.update_layout(
-                        xaxis_title="Mês",
-                        yaxis_title="Total de Implantações",
+                        xaxis_title="MÃªs",
+                        yaxis_title="Total de ImplantaÃ§Ãµes",
                         height=300,
                         margin=dict(t=10, b=40, l=40, r=10),
                         paper_bgcolor='rgba(0,0,0,0)',
@@ -1733,21 +1733,21 @@ if menu == "🏠 Dashboard Principal":
                     )
                     st.plotly_chart(fig_evolucao, use_container_width=True, key="graf_evolucao_implantacoes")
                 else:
-                    st.info("📊 Ainda não há dados de implantações com data de assinatura registrada.")
+                    st.info("ðŸ“Š Ainda nÃ£o hÃ¡ dados de implantaÃ§Ãµes com data de assinatura registrada.")
             except Exception as e:
-                st.error(f"Erro ao carregar evolução: {e}")
+                st.error(f"Erro ao carregar evoluÃ§Ã£o: {e}")
 
-        # ── 2. MAPA DE CALOR - Distribuição Geográfica dos Funcionários (COLAPSÁVEL) ──
-        with st.expander("🗺️ Ver Distribuição Geográfica dos Funcionários", expanded=False):
+        # â”€â”€ 2. MAPA DE CALOR - DistribuiÃ§Ã£o GeogrÃ¡fica dos FuncionÃ¡rios (COLAPSÃVEL) â”€â”€
+        with st.expander("ðŸ—ºï¸ Ver DistribuiÃ§Ã£o GeogrÃ¡fica dos FuncionÃ¡rios", expanded=False):
             st.markdown("""
             <p style="color:#64748B;font-size:14px;margin:0 0 16px;">
-                Visualize onde estão concentrados os funcionários por região
+                Visualize onde estÃ£o concentrados os funcionÃ¡rios por regiÃ£o
             </p>
             """, unsafe_allow_html=True)
             
             try:
                 _conn_geo = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                _df_geo = pd.read_sql_query("""
+                _df_geo = safe_sql_query("""
                     SELECT cep_casa, COUNT(*) as qtd
                     FROM jovens_rotas
                     WHERE cep_casa IS NOT NULL AND cep_casa != ''
@@ -1758,7 +1758,7 @@ if menu == "🏠 Dashboard Principal":
                 _conn_geo.close()
                 
                 if not _df_geo.empty:
-                    # Busca informações de bairro/região para cada CEP
+                    # Busca informaÃ§Ãµes de bairro/regiÃ£o para cada CEP
                     _regioes = []
                     for _, row in _df_geo.iterrows():
                         try:
@@ -1782,10 +1782,10 @@ if menu == "🏠 Dashboard Principal":
                         color_continuous_scale=['#FEF3C7', '#f8ae28', '#e09a1f']
                     )
                     fig_geo.update_traces(
-                        hovertemplate='<b>%{y}</b><br>Funcionários: %{x}<extra></extra>'
+                        hovertemplate='<b>%{y}</b><br>FuncionÃ¡rios: %{x}<extra></extra>'
                     )
                     fig_geo.update_layout(
-                        xaxis_title="Quantidade de Funcionários",
+                        xaxis_title="Quantidade de FuncionÃ¡rios",
                         yaxis_title="",
                         height=400,
                         margin=dict(t=10, b=40, l=150, r=10),
@@ -1799,19 +1799,19 @@ if menu == "🏠 Dashboard Principal":
                     )
                     st.plotly_chart(fig_geo, use_container_width=True, key="graf_distribuicao_geografica")
                 else:
-                    st.info("🗺️ Ainda não há dados de CEP cadastrados para análise geográfica.")
+                    st.info("ðŸ—ºï¸ Ainda nÃ£o hÃ¡ dados de CEP cadastrados para anÃ¡lise geogrÃ¡fica.")
             except Exception as e:
-                st.error(f"Erro ao carregar distribuição geográfica: {e}")
+                st.error(f"Erro ao carregar distribuiÃ§Ã£o geogrÃ¡fica: {e}")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ── 3. WIDGET DE AÇÕES RÁPIDAS ──
+        # â”€â”€ 3. WIDGET DE AÃ‡Ã•ES RÃPIDAS â”€â”€
         st.markdown("""
         <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:4px solid #444c9b;
                     border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-            <h3 style="margin:0 0 4px;color:#444c9b;">⚡ Ações Rápidas</h3>
+            <h3 style="margin:0 0 4px;color:#444c9b;">âš¡ AÃ§Ãµes RÃ¡pidas</h3>
             <p style="color:#64748B;font-size:14px;margin:0;">
-                Acesso rápido às tarefas mais comuns do sistema
+                Acesso rÃ¡pido Ã s tarefas mais comuns do sistema
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -1819,50 +1819,50 @@ if menu == "🏠 Dashboard Principal":
         col_acao1, col_acao2, col_acao3, col_acao4 = st.columns(4)
         
         with col_acao1:
-            if st.button("➕ Cadastrar Jovem", use_container_width=True, type="secondary"):
-                st.query_params["menu"] = "➕ Cadastrar Novo Jovem"
+            if st.button("âž• Cadastrar Jovem", use_container_width=True, type="secondary"):
+                st.query_params["menu"] = "âž• Cadastrar Novo Jovem"
                 st.rerun()
-            st.caption("Adicionar novo funcionário")
+            st.caption("Adicionar novo funcionÃ¡rio")
         
         with col_acao2:
-            if st.button("🔍 Pesquisar Rota", use_container_width=True, type="secondary"):
-                st.query_params["menu"] = "🔍 Pesquisar Consultas"
+            if st.button("ðŸ” Pesquisar Rota", use_container_width=True, type="secondary"):
+                st.query_params["menu"] = "ðŸ” Pesquisar Consultas"
                 st.rerun()
             st.caption("Buscar rotas existentes")
         
         with col_acao3:
-            if st.button("📋 Triagem de Fichas", use_container_width=True, type="secondary"):
-                st.query_params["menu"] = "🗂️ Triagem de Fichas"
+            if st.button("ðŸ“‹ Triagem de Fichas", use_container_width=True, type="secondary"):
+                st.query_params["menu"] = "ðŸ—‚ï¸ Triagem de Fichas"
                 st.rerun()
             st.caption("Aprovar candidaturas")
         
         with col_acao4:
-            if st.button("🗄️ Banco de Dados", use_container_width=True, type="secondary"):
-                st.query_params["menu"] = "💾 Banco de Dados"
+            if st.button("ðŸ—„ï¸ Banco de Dados", use_container_width=True, type="secondary"):
+                st.query_params["menu"] = "ðŸ’¾ Banco de Dados"
                 st.rerun()
             st.caption("Gerenciar registros")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # ══════════════════════════════════════════════════════════════════════════
-        # GESTÃO DE BASE - Economia Acumulada e Distribuição de Status
-        # ══════════════════════════════════════════════════════════════════════════
-        if tipo_rota == "📊 Gestão de Base":
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        # GESTÃƒO DE BASE - Economia Acumulada e DistribuiÃ§Ã£o de Status
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        if tipo_rota == "ðŸ“Š GestÃ£o de Base":
             st.markdown("""
             <div style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05));
                         border:1px solid rgba(16,185,129,0.3);border-left:4px solid #10B981;
                         border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                <h3 style="margin:0 0 4px;color:#10B981;">💰 Economia Acumulada Total</h3>
+                <h3 style="margin:0 0 4px;color:#10B981;">ðŸ’° Economia Acumulada Total</h3>
                 <p style="color:#64748B;font-size:14px;margin:0;">
-                    Economia total desde o início do sistema de mobilidade otimizada
+                    Economia total desde o inÃ­cio do sistema de mobilidade otimizada
                 </p>
             </div>
             """, unsafe_allow_html=True)
             
             try:
-                # Busca a data da primeira implantação
+                # Busca a data da primeira implantaÃ§Ã£o
                 _conn_economia = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                _df_primeira_data = pd.read_sql_query("""
+                _df_primeira_data = safe_sql_query("""
                     SELECT MIN(assinatura_data) as primeira_data
                     FROM jovens_rotas
                     WHERE status_rota = 'Implantado' 
@@ -1903,7 +1903,7 @@ if menu == "🏠 Dashboard Principal":
                         <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;
                                     padding:20px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                             <p style="color:#444c9b;font-size:14px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
-                                Tempo de Operação
+                                Tempo de OperaÃ§Ã£o
                             </p>
                             <p style="color:#444c9b;font-size:36px;font-weight:800;margin:0;">
                                 {int(_meses_desde_inicio)}
@@ -1920,18 +1920,18 @@ if menu == "🏠 Dashboard Principal":
                         <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;
                                     padding:20px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                             <p style="color:#f8ae28;font-size:14px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
-                                Economia Média/Dia
+                                Economia MÃ©dia/Dia
                             </p>
                             <p style="color:#f8ae28;font-size:36px;font-weight:800;margin:0;">
                                 R$ {_economia_por_dia:,.2f}
                             </p>
                             <p style="color:#64748B;font-size:13px;margin:4px 0 0;">
-                                Média diária de economia
+                                MÃ©dia diÃ¡ria de economia
                             </p>
                         </div>
                         """, unsafe_allow_html=True)
                 else:
-                    st.info("📊 Ainda não há implantações com data registrada para calcular economia acumulada.")
+                    st.info("ðŸ“Š Ainda nÃ£o hÃ¡ implantaÃ§Ãµes com data registrada para calcular economia acumulada.")
                 
                 _conn_economia.close()
             except Exception as e:
@@ -1939,20 +1939,20 @@ if menu == "🏠 Dashboard Principal":
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # ── GRÁFICO DE PIZZA - Distribuição de Status ──
+            # â”€â”€ GRÃFICO DE PIZZA - DistribuiÃ§Ã£o de Status â”€â”€
             st.markdown("""
             <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:4px solid #444c9b;
                         border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                <h3 style="margin:0 0 4px;color:#444c9b;">📊 Distribuição de Status</h3>
+                <h3 style="margin:0 0 4px;color:#444c9b;">ðŸ“Š DistribuiÃ§Ã£o de Status</h3>
                 <p style="color:#64748B;font-size:14px;margin:0;">
-                    Visualize a distribuição de funcionários por status de rota
+                    Visualize a distribuiÃ§Ã£o de funcionÃ¡rios por status de rota
                 </p>
             </div>
             """, unsafe_allow_html=True)
             
             try:
                 _conn_status = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                _df_status = pd.read_sql_query("""
+                _df_status = safe_sql_query("""
                     SELECT 
                         COALESCE(status_rota, 'Sem Status') as status,
                         COUNT(*) as total
@@ -1968,7 +1968,7 @@ if menu == "🏠 Dashboard Principal":
                         'Implantado': '#10B981',
                         'Otimizado': '#3B82F6',
                         'Contestada': '#F59E0B',
-                        'Não Optante': '#94A3B8',
+                        'NÃ£o Optante': '#94A3B8',
                         'Sem Status': '#64748B'
                     }
                     
@@ -1987,7 +1987,7 @@ if menu == "🏠 Dashboard Principal":
                         textinfo='label+percent',
                         textfont=dict(size=14, color='#FFFFFF', family='Arial'),
                         hovertemplate='<b>%{label}</b><br>' +
-                                     'Quantidade: %{value} funcionários<br>' +
+                                     'Quantidade: %{value} funcionÃ¡rios<br>' +
                                      'Percentual: %{percent}<br>' +
                                      '<extra></extra>',
                         marker=dict(line=dict(color='#FFFFFF', width=2))
@@ -2019,7 +2019,7 @@ if menu == "🏠 Dashboard Principal":
                     )
                     st.plotly_chart(fig_status, use_container_width=True, key="graf_distribuicao_status")
                     
-                    # Tabela resumo abaixo do gráfico
+                    # Tabela resumo abaixo do grÃ¡fico
                     st.markdown("<p style='color:#94A3B8;font-size:13px;margin-top:16px;'>Resumo por Status:</p>", unsafe_allow_html=True)
                     col_st1, col_st2, col_st3, col_st4 = st.columns(4)
                     for idx, (_, row) in enumerate(_df_status.iterrows()):
@@ -2042,15 +2042,15 @@ if menu == "🏠 Dashboard Principal":
                             </div>
                             """, unsafe_allow_html=True)
                 else:
-                    st.info("📊 Ainda não há dados de status para exibir.")
+                    st.info("ðŸ“Š Ainda nÃ£o hÃ¡ dados de status para exibir.")
             except Exception as e:
-                st.error(f"Erro ao carregar distribuição de status: {e}")
+                st.error(f"Erro ao carregar distribuiÃ§Ã£o de status: {e}")
 
         st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
 
-        # ══════════════════════════════════════════════════════════════════════════
-        # EXPORTAÇÃO DE RELATÓRIOS
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        # EXPORTAÃ‡ÃƒO DE RELATÃ“RIOS
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
         # Exportar para Excel
         if st.session_state.get('exportar_excel', False):
@@ -2063,10 +2063,10 @@ if menu == "🏠 Dashboard Principal":
                 ws = wb.active
                 ws.title = "Dashboard Mobilidade"
                 
-                # Cabeçalho
+                # CabeÃ§alho
                 ws['A1'] = "Dashboard de Mobilidade - RENAPSI"
                 ws['A1'].font = Font(size=16, bold=True, color="444c9b")
-                ws['A2'] = f"Período: {periodo_selecionado}"
+                ws['A2'] = f"PerÃ­odo: {periodo_selecionado}"
                 ws['A2'].font = Font(size=12, italic=True)
                 
                 # KPIs
@@ -2077,24 +2077,24 @@ if menu == "🏠 Dashboard Principal":
                 
                 ws['A5'] = "Total de Consultas"
                 ws['B5'] = total_consultas
-                ws['A6'] = "SLA Médio (segundos)"
+                ws['A6'] = "SLA MÃ©dio (segundos)"
                 ws['B6'] = f"{sla_medio:.2f}"
-                ws['A7'] = "Contestações"
+                ws['A7'] = "ContestaÃ§Ãµes"
                 ws['B7'] = total_contestacoes
-                ws['A8'] = "Implantações Ativas"
+                ws['A8'] = "ImplantaÃ§Ãµes Ativas"
                 ws['B8'] = total_implantados
                 
                 # ROI
-                ws['A10'] = "Análise de ROI"
+                ws['A10'] = "AnÃ¡lise de ROI"
                 ws['A10'].font = Font(size=14, bold=True)
                 ws['A10'].fill = PatternFill(start_color="f8ae28", end_color="f8ae28", fill_type="solid")
                 ws['A10'].font = Font(size=14, bold=True, color="FFFFFF")
                 
                 ws['A11'] = "Total de Jovens"
                 ws['B11'] = total_jovens
-                ws['A12'] = "Custo Manual (Mês)"
+                ws['A12'] = "Custo Manual (MÃªs)"
                 ws['B12'] = f"R$ {custo_manual_mes:,.2f}"
-                ws['A13'] = "Custo Otimizado (Mês)"
+                ws['A13'] = "Custo Otimizado (MÃªs)"
                 ws['B13'] = f"R$ {custo_otimizado_mes:,.2f}"
                 ws['A14'] = "Economia Mensal"
                 ws['B14'] = f"R$ {economia_mes:,.2f}"
@@ -2113,16 +2113,16 @@ if menu == "🏠 Dashboard Principal":
                 buffer.seek(0)
                 
                 st.download_button(
-                    label="⬇️ Baixar Relatório Excel",
+                    label="â¬‡ï¸ Baixar RelatÃ³rio Excel",
                     data=buffer,
                     file_name=f"dashboard_mobilidade_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True
                 )
                 st.session_state.exportar_excel = False
-                st.success("✅ Relatório Excel gerado com sucesso!")
+                st.success("âœ… RelatÃ³rio Excel gerado com sucesso!")
             except Exception as e:
-                st.error(f"❌ Erro ao gerar Excel: {str(e)}")
+                st.error(f"âŒ Erro ao gerar Excel: {str(e)}")
                 st.session_state.exportar_excel = False
         
         # Exportar para PDF
@@ -2134,13 +2134,13 @@ if menu == "🏠 Dashboard Principal":
                 pdf = FPDF()
                 pdf.add_page()
                 
-                # Título
+                # TÃ­tulo
                 pdf.set_font('Arial', 'B', 20)
                 pdf.set_text_color(68, 76, 155)
                 pdf.cell(0, 10, 'Dashboard de Mobilidade - RENAPSI', 0, 1, 'C')
                 pdf.ln(5)
                 
-                # Período
+                # PerÃ­odo
                 pdf.set_font('Arial', 'I', 12)
                 pdf.set_text_color(100, 100, 100)
                 pdf.cell(0, 8, f'Periodo: {periodo_selecionado}', 0, 1, 'C')
@@ -2185,7 +2185,7 @@ if menu == "🏠 Dashboard Principal":
                 pdf.cell(90, 8, 'Percentual de Economia:', 0, 0)
                 pdf.cell(0, 8, f'{percentual_economia:.1f}%', 0, 1)
                 
-                # Rodapé
+                # RodapÃ©
                 pdf.ln(15)
                 pdf.set_font('Arial', 'I', 9)
                 pdf.set_text_color(150, 150, 150)
@@ -2198,35 +2198,35 @@ if menu == "🏠 Dashboard Principal":
                 buffer.seek(0)
                 
                 st.download_button(
-                    label="⬇️ Baixar Relatório PDF",
+                    label="â¬‡ï¸ Baixar RelatÃ³rio PDF",
                     data=buffer,
                     file_name=f"dashboard_mobilidade_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
                     mime="application/pdf",
                     use_container_width=True
                 )
                 st.session_state.exportar_pdf = False
-                st.success("✅ Relatório PDF gerado com sucesso!")
+                st.success("âœ… RelatÃ³rio PDF gerado com sucesso!")
             except Exception as e:
-                st.error(f"❌ Erro ao gerar PDF: {str(e)}")
+                st.error(f"âŒ Erro ao gerar PDF: {str(e)}")
                 st.session_state.exportar_pdf = False
 
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # ENVIOS EM MASSA
-        # ══════════════════════════════════════════════════════════════════════════
-        if tipo_rota == "📧 Envios em Massa":
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        if tipo_rota == "ðŸ“§ Envios em Massa":
             st.markdown("""
             <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
                         border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                <h3 style="margin:0 0 4px;color:#444c9b;">📧 Envio em Massa de Cartas de VT</h3>
+                <h3 style="margin:0 0 4px;color:#444c9b;">ðŸ“§ Envio em Massa de Cartas de VT</h3>
                 <p style="color:#666666;font-size:15px;margin:0;">
-                    Selecione os funcionários e envie as cartas personalizadas automaticamente
+                    Selecione os funcionÃ¡rios e envie as cartas personalizadas automaticamente
                 </p>
             </div>
             """, unsafe_allow_html=True)
 
-            # Busca funcionários pendentes (status != Implantado)
+            # Busca funcionÃ¡rios pendentes (status != Implantado)
             conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-            df_pendentes = pd.read_sql_query("""
+            df_pendentes = safe_sql_query("""
                 SELECT id, nome, cpf, email, status_rota, cep_casa, cep_trabalho, matricula
                 FROM jovens_rotas 
                 WHERE status_rota != 'Implantado' OR status_rota IS NULL
@@ -2235,7 +2235,7 @@ if menu == "🏠 Dashboard Principal":
             conexao.close()
 
             if df_pendentes.empty:
-                st.info("✅ Não há funcionários pendentes de envio. Todos já foram implantados!")
+                st.info("âœ… NÃ£o hÃ¡ funcionÃ¡rios pendentes de envio. Todos jÃ¡ foram implantados!")
             else:
                 # Filtra apenas quem tem e-mail cadastrado
                 df_com_email = df_pendentes[df_pendentes['email'].notna() & (df_pendentes['email'] != '')]
@@ -2262,7 +2262,7 @@ if menu == "🏠 Dashboard Principal":
                 """, unsafe_allow_html=True)
 
                 if len(df_sem_email) > 0:
-                    with st.expander(f"⚠️ {len(df_sem_email)} funcionário(s) sem e-mail cadastrado"):
+                    with st.expander(f"âš ï¸ {len(df_sem_email)} funcionÃ¡rio(s) sem e-mail cadastrado"):
                         for _, row in df_sem_email.iterrows():
                             st.markdown(f"""
                             <div style="background:rgba(239,68,68,0.05);border-left:3px solid #EF4444;
@@ -2276,17 +2276,17 @@ if menu == "🏠 Dashboard Principal":
 
                 if len(df_com_email) > 0:
                     st.markdown("<hr style='border-color:#E2E8F0;margin:20px 0;'>", unsafe_allow_html=True)
-                    st.markdown("<p style='color:#444c9b;font-size:16px;font-weight:600;margin-bottom:12px;'>Selecione os funcionários para envio:</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#444c9b;font-size:16px;font-weight:600;margin-bottom:12px;'>Selecione os funcionÃ¡rios para envio:</p>", unsafe_allow_html=True)
 
-                    # Opção de selecionar todos
-                    selecionar_todos = st.checkbox("✅ Selecionar todos", value=False)
+                    # OpÃ§Ã£o de selecionar todos
+                    selecionar_todos = st.checkbox("âœ… Selecionar todos", value=False)
 
-                    # Lista de seleção
+                    # Lista de seleÃ§Ã£o
                     funcionarios_selecionados = []
                     
                     if selecionar_todos:
                         funcionarios_selecionados = df_com_email['id'].tolist()
-                        st.info(f"📋 {len(funcionarios_selecionados)} funcionário(s) selecionado(s)")
+                        st.info(f"ðŸ“‹ {len(funcionarios_selecionados)} funcionÃ¡rio(s) selecionado(s)")
                     else:
                         # Exibe lista com checkboxes
                         for _, row in df_com_email.iterrows():
@@ -2303,32 +2303,32 @@ if menu == "🏠 Dashboard Principal":
                                         <strong>#{row['id']}</strong> - {row['nome']}
                                     </p>
                                     <p style="margin:4px 0 0;color:#666666;font-size:16px;">
-                                        CPF: {cpf_mask} · E-mail: {row['email']} · Status: {row['status_rota'] or 'Pendente'}
+                                        CPF: {cpf_mask} Â· E-mail: {row['email']} Â· Status: {row['status_rota'] or 'Pendente'}
                                     </p>
                                 </div>
                                 """, unsafe_allow_html=True)
 
                     st.markdown("<br>", unsafe_allow_html=True)
 
-                    # Botão de envio
+                    # BotÃ£o de envio
                     if len(funcionarios_selecionados) > 0:
                         st.markdown(f"""
                         <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
                                     border-radius:10px;padding:16px;margin-bottom:16px;text-align:center;">
                             <p style="color:#60A5FA;font-size:16px;margin:0;">
-                                <strong>{len(funcionarios_selecionados)}</strong> funcionário(s) selecionado(s) para envio
+                                <strong>{len(funcionarios_selecionados)}</strong> funcionÃ¡rio(s) selecionado(s) para envio
                             </p>
                         </div>
                         """, unsafe_allow_html=True)
 
                         col_env1, col_env2 = st.columns([1, 1])
                         with col_env1:
-                            if st.button("🚀 Iniciar Envio em Massa", type="primary", width="stretch"):
+                            if st.button("ðŸš€ Iniciar Envio em Massa", type="primary", width="stretch"):
                                 st.session_state.iniciar_envio_massa = True
                                 st.session_state.ids_para_envio = funcionarios_selecionados
                                 st.rerun()
                         with col_env2:
-                            if st.button("❌ Cancelar", width="stretch"):
+                            if st.button("âŒ Cancelar", width="stretch"):
                                 st.rerun()
 
                         # Processo de envio
@@ -2337,9 +2337,9 @@ if menu == "🏠 Dashboard Principal":
                             st.markdown("""
                             <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.3);
                                         border-radius:12px;padding:20px;margin-bottom:20px;">
-                                <h4 style="margin:0 0 8px;color:#A78BFA;">⚡ Processamento em Andamento</h4>
+                                <h4 style="margin:0 0 8px;color:#A78BFA;">âš¡ Processamento em Andamento</h4>
                                 <p style="color:#94A3B8;font-size:15px;margin:0;">
-                                    Aguarde enquanto as cartas são geradas e enviadas...
+                                    Aguarde enquanto as cartas sÃ£o geradas e enviadas...
                                 </p>
                             </div>
                             """, unsafe_allow_html=True)
@@ -2355,9 +2355,9 @@ if menu == "🏠 Dashboard Principal":
 
                             for idx, func_id in enumerate(st.session_state.ids_para_envio):
                                 try:
-                                    # Busca dados do funcionário
+                                    # Busca dados do funcionÃ¡rio
                                     conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                                    df_func = pd.read_sql_query(
+                                    df_func = safe_sql_query(
                                         "SELECT * FROM jovens_rotas WHERE id = ?", 
                                         conexao, 
                                         params=(int(func_id),)
@@ -2366,8 +2366,8 @@ if menu == "🏠 Dashboard Principal":
 
                                     if df_func.empty:
                                         with log_container:
-                                            st.error(f"❌ ID {func_id}: Funcionário não encontrado no banco")
-                                        falhas.append(f"ID {func_id} - Não encontrado")
+                                            st.error(f"âŒ ID {func_id}: FuncionÃ¡rio nÃ£o encontrado no banco")
+                                        falhas.append(f"ID {func_id} - NÃ£o encontrado")
                                         continue
 
                                     dados = df_func.iloc[0]
@@ -2379,7 +2379,7 @@ if menu == "🏠 Dashboard Principal":
 
                                     status_text.markdown(f"""
                                     <p style="color:#60A5FA;font-size:16px;">
-                                        📤 Processando <strong>{nome}</strong> ({idx + 1}/{total})...
+                                        ðŸ“¤ Processando <strong>{nome}</strong> ({idx + 1}/{total})...
                                     </p>
                                     """, unsafe_allow_html=True)
 
@@ -2391,8 +2391,8 @@ if menu == "🏠 Dashboard Principal":
                                     rua_trab = end_trab_dict.get('rua', 'N/A') if isinstance(end_trab_dict, dict) else end_trab_dict
 
                                     rota = motor_de_rotas_gratuito(
-                                        f"{rua_casa}, São Paulo, Brasil",
-                                        f"{rua_trab}, São Paulo, Brasil"
+                                        f"{rua_casa}, SÃ£o Paulo, Brasil",
+                                        f"{rua_trab}, SÃ£o Paulo, Brasil"
                                     )
                                     
                                     # Registra o SLA no banco de dados
@@ -2400,10 +2400,10 @@ if menu == "🏠 Dashboard Principal":
                                         from banco_dados import registrar_sla
                                         registrar_sla(func_id, rota['sla_segundos'])
 
-                                    # Seleciona primeira rota disponível
+                                    # Seleciona primeira rota disponÃ­vel
                                     rota_para_carta = rota['rotas'][0] if rota.get('rotas') else {
-                                        'modal': 'Integração', 'trajeto': 'Ônibus + Metrô/CPTM',
-                                        'bilhete': 'Integração VT', 'valor_diario': 0.0, 'tempo': 'N/A'
+                                        'modal': 'IntegraÃ§Ã£o', 'trajeto': 'Ã”nibus + MetrÃ´/CPTM',
+                                        'bilhete': 'IntegraÃ§Ã£o VT', 'valor_diario': 0.0, 'tempo': 'N/A'
                                     }
 
                                     end_casa_str = end_casa_dict.get('completo', cep_casa) if isinstance(end_casa_dict, dict) else cep_casa
@@ -2415,13 +2415,13 @@ if menu == "🏠 Dashboard Principal":
                                         'matricula': dados.get('matricula', ''), 'email': email
                                     }
 
-                                    # Verifica se é rota manual ou automática
+                                    # Verifica se Ã© rota manual ou automÃ¡tica
                                     modo_rota_func = dados.get('modo_rota', 'automatica')
                                     
                                     if modo_rota_func == 'manual':
                                         # Usa dados da rota manual
                                         rota_para_carta = {
-                                            'tipo_bilhete_manual': dados.get('tipo_bilhete_manual', 'Bilhete Único'),
+                                            'tipo_bilhete_manual': dados.get('tipo_bilhete_manual', 'Bilhete Ãšnico'),
                                             'valor_tarifa_manual': dados.get('valor_tarifa_manual', 0.0),
                                             'descricao_itinerario_manual': dados.get('descricao_itinerario_manual', 'Trajeto manual')
                                         }
@@ -2443,28 +2443,28 @@ if menu == "🏠 Dashboard Principal":
 
                                     if sucesso:
                                         with log_container:
-                                            st.success(f"✅ {nome} - Carta enviada para {email}")
+                                            st.success(f"âœ… {nome} - Carta enviada para {email}")
                                         sucessos += 1
                                     else:
                                         with log_container:
-                                            st.error(f"❌ {nome} - Falha: {erro}")
+                                            st.error(f"âŒ {nome} - Falha: {erro}")
                                         falhas.append(f"{nome} ({email})")
 
                                 except Exception as e:
                                     with log_container:
-                                        st.error(f"❌ ID {func_id}: Erro inesperado - {str(e)}")
+                                        st.error(f"âŒ ID {func_id}: Erro inesperado - {str(e)}")
                                     falhas.append(f"ID {func_id} - Erro: {str(e)}")
 
                                 # Atualiza progresso
                                 progress_bar.progress((idx + 1) / total)
 
                                 # Intervalo de 3 segundos entre envios
-                                if idx < total - 1:  # Não espera após o último
+                                if idx < total - 1:  # NÃ£o espera apÃ³s o Ãºltimo
                                     time.sleep(3)
 
-                            # ══════════════════════════════════════════════════════════════════════════
-                            # RELATÓRIO DE FEEDBACK VISUAL
-                            # ══════════════════════════════════════════════════════════════════════════
+                            # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+                            # RELATÃ“RIO DE FEEDBACK VISUAL
+                            # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                             progress_bar.progress(1.0)
                             
                             st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
@@ -2473,7 +2473,7 @@ if menu == "🏠 Dashboard Principal":
                             st.markdown(f"""
                             <div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(16,185,129,0.05));
                                         border:1px solid rgba(16,185,129,0.3);border-radius:14px;padding:24px;margin-bottom:20px;text-align:center;">
-                                <h3 style="margin:0 0 12px;color:#10B981;">✅ Envio Concluído!</h3>
+                                <h3 style="margin:0 0 12px;color:#10B981;">âœ… Envio ConcluÃ­do!</h3>
                                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
                                     <div>
                                         <p style="color:#64748B;font-size:14px;margin:0 0 4px;text-transform:uppercase;">Enviados com Sucesso</p>
@@ -2493,22 +2493,22 @@ if menu == "🏠 Dashboard Principal":
                                 <div style="background:rgba(16,185,129,0.08);border-left:4px solid #10B981;
                                             border-radius:0 8px 8px 0;padding:16px;margin-bottom:16px;">
                                     <p style="color:#10B981;font-size:16px;font-weight:600;margin:0 0 8px;">
-                                        ✅ {sucessos} e-mail(s) enviado(s) com sucesso
+                                        âœ… {sucessos} e-mail(s) enviado(s) com sucesso
                                     </p>
                                     <p style="color:#94A3B8;font-size:14px;margin:0;">
-                                        Os funcionários receberão suas cartas de VT personalizadas em breve.
+                                        Os funcionÃ¡rios receberÃ£o suas cartas de VT personalizadas em breve.
                                     </p>
                                 </div>
                                 """, unsafe_allow_html=True)
 
                             # Detalhes de falhas
                             if len(falhas) > 0:
-                                with st.expander(f"🚨 Detalhes das {len(falhas)} Falha(s)", expanded=True):
+                                with st.expander(f"ðŸš¨ Detalhes das {len(falhas)} Falha(s)", expanded=True):
                                     st.markdown(f"""
                                     <div style="background:rgba(239,68,68,0.08);border-left:4px solid #EF4444;
                                                 border-radius:0 8px 8px 0;padding:16px;margin-bottom:16px;">
                                         <p style="color:#EF4444;font-size:16px;font-weight:600;margin:0 0 12px;">
-                                            ⚠️ Os seguintes funcionários não receberam o e-mail:
+                                            âš ï¸ Os seguintes funcionÃ¡rios nÃ£o receberam o e-mail:
                                         </p>
                                     """, unsafe_allow_html=True)
                                     
@@ -2517,7 +2517,7 @@ if menu == "🏠 Dashboard Principal":
                                         <div style="background:rgba(239,68,68,0.05);border-left:2px solid #EF4444;
                                                     padding:10px 12px;margin-bottom:8px;border-radius:0 4px 4px 0;">
                                             <p style="color:#E2E8F0;font-size:13px;margin:0;">
-                                                • {falha}
+                                                â€¢ {falha}
                                             </p>
                                         </div>
                                         """, unsafe_allow_html=True)
@@ -2526,7 +2526,7 @@ if menu == "🏠 Dashboard Principal":
                                     <div style="background:rgba(239,68,68,0.05);border-left:4px solid #EF4444;
                                                 border-radius:0 8px 8px 0;padding:12px;margin-top:12px;">
                                         <p style="color:#94A3B8;font-size:14px;margin:0;">
-                                            <strong>Ação recomendada:</strong> Verifique os e-mails cadastrados e tente novamente.
+                                            <strong>AÃ§Ã£o recomendada:</strong> Verifique os e-mails cadastrados e tente novamente.
                                         </p>
                                     </div>
                                     """, unsafe_allow_html=True)
@@ -2534,17 +2534,17 @@ if menu == "🏠 Dashboard Principal":
                             st.session_state.iniciar_envio_massa = False
                             st.session_state.ids_para_envio = []
 
-                            if st.button("🔄 Voltar ao Início", type="primary"):
+                            if st.button("ðŸ”„ Voltar ao InÃ­cio", type="primary"):
                                 st.rerun()
 
                     else:
-                        st.info("👆 Selecione pelo menos um funcionário para enviar")
+                        st.info("ðŸ‘† Selecione pelo menos um funcionÃ¡rio para enviar")
 
-        # ── Gráficos ──
+        # â”€â”€ GrÃ¡ficos â”€â”€
 
         conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         try:
-            df_contest = pd.read_sql_query("SELECT * FROM contestacoes", conexao)
+            df_contest = safe_sql_query("SELECT * FROM contestacoes", conexao)
             qtd_resolvidas = len(df_contest[df_contest['status'] == 'Resolvido'])
             qtd_pendentes = len(df_contest[df_contest['status'] == 'Pendente'])
         except Exception:
@@ -2558,10 +2558,10 @@ if menu == "🏠 Dashboard Principal":
         CORES_RENAPSI = ['#f8ae28', '#444c9b', '#64748B', '#F59E0B']  # Laranja, Azul, Cinza, Amarelo
 
         with col_g1:
-            # ── Implantações por mês (dados reais) ──
+            # â”€â”€ ImplantaÃ§Ãµes por mÃªs (dados reais) â”€â”€
             try:
                 _conn_impl = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                _df_impl = pd.read_sql_query("""
+                _df_impl = safe_sql_query("""
                     SELECT COUNT(*) as total FROM jovens_rotas WHERE status_rota = 'Implantado'
                 """, _conn_impl)
                 _total_impl = int(_df_impl.iloc[0]['total']) if not _df_impl.empty else 0
@@ -2572,24 +2572,24 @@ if menu == "🏠 Dashboard Principal":
             <div style="background:#FFFFFF;border:1px solid #E5E7EB;
                         border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                 <p style="color:#666666;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px;">
-                    Implantações Ativas
+                    ImplantaÃ§Ãµes Ativas
                 </p>
                 <p style="color:#10B981;font-size:36px;font-weight:800;margin:0;">{_total_impl}</p>
-                <p style="color:#94A3B8;font-size:12px;margin:4px 0 0;">funcionários com VT ativo</p>
+                <p style="color:#94A3B8;font-size:12px;margin:4px 0 0;">funcionÃ¡rios com VT ativo</p>
             </div>
             """, unsafe_allow_html=True)
 
         with col_g2:
             st.markdown(f"""
             <p style="color:#94A3B8;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">
-                Contestações ({qtd_resolvidas}/{total_contestacoes})
+                ContestaÃ§Ãµes ({qtd_resolvidas}/{total_contestacoes})
             </p>
             """, unsafe_allow_html=True)
             if total_contestacoes == 0:
                 st.markdown("""
                 <div style="background:#FFFFFF;border:1px solid #E5E7EB;
                             border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                    <p style="color:#666666;font-size:13px;margin:0;">Nenhuma contestação</p>
+                    <p style="color:#666666;font-size:13px;margin:0;">Nenhuma contestaÃ§Ã£o</p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
@@ -2601,11 +2601,11 @@ if menu == "🏠 Dashboard Principal":
                 st.plotly_chart(fig, width="stretch", key="graf_contest")
 
         with col_g3:
-            # ── Por Local de Trabalho (dados reais) ──
+            # â”€â”€ Por Local de Trabalho (dados reais) â”€â”€
             st.markdown("<p style='color:#666666;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;'>Por Local de Trabalho</p>", unsafe_allow_html=True)
             try:
                 _conn_lt = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                _df_lt = pd.read_sql_query("""
+                _df_lt = safe_sql_query("""
                     SELECT lt.nome_unidade as local, COUNT(jr.id) as qtd
                     FROM jovens_rotas jr
                     LEFT JOIN locais_trabalho lt ON jr.cep_trabalho = lt.cep
@@ -2629,11 +2629,11 @@ if menu == "🏠 Dashboard Principal":
             st.plotly_chart(fig2, width="stretch", key="graf_local")
 
         with col_g4:
-            # ── Por Status (dados reais) ──
+            # â”€â”€ Por Status (dados reais) â”€â”€
             st.markdown("<p style='color:#666666;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;'>Por Status</p>", unsafe_allow_html=True)
             try:
                 _conn_st = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                _df_st = pd.read_sql_query("""
+                _df_st = safe_sql_query("""
                     SELECT COALESCE(status_rota, 'Sem status') as status, COUNT(*) as qtd
                     FROM jovens_rotas GROUP BY status_rota ORDER BY qtd DESC
                 """, _conn_st)
@@ -2653,17 +2653,17 @@ if menu == "🏠 Dashboard Principal":
 
         st.markdown("<hr style='border-color:rgba(0,212,255,0.1);'>", unsafe_allow_html=True)
 
-        # ── Contestações ──
-        with st.expander("⚡ Ver Detalhes das Contestações"):
+        # â”€â”€ ContestaÃ§Ãµes â”€â”€
+        with st.expander("âš¡ Ver Detalhes das ContestaÃ§Ãµes"):
             if df_contest.empty:
-                st.info("Nenhuma contestação registada.")
+                st.info("Nenhuma contestaÃ§Ã£o registada.")
             else:
-                tab_pend, tab_resol, tab_tab = st.tabs(["🔴 Pendentes", "✅ Resolvidas", "📋 Tabela"])
+                tab_pend, tab_resol, tab_tab = st.tabs(["ðŸ”´ Pendentes", "âœ… Resolvidas", "ðŸ“‹ Tabela"])
 
                 with tab_pend:
                     df_pend = df_contest[df_contest['status'] == 'Pendente']
                     if df_pend.empty:
-                        st.success("Tudo limpo! Nenhuma contestação pendente.")
+                        st.success("Tudo limpo! Nenhuma contestaÃ§Ã£o pendente.")
                     else:
                         for _, row in df_pend.iterrows():
                             st.markdown(f"""
@@ -2676,7 +2676,7 @@ if menu == "🏠 Dashboard Principal":
                                                 border-radius:20px;font-size:13px;">PENDENTE</span>
                                 </div>
                                 <p style="color:#666666;font-size:13px;margin:0 0 8px;">
-                                    {row['data_geracao']} · <strong style="color:#333333;">{row['nome_jovem']}</strong>
+                                    {row['data_geracao']} Â· <strong style="color:#333333;">{row['nome_jovem']}</strong>
                                 </p>
                                 <div style="background:rgba(239,68,68,0.05);border-left:3px solid #EF4444;
                                             padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#333333;">
@@ -2700,7 +2700,7 @@ if menu == "🏠 Dashboard Principal":
                 with tab_resol:
                     df_res = df_contest[df_contest['status'] == 'Resolvido']
                     if df_res.empty:
-                        st.info("Nenhuma contestação resolvida ainda.")
+                        st.info("Nenhuma contestaÃ§Ã£o resolvida ainda.")
                     else:
                         for _, row in df_res.iterrows():
                             st.markdown(f"""
@@ -2711,7 +2711,7 @@ if menu == "🏠 Dashboard Principal":
                                     <span style="background:rgba(16,185,129,0.15);color:#10B981;padding:2px 8px;
                                                 border-radius:20px;font-size:13px;">RESOLVIDO</span>
                                 </div>
-                                <p style="color:#666666;font-size:13px;margin:0 0 6px;">{row['data_geracao']} · <strong style="color:#333333;">{row['nome_jovem']}</strong></p>
+                                <p style="color:#666666;font-size:13px;margin:0 0 6px;">{row['data_geracao']} Â· <strong style="color:#333333;">{row['nome_jovem']}</strong></p>
                                 <p style="color:#666666;font-size:13px;margin:0 0 8px;"><strong>Motivo:</strong> {row['motivo']}</p>
                                 <div style="background:rgba(16,185,129,0.08);border-left:3px solid #10B981;
                                             padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#333333;">
@@ -2722,20 +2722,20 @@ if menu == "🏠 Dashboard Principal":
 
                 with tab_tab:
                     df_exib = df_contest[['id','data_geracao','nome_jovem','motivo','status','tratativa']].copy()
-                    df_exib.columns = ['ID','Data','Funcionário','Motivo','Status','Tratativa']
+                    df_exib.columns = ['ID','Data','FuncionÃ¡rio','Motivo','Status','Tratativa']
                     st.dataframe(df_exib, width="stretch", hide_index=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA 1 — PESQUISAR CONSULTAS
-# ══════════════════════════════════════════════════════════════════════════════
-elif menu == "🔍 Pesquisar Consultas":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA 1 â€” PESQUISAR CONSULTAS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+elif menu == "ðŸ” Pesquisar Consultas":
 
-# Recupera estado após F5
+# Recupera estado apÃ³s F5
         if 'id_consulta' in st.query_params and st.session_state.get('resultado_busca') is None:
             id_salvo = st.query_params['id_consulta']
             conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-            df_salvo = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(float(id_salvo)),))
+            df_salvo = safe_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(float(id_salvo)),))
             conexao.close()
             if not df_salvo.empty:
                 st.session_state.resultado_busca = df_salvo
@@ -2747,12 +2747,12 @@ elif menu == "🔍 Pesquisar Consultas":
             if key not in st.session_state:
                 st.session_state[key] = default
 
-        # ── PAINEL DE DETALHES ──────────────────────────────────────────────────
+        # â”€â”€ PAINEL DE DETALHES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if st.session_state.detalhes_abertos and st.session_state.resultado_busca is not None:
 
             col_voltar, _ = st.columns([1, 11])
             with col_voltar:
-                if st.button("← Voltar"):
+                if st.button("â† Voltar"):
                     for k in ['detalhes_abertos','rota_gerada','modo_contestacao',
                             'modo_edicao','mostrar_modal_email']:
                         st.session_state[k] = False
@@ -2760,27 +2760,27 @@ elif menu == "🔍 Pesquisar Consultas":
                         del st.query_params['id_consulta']
                     st.rerun()
 
-            # Verifica se há dados válidos
+            # Verifica se hÃ¡ dados vÃ¡lidos
             if st.session_state.resultado_busca.empty:
-                st.error("❌ Nenhum dado encontrado para esta consulta.")
+                st.error("âŒ Nenhum dado encontrado para esta consulta.")
                 st.session_state.detalhes_abertos = False
                 st.rerun()
                 
             dados_jovem = st.session_state.resultado_busca.iloc[0]
             
-            # ── BLINDAGEM CONTRA ID VAZIO ──
+            # â”€â”€ BLINDAGEM CONTRA ID VAZIO â”€â”€
             try:
                 id_selecionado = int(dados_jovem['id'])
             except (TypeError, ValueError):
-                st.error("⚠️ Este jovem está sem ID no banco de dados! Por favor, vá na aba 'Banco de Dados', adicione um número no campo ID dele e salve.")
+                st.error("âš ï¸ Este jovem estÃ¡ sem ID no banco de dados! Por favor, vÃ¡ na aba 'Banco de Dados', adicione um nÃºmero no campo ID dele e salve.")
                 st.stop()
                 
             nome_jovem       = dados_jovem['nome']
             cpf_cru          = str(dados_jovem['cpf']).zfill(11)
             cep_casa         = dados_jovem['cep_casa']
-            matricula_exib   = dados_jovem.get('matricula', 'Não informada')
+            matricula_exib   = dados_jovem.get('matricula', 'NÃ£o informada')
 
-            # --- LÓGICA DE CONTEXTO (Status dentro da consulta) ---
+            # --- LÃ“GICA DE CONTEXTO (Status dentro da consulta) ---
             modalidade_atual = st.session_state.get('contexto_salvo', 'Trabalho')
             contexto_ativo = "Trabalho" if "Trabalho" in modalidade_atual else "Curso"
             sigla_contexto = "C-T" if contexto_ativo == "Trabalho" else "C-C"
@@ -2808,80 +2808,80 @@ elif menu == "🔍 Pesquisar Consultas":
             numero_casa      = dados_jovem.get('numero_casa', '')
             coordenadas_casa = dados_jovem.get('coordenadas', '')
 
-            # ── MODO EDIÇÃO ──
+            # â”€â”€ MODO EDIÃ‡ÃƒO â”€â”€
             if st.session_state.modo_edicao:
                 st.markdown("""
                 <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #444c9b;
                             border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                    <h3 style="margin:0 0 4px;color:#444c9b;">✏️ Editar Dados da Consulta</h3>
-                    <p style="color:#666666;font-size:13px;margin:0;">Atualize as informações do funcionário e o local de trabalho</p>
+                    <h3 style="margin:0 0 4px;color:#444c9b;">âœï¸ Editar Dados da Consulta</h3>
+                    <p style="color:#666666;font-size:13px;margin:0;">Atualize as informaÃ§Ãµes do funcionÃ¡rio e o local de trabalho</p>
                 </div>
                 """, unsafe_allow_html=True)
 
-                # ── Colunas dos status ──
+                # â”€â”€ Colunas dos status â”€â”€
                 col_e1, col_e2, col_e3 = st.columns(3)
                 
                 with col_e1:
-                    st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>👤 Dados do Funcionário</p>", unsafe_allow_html=True)
-                    mat_input    = st.text_input("Matrícula", value=matricula_exib if matricula_exib != 'Não informada' else '')
+                    st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>ðŸ‘¤ Dados do FuncionÃ¡rio</p>", unsafe_allow_html=True)
+                    mat_input    = st.text_input("MatrÃ­cula", value=matricula_exib if matricula_exib != 'NÃ£o informada' else '')
                     nome_input   = st.text_input("Nome", value=nome_jovem, disabled=True)
                     email_input  = st.text_input("E-mail", value=email_jovem or '')
                     celular_input= st.text_input("Celular", value=celular_jovem or '')
                     obs_input    = st.text_area(
-                        "📝 Observações internas",
+                        "ðŸ“ ObservaÃ§Ãµes internas",
                         value=dados_jovem.get('observacoes', '') or '',
-                        placeholder="Ex: aguardando documentação, mudou de endereço...",
+                        placeholder="Ex: aguardando documentaÃ§Ã£o, mudou de endereÃ§o...",
                         height=90,
                         key=f"obs_input_{id_selecionado}"
                     )
 
                 with col_e2:
-                    st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏠 Endereço do Funcionário</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>ðŸ  EndereÃ§o do FuncionÃ¡rio</p>", unsafe_allow_html=True)
                     cep_input = st.text_input("CEP Residencial", value=cep_casa)
                     c_rua, c_num = st.columns([3, 1])
                     
-                    # Busca endereço
+                    # Busca endereÃ§o
                     end_atual = buscar_endereco_viacep(cep_input)
                     rua_input = c_rua.text_input("Logradouro", value=end_atual.get('completo','') if isinstance(end_atual, dict) else '', disabled=True)
-                    num_input = c_num.text_input("Número", value=numero_casa or '')
+                    num_input = c_num.text_input("NÃºmero", value=numero_casa or '')
 
                     # Coordenadas
                     coord_atual = st.session_state.get('coord_temp', coordenadas_casa)
                     coord_input = st.text_input("Coordenadas (Opcional)", value=coord_atual or '')
                     
-                    if st.button("🔍 Buscar Coordenadas Reais", type="secondary", width="stretch"):
+                    if st.button("ðŸ” Buscar Coordenadas Reais", type="secondary", width="stretch"):
                         if cep_input and len(cep_input.strip()) == 8:
-                            end_completo = f"CEP {cep_input}, {num_input if num_input else ''}, São Paulo, Brasil"
+                            end_completo = f"CEP {cep_input}, {num_input if num_input else ''}, SÃ£o Paulo, Brasil"
                             lat, lon = obter_coordenadas_reais(end_completo)
                             if lat is not None and lon is not None:
                                 st.session_state.coord_temp = f"{lat}, {lon}"
-                                st.success(f"✅ Coordenadas: {lat}, {lon}")
+                                st.success(f"âœ… Coordenadas: {lat}, {lon}")
                                 time.sleep(1)
                                 st.rerun()
                             else:
-                                st.warning("⚠️ Não encontradas. Verifique o CEP.")
+                                st.warning("âš ï¸ NÃ£o encontradas. Verifique o CEP.")
                         else:
-                            st.error("❌ CEP inválido")
+                            st.error("âŒ CEP invÃ¡lido")
 
                 with col_e3:
-                    st.markdown(f"<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>🏢 Local de {contexto_ativo}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:#444c9b;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;'>ðŸ¢ Local de {contexto_ativo}</p>", unsafe_allow_html=True)
                     
                     # Busca todas as unidades
                     todos_locais = obter_locais_trabalho()
                     
                     # Pega apenas os locais cujo 'tipo_local' bate com o contexto atual
-                    # O .get previne erros caso alguma unidade antiga não tenha o tipo preenchido
+                    # O .get previne erros caso alguma unidade antiga nÃ£o tenha o tipo preenchido
                     locais_trabalho = [loc for loc in todos_locais if loc.get('tipo_local', 'Trabalho') == contexto_ativo]
                     
                     if not locais_trabalho:
-                        st.warning(f"⚠️ Nenhuma unidade do tipo '{contexto_ativo}' cadastrada no sistema. Vá em 'Gerenciar Unidades' para adicionar.")
+                        st.warning(f"âš ï¸ Nenhuma unidade do tipo '{contexto_ativo}' cadastrada no sistema. VÃ¡ em 'Gerenciar Unidades' para adicionar.")
                         local_selecionado = None
                     else:
-                        # Cria dicionário com nome_unidade como chave
+                        # Cria dicionÃ¡rio com nome_unidade como chave
                         dict_locais = {local['nome_unidade']: local for local in locais_trabalho}
                         nomes_unidades = list(dict_locais.keys())
                         
-                        # Selectbox com unidades do banco (dinâmico, sem hardcoding)
+                        # Selectbox com unidades do banco (dinÃ¢mico, sem hardcoding)
                         local_selecionado_nome = st.selectbox(
                             "Selecione o local de trabalho:",
                             nomes_unidades,
@@ -2893,7 +2893,7 @@ elif menu == "🔍 Pesquisar Consultas":
                         if local_selecionado_nome:
                             local_selecionado = dict_locais[local_selecionado_nome]
                             
-                            # Card azul com dados reais da unidade (100% dinâmico)
+                            # Card azul com dados reais da unidade (100% dinÃ¢mico)
                             st.markdown(f"""
                             <div style="background-color:#BAE6FD; border-radius:8px; padding:15px; text-align:center; margin-top:5px; border: 1px solid #7DD3FC;">
                                 <p style="color:#0284C7; font-size:12px; font-weight:700; margin:0;">
@@ -2908,7 +2908,7 @@ elif menu == "🔍 Pesquisar Consultas":
                             """, unsafe_allow_html=True)
                         else:
                             local_selecionado = None
-                            st.info("ℹ️ Selecione uma unidade para visualizar os dados")
+                            st.info("â„¹ï¸ Selecione uma unidade para visualizar os dados")
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 col_f, col_c = st.columns([1, 1])
@@ -2918,20 +2918,20 @@ elif menu == "🔍 Pesquisar Consultas":
                         st.session_state.pop('coord_temp', None)
                         st.rerun()
                 with col_c:
-                    if st.button("Confirmar Alterações", type="primary", width="stretch"):
+                    if st.button("Confirmar AlteraÃ§Ãµes", type="primary", width="stretch"):
                         try:
                             # Valida se uma unidade foi selecionada
                             local_selecionado_nome = st.session_state.get(f"select_local_trabalho_app_{id_selecionado}")
                             
                             if not local_selecionado_nome:
-                                st.error("⚠️ Selecione um local de trabalho antes de confirmar.")
+                                st.error("âš ï¸ Selecione um local de trabalho antes de confirmar.")
                             else:
                                 # Busca a unidade selecionada do banco para garantir dados atualizados
                                 locais_trabalho = obter_locais_trabalho()
                                 dict_locais = {local['nome_unidade']: local for local in locais_trabalho}
                                 
                                 if local_selecionado_nome not in dict_locais:
-                                    st.error("❌ Unidade selecionada não encontrada no banco de dados.")
+                                    st.error("âŒ Unidade selecionada nÃ£o encontrada no banco de dados.")
                                 else:
                                     local_selecionado = dict_locais[local_selecionado_nome]
                                     
@@ -2943,7 +2943,7 @@ elif menu == "🔍 Pesquisar Consultas":
                                     num_final = str(num_input) if num_input else ''
                                     coord_final = str(coord_input) if coord_input else ''
                                     
-                                    # CEP da unidade selecionada (CRÍTICO: garantir que seja do banco)
+                                    # CEP da unidade selecionada (CRÃTICO: garantir que seja do banco)
                                     cep_trab_final = local_selecionado['cep']
                                     
                                     with st.spinner("Salvando no banco de dados..."):
@@ -2958,22 +2958,22 @@ elif menu == "🔍 Pesquisar Consultas":
                                         conexao.commit()
                                         
                                         # Recarrega dados atualizados
-                                        df_atualizado = pd.read_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_selecionado),))
+                                        df_atualizado = safe_sql_query("SELECT * FROM jovens_rotas WHERE id = ?", conexao, params=(int(id_selecionado),))
                                         conexao.close()
                                     
                                     if not df_atualizado.empty:
                                         st.session_state.resultado_busca = df_atualizado
                                         st.session_state.modo_edicao = False
                                         st.session_state.pop('coord_temp', None)
-                                        st.session_state.rota_gerada = None # Força o recalculo da rota para a nova empresa
+                                        st.session_state.rota_gerada = None # ForÃ§a o recalculo da rota para a nova empresa
                                         st.session_state.analise_ia = None
 
-                                        # ── Registra no histórico de auditoria ──
+                                        # â”€â”€ Registra no histÃ³rico de auditoria â”€â”€
                                         try:
                                             _usr_hist = st.session_state.get("usuario_dados", {}).get("username", "desconhecido")
                                             registrar_historico(
                                                 usuario=_usr_hist,
-                                                acao="Edição de dados do funcionário",
+                                                acao="EdiÃ§Ã£o de dados do funcionÃ¡rio",
                                                 tabela="jovens_rotas",
                                                 registro_id=id_selecionado,
                                                 campo="matricula/email/celular/cep_casa/cep_trabalho",
@@ -2982,15 +2982,15 @@ elif menu == "🔍 Pesquisar Consultas":
                                         except Exception:
                                             pass
 
-                                        st.success(f"✅ Dados salvos com sucesso! CEP de trabalho atualizado para: {cep_trab_final}")
+                                        st.success(f"âœ… Dados salvos com sucesso! CEP de trabalho atualizado para: {cep_trab_final}")
                                         time.sleep(2)
                                         st.rerun()
                                     else:
-                                        st.error("❌ Erro ao recarregar dados do banco.")
+                                        st.error("âŒ Erro ao recarregar dados do banco.")
                         except Exception as e:
-                            st.error(f"❌ Erro ao salvar: {str(e)}")
+                            st.error(f"âŒ Erro ao salvar: {str(e)}")
 
-            # ── MODO VISUALIZAÇÃO ──
+            # â”€â”€ MODO VISUALIZAÃ‡ÃƒO â”€â”€
             else:
                 end_casa_dict = buscar_endereco_viacep(cep_casa)
                 end_trab_dict = buscar_endereco_viacep(cep_trab)
@@ -3001,8 +3001,8 @@ elif menu == "🔍 Pesquisar Consultas":
                 bairro_cidade_trab = f"{end_trab_dict.get('bairro','')} - {end_trab_dict.get('cidade_uf','')}" if isinstance(end_trab_dict, dict) else ""
 
                 if not st.session_state.get('rota_gerada'):
-                    endereco_completo_casa = end_casa_dict.get('completo', f"{rua_casa}, São Paulo, SP, Brasil") if isinstance(end_casa_dict, dict) else f"{rua_casa}, São Paulo, SP, Brasil"
-                    endereco_completo_trab = end_trab_dict.get('completo', f"{rua_trab}, São Paulo, SP, Brasil") if isinstance(end_trab_dict, dict) else f"{rua_trab}, São Paulo, SP, Brasil"
+                    endereco_completo_casa = end_casa_dict.get('completo', f"{rua_casa}, SÃ£o Paulo, SP, Brasil") if isinstance(end_casa_dict, dict) else f"{rua_casa}, SÃ£o Paulo, SP, Brasil"
+                    endereco_completo_trab = end_trab_dict.get('completo', f"{rua_trab}, SÃ£o Paulo, SP, Brasil") if isinstance(end_trab_dict, dict) else f"{rua_trab}, SÃ£o Paulo, SP, Brasil"
                     
                     rota = motor_de_rotas_gratuito(endereco_completo_casa, endereco_completo_trab)
                     st.session_state.rota_gerada = rota
@@ -3019,7 +3019,7 @@ elif menu == "🔍 Pesquisar Consultas":
 
                 col_fill, col_edit_btn = st.columns([11, 1])
                 with col_edit_btn:
-                    if st.button("✏️", width="stretch", help="Editar dados"):
+                    if st.button("âœï¸", width="stretch", help="Editar dados"):
                         st.session_state.modo_edicao = True
                         st.rerun()
 
@@ -3033,22 +3033,22 @@ elif menu == "🔍 Pesquisar Consultas":
                 else:
                     status_color, status_bg = "#94A3B8", "148,163,184"
 
-                # ── PREPARAÇÃO DAS STRINGS ──
+                # â”€â”€ PREPARAÃ‡ÃƒO DAS STRINGS â”€â”€
                 linha_num_casa = f', {numero_casa}' if numero_casa else ''
 
-                # Cabeçalho com ID, título e status
+                # CabeÃ§alho com ID, tÃ­tulo e status
                 col_header_left, col_header_right = st.columns([10, 2])
                 
                 with col_header_left:
-                    st.markdown(f"### 👤 Consulta #{id_selecionado}")
-                    st.caption(f"RENAPSI · SÃO PAULO · {sigla_contexto}")
-                    # ── Indicador de completude ──
+                    st.markdown(f"### ðŸ‘¤ Consulta #{id_selecionado}")
+                    st.caption(f"RENAPSI Â· SÃƒO PAULO Â· {sigla_contexto}")
+                    # â”€â”€ Indicador de completude â”€â”€
                     _campos_completude = {
                         'E-mail': bool(email_jovem),
                         'Celular': bool(celular_jovem),
-                        'Matrícula': bool(matricula_exib and matricula_exib != 'Não informada'),
+                        'MatrÃ­cula': bool(matricula_exib and matricula_exib != 'NÃ£o informada'),
                         'CEP Trabalho': bool(cep_trab),
-                        'Número casa': bool(numero_casa),
+                        'NÃºmero casa': bool(numero_casa),
                         'Coordenadas': bool(coordenadas_casa),
                     }
                     _total_campos = len(_campos_completude)
@@ -3072,47 +3072,47 @@ elif menu == "🔍 Pesquisar Consultas":
                         {status_exib}
                     </div>
                     """, unsafe_allow_html=True)
-                    # Timestamp da última carta enviada
+                    # Timestamp da Ãºltima carta enviada
                     _ultima_carta = dados_jovem.get('ultima_carta_enviada', '')
                     if _ultima_carta:
                         st.markdown(f"""
                         <div style="margin-top:6px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);
                                     border-radius:8px;padding:4px 10px;font-size:11px;color:#10B981;text-align:center;">
-                            📧 Carta enviada em {_ultima_carta}
+                            ðŸ“§ Carta enviada em {_ultima_carta}
                         </div>
                         """, unsafe_allow_html=True)
 
                 st.divider()
 
-                # Três colunas para os dados
+                # TrÃªs colunas para os dados
                 col1, col2, col3 = st.columns(3)
 
-                # Coluna 1: Dados do Funcionário
+                # Coluna 1: Dados do FuncionÃ¡rio
                 with col1:
-                    st.markdown("**Dados do Funcionário**")
+                    st.markdown("**Dados do FuncionÃ¡rio**")
                     st.markdown(f"**CPF:** {cpf_cru}")
-                    st.markdown(f"**Matrícula:** {matricula_exib}")
+                    st.markdown(f"**MatrÃ­cula:** {matricula_exib}")
                     st.markdown(f"**Nome:** {nome_jovem}")
                     if email_jovem:
                         st.markdown(f"**E-mail:** {email_jovem}")
                     if celular_jovem:
                         st.markdown(f"**Celular:** {celular_jovem}")
-                    # Observações internas
+                    # ObservaÃ§Ãµes internas
                     _obs_exib = dados_jovem.get('observacoes', '') or ''
                     if _obs_exib.strip():
                         st.markdown(f"""
                         <div style="background:rgba(245,158,11,0.08);border-left:3px solid #F59E0B;
                                     border-radius:0 6px 6px 0;padding:8px 10px;margin-top:8px;">
-                            <p style="color:#92400E;font-size:12px;font-weight:600;margin:0 0 2px;">📝 Obs. internas</p>
+                            <p style="color:#92400E;font-size:12px;font-weight:600;margin:0 0 2px;">ðŸ“ Obs. internas</p>
                             <p style="color:#78350F;font-size:12px;margin:0;">{_obs_exib}</p>
                         </div>
                         """, unsafe_allow_html=True)
 
-                # Coluna 2: Endereço Residencial
+                # Coluna 2: EndereÃ§o Residencial
                 with col2:
-                    st.markdown("**Endereço Residencial**")
+                    st.markdown("**EndereÃ§o Residencial**")
                     st.markdown("""
-                    <span style="background:rgba(16,185,129,0.1);color:#10B981;padding:2px 8px;font-size:12px;border-radius:20px;font-weight:600;">● BAIXO RISCO</span>
+                    <span style="background:rgba(16,185,129,0.1);color:#10B981;padding:2px 8px;font-size:12px;border-radius:20px;font-weight:600;">â— BAIXO RISCO</span>
                     """, unsafe_allow_html=True)
                     st.markdown(f"**CEP:** {cep_casa}")
                     st.markdown(f"{rua_casa}{linha_num_casa}  \n{bairro_cidade_casa}")
@@ -3123,16 +3123,16 @@ elif menu == "🔍 Pesquisar Consultas":
                     st.markdown(f"**CEP:** {cep_trab}")
                     st.markdown(f"{rua_trab}  \n{bairro_cidade_trab}")
                 
-                # ── Barra de ações ──
-                st.markdown("<p style='color:#64748B;font-size:12px;margin-bottom:8px;'>AÇÕES DA CONSULTA</p>", unsafe_allow_html=True)
+                # â”€â”€ Barra de aÃ§Ãµes â”€â”€
+                st.markdown("<p style='color:#64748B;font-size:12px;margin-bottom:8px;'>AÃ‡Ã•ES DA CONSULTA</p>", unsafe_allow_html=True)
                 col_b1, col_b2, col_b3, col_b4, col_b5, col_fill2 = st.columns([1, 1, 1, 1, 1, 1])
                 ja_implantado = (status_rota_raw == "Implantado")
                 
                 with col_b1:
-                    if st.button("🔄 Recalcular", type="secondary", width="stretch"):
-                        # Limpa TUDO relacionado à rota para forçar recálculo completo
+                    if st.button("ðŸ”„ Recalcular", type="secondary", width="stretch"):
+                        # Limpa TUDO relacionado Ã  rota para forÃ§ar recÃ¡lculo completo
                         print("\n" + "="*60)
-                        print("🔄 RECALCULANDO ROTA - LIMPANDO CACHE")
+                        print("ðŸ”„ RECALCULANDO ROTA - LIMPANDO CACHE")
                         print("="*60 + "\n")
                         
                         if 'rota_gerada' in st.session_state:
@@ -3142,43 +3142,43 @@ elif menu == "🔍 Pesquisar Consultas":
                         if 'modo_contestacao' in st.session_state:
                             del st.session_state.modo_contestacao
                         
-                        st.success("✅ Cache limpo! Recalculando rota...")
+                        st.success("âœ… Cache limpo! Recalculando rota...")
                         time.sleep(0.5)
                         st.rerun()
                         
                 with col_b2:
-                    if st.button("✉️ Enviar Carta", type="secondary", width="stretch"):
+                    if st.button("âœ‰ï¸ Enviar Carta", type="secondary", width="stretch"):
                         st.session_state.mostrar_modal_email = not st.session_state.get('mostrar_modal_email', False)
                         
                 with col_b3:
-                    if st.button("⚠️ Contestação", type="secondary", width="stretch"):
+                    if st.button("âš ï¸ ContestaÃ§Ã£o", type="secondary", width="stretch"):
                         st.session_state.modo_contestacao = not st.session_state.get('modo_contestacao', False)
                         
                 with col_b4:
-                    if st.button("✍️ Rota Manual", type="secondary", width="stretch"):
+                    if st.button("âœï¸ Rota Manual", type="secondary", width="stretch"):
                         st.session_state.modo_rota_manual = not st.session_state.get('modo_rota_manual', False)
                         
                 with col_b5:
-                    if st.button("📋 Implantados", type="secondary", width="stretch"):
+                    if st.button("ðŸ“‹ Implantados", type="secondary", width="stretch"):
                         st.session_state.modo_implantacao = not st.session_state.get('modo_implantacao', False)
 
                 if st.session_state.get('mostrar_modal_email'):
                     st.markdown(f"""
                     <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.25);
                                 border-radius:12px;padding:16px;margin:12px 0;">
-                        <p style="color:#00D4FF;font-weight:600;margin:0 0 6px;">✉️ Enviar Carta de Opção de Transporte</p>
+                        <p style="color:#00D4FF;font-weight:600;margin:0 0 6px;">âœ‰ï¸ Enviar Carta de OpÃ§Ã£o de Transporte</p>
                         <p style="color:#94A3B8;font-size:13px;margin:0;">
-                            Destinatário: <strong style="color:#E2E8F0;">{email_jovem or 'E-mail não informado'}</strong>
+                            DestinatÃ¡rio: <strong style="color:#E2E8F0;">{email_jovem or 'E-mail nÃ£o informado'}</strong>
                         </p>
                     </div>
                     """, unsafe_allow_html=True)
 
                     if not email_jovem:
-                        st.warning("⚠️ Este funcionário não possui e-mail cadastrado. Edite os dados para adicionar.")
+                        st.warning("âš ï¸ Este funcionÃ¡rio nÃ£o possui e-mail cadastrado. Edite os dados para adicionar.")
                     else:
                         # Seleciona qual rota usar na carta
                         rotas_disponiveis = st.session_state.rota_gerada.get('rotas', []) if st.session_state.get('rota_gerada') else []
-                        opcoes_carta = [r['modal'] for r in rotas_disponiveis] if rotas_disponiveis else ["Rota padrão"]
+                        opcoes_carta = [r['modal'] for r in rotas_disponiveis] if rotas_disponiveis else ["Rota padrÃ£o"]
                         rota_escolhida_label = st.selectbox(
                             "Qual rota incluir na carta?",
                             opcoes_carta,
@@ -3187,18 +3187,18 @@ elif menu == "🔍 Pesquisar Consultas":
 
                         c1, c2 = st.columns([1, 5])
                         with c1:
-                            if st.button("📄 Gerar e Enviar", type="primary"):
+                            if st.button("ðŸ“„ Gerar e Enviar", type="primary"):
                                 with st.spinner("Gerando PDF e enviando e-mail..."):
                                     try:
                                         # Seleciona a rota escolhida
                                         idx_rota = opcoes_carta.index(rota_escolhida_label)
                                         rota_para_carta = rotas_disponiveis[idx_rota] if rotas_disponiveis else {
-                                            'modal': 'Integração', 'trajeto': 'Ônibus + Metrô/CPTM',
-                                            'bilhete': 'Integração Ônibus+Metrô VT',
+                                            'modal': 'IntegraÃ§Ã£o', 'trajeto': 'Ã”nibus + MetrÃ´/CPTM',
+                                            'bilhete': 'IntegraÃ§Ã£o Ã”nibus+MetrÃ´ VT',
                                             'valor_diario': 22.64, 'tempo': '45 min'
                                         }
 
-                                        # Monta endereços completos
+                                        # Monta endereÃ§os completos
                                         end_casa_dict2 = buscar_endereco_viacep(cep_casa)
                                         end_trab_dict2 = buscar_endereco_viacep(cep_trab)
                                         end_casa_str = end_casa_dict2.get('completo', cep_casa) if isinstance(end_casa_dict2, dict) else cep_casa
@@ -3212,13 +3212,13 @@ elif menu == "🔍 Pesquisar Consultas":
                                             'email':     email_jovem,
                                         }
 
-                                        # Verifica se é rota manual ou automática
+                                        # Verifica se Ã© rota manual ou automÃ¡tica
                                         modo_rota_atual = dados_jovem.get('modo_rota', 'automatica')
                                         
                                         if modo_rota_atual == 'manual':
                                             # Usa dados da rota manual
                                             rota_para_carta = {
-                                                'tipo_bilhete_manual': dados_jovem.get('tipo_bilhete_manual', 'Bilhete Único'),
+                                                'tipo_bilhete_manual': dados_jovem.get('tipo_bilhete_manual', 'Bilhete Ãšnico'),
                                                 'valor_tarifa_manual': dados_jovem.get('valor_tarifa_manual', 0.0),
                                                 'descricao_itinerario_manual': dados_jovem.get('descricao_itinerario_manual', 'Trajeto manual')
                                             }
@@ -3238,7 +3238,7 @@ elif menu == "🔍 Pesquisar Consultas":
                                         )
 
                                         if sucesso:
-                                            st.success(f"✅ Carta enviada com sucesso para **{email_jovem}**!")
+                                            st.success(f"âœ… Carta enviada com sucesso para **{email_jovem}**!")
                                             # Registra timestamp do envio
                                             try:
                                                 _ts_carta = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -3251,9 +3251,9 @@ elif menu == "🔍 Pesquisar Consultas":
                                                 _conn_ts.close()
                                             except Exception:
                                                 pass
-                                            # Disponibiliza download também
+                                            # Disponibiliza download tambÃ©m
                                             st.download_button(
-                                                "⬇️ Baixar PDF da Carta",
+                                                "â¬‡ï¸ Baixar PDF da Carta",
                                                 data=pdf_bytes,
                                                 file_name=f"Carta_VT_{nome_jovem.replace(' ','_')}.pdf",
                                                 mime="application/pdf"
@@ -3262,40 +3262,40 @@ elif menu == "🔍 Pesquisar Consultas":
                                             st.session_state.mostrar_modal_email = False
                                             st.rerun()
                                         else:
-                                            st.error(f"❌ Falha ao enviar: {erro}")
+                                            st.error(f"âŒ Falha ao enviar: {erro}")
                                             # Mesmo com erro, oferece download do PDF
                                             st.download_button(
-                                                "⬇️ Baixar PDF da Carta (envio falhou)",
+                                                "â¬‡ï¸ Baixar PDF da Carta (envio falhou)",
                                                 data=pdf_bytes,
                                                 file_name=f"Carta_VT_{nome_jovem.replace(' ','_')}.pdf",
                                                 mime="application/pdf"
                                             )
                                     except Exception as e:
-                                        st.error(f"❌ Erro ao gerar carta: {e}")
+                                        st.error(f"âŒ Erro ao gerar carta: {e}")
 
                 if st.session_state.modo_contestacao:
                     with st.form(key="form_contestacao"):
-                        st.markdown("<p style='color:#F59E0B;font-weight:600;'>⚠️ Registrar Contestação</p>", unsafe_allow_html=True)
-                        motivo_input = st.text_area("Descreva o problema:", placeholder="Ex: tarifa indevida, rota que não faz sentido...")
+                        st.markdown("<p style='color:#F59E0B;font-weight:600;'>âš ï¸ Registrar ContestaÃ§Ã£o</p>", unsafe_allow_html=True)
+                        motivo_input = st.text_area("Descreva o problema:", placeholder="Ex: tarifa indevida, rota que nÃ£o faz sentido...")
                         email_rh_input = st.text_input(
-                            "E-mail do RH para notificação (opcional)",
+                            "E-mail do RH para notificaÃ§Ã£o (opcional)",
                             placeholder="rh@empresa.com.br",
-                            help="Se preenchido, um e-mail de alerta será enviado automaticamente ao RH."
+                            help="Se preenchido, um e-mail de alerta serÃ¡ enviado automaticamente ao RH."
                         )
                         if st.form_submit_button("Registrar", type="primary"):
                             if not motivo_input.strip():
                                 st.error("Descreva o motivo antes de registrar.")
                             else:
-                                registrar_contestacao(nome=nome_jovem, cid_res="São Paulo", cid_trab="São Paulo", motivo=motivo_input)
+                                registrar_contestacao(nome=nome_jovem, cid_res="SÃ£o Paulo", cid_trab="SÃ£o Paulo", motivo=motivo_input)
 
                                 # Detectar contexto ativo
                                 modalidade_atual = st.session_state.get('contexto_salvo', 'Trabalho')
                                 contexto_ativo = "Trabalho" if "Trabalho" in modalidade_atual else "Curso"
 
-                                # Atualiza status para CONTESTADA usando função com contexto
+                                # Atualiza status para CONTESTADA usando funÃ§Ã£o com contexto
                                 atualizar_status_rota(id_selecionado, 'Contestada', contexto_ativo)
 
-                                # ── Notificação automática ao RH ──────────────────────────
+                                # â”€â”€ NotificaÃ§Ã£o automÃ¡tica ao RH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                                 _email_destino_rh = email_rh_input.strip() if email_rh_input.strip() else None
                                 if not _email_destino_rh:
                                     # Tenta ler do .env
@@ -3318,21 +3318,21 @@ elif menu == "🔍 Pesquisar Consultas":
                                             _msg_rh = MIMEMultipart()
                                             _msg_rh["From"] = _smtp_user
                                             _msg_rh["To"] = _email_destino_rh
-                                            _msg_rh["Subject"] = f"⚠️ Nova Contestação Registrada — {nome_jovem}"
+                                            _msg_rh["Subject"] = f"âš ï¸ Nova ContestaÃ§Ã£o Registrada â€” {nome_jovem}"
                                             _corpo_rh = f"""
                                             <html><body style="font-family:Arial,sans-serif;color:#333;padding:20px;">
                                             <div style="max-width:600px;margin:auto;border-top:4px solid #F59E0B;border-radius:8px;padding:24px;background:#fff;">
-                                                <h2 style="color:#F59E0B;margin-top:0;">⚠️ Nova Contestação Registrada</h2>
-                                                <p><strong>Funcionário:</strong> {nome_jovem}</p>
+                                                <h2 style="color:#F59E0B;margin-top:0;">âš ï¸ Nova ContestaÃ§Ã£o Registrada</h2>
+                                                <p><strong>FuncionÃ¡rio:</strong> {nome_jovem}</p>
                                                 <p><strong>CPF:</strong> ***.***.{cpf_cru[6:9]}-{cpf_cru[9:11]}</p>
-                                                <p><strong>Matrícula:</strong> {matricula_exib}</p>
+                                                <p><strong>MatrÃ­cula:</strong> {matricula_exib}</p>
                                                 <p><strong>Contexto:</strong> {contexto_ativo}</p>
                                                 <p><strong>Motivo:</strong></p>
                                                 <div style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:12px;border-radius:0 8px 8px 0;">
                                                     {motivo_input}
                                                 </div>
                                                 <p style="color:#94A3B8;font-size:12px;margin-top:20px;">
-                                                    Registrado em {datetime.datetime.now().strftime("%d/%m/%Y às %H:%M")} · RENAPSI Sistema de Mobilidade
+                                                    Registrado em {datetime.datetime.now().strftime("%d/%m/%Y Ã s %H:%M")} Â· RENAPSI Sistema de Mobilidade
                                                 </p>
                                             </div>
                                             </body></html>
@@ -3343,16 +3343,16 @@ elif menu == "🔍 Pesquisar Consultas":
                                                 _srv.starttls()
                                                 _srv.login(_smtp_user, _smtp_pass)
                                                 _srv.sendmail(_smtp_user, _email_destino_rh, _msg_rh.as_string())
-                                            st.info(f"📧 Notificação enviada para {_email_destino_rh}")
+                                            st.info(f"ðŸ“§ NotificaÃ§Ã£o enviada para {_email_destino_rh}")
                                     except Exception as _e_rh:
-                                        st.warning(f"⚠️ Contestação registrada, mas falha ao notificar RH: {_e_rh}")
+                                        st.warning(f"âš ï¸ ContestaÃ§Ã£o registrada, mas falha ao notificar RH: {_e_rh}")
 
-                                st.success("Contestação registrada! Status alterado para CONTESTADA.")
-                                # ── Histórico ──
+                                st.success("ContestaÃ§Ã£o registrada! Status alterado para CONTESTADA.")
+                                # â”€â”€ HistÃ³rico â”€â”€
                                 try:
                                     registrar_historico(
                                         usuario=st.session_state.get("usuario_dados", {}).get("username", "desconhecido"),
-                                        acao="Contestação registrada",
+                                        acao="ContestaÃ§Ã£o registrada",
                                         tabela="jovens_rotas",
                                         registro_id=id_selecionado,
                                         campo="status_rota",
@@ -3365,16 +3365,16 @@ elif menu == "🔍 Pesquisar Consultas":
                                 time.sleep(2)
                                 st.rerun()
 
-                # ══════════════════════════════════════════════════════════════════════════
-                # MODAL DE IMPLANTAÇÃO
-                # ══════════════════════════════════════════════════════════════════════════
+                # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+                # MODAL DE IMPLANTAÃ‡ÃƒO
+                # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                 if st.session_state.get('modo_implantacao', False):
                     st.markdown("""
                     <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);
                                 border-radius:14px;padding:20px;margin-bottom:20px;">
-                        <h3 style="margin:0 0 4px;color:#3B82F6;">📋 Alterar Status de Implantação</h3>
+                        <h3 style="margin:0 0 4px;color:#3B82F6;">ðŸ“‹ Alterar Status de ImplantaÃ§Ã£o</h3>
                         <p style="color:#94A3B8;font-size:13px;margin:0;">
-                            Selecione a ação desejada para alterar o status do funcionário
+                            Selecione a aÃ§Ã£o desejada para alterar o status do funcionÃ¡rio
                         </p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -3388,19 +3388,19 @@ elif menu == "🔍 Pesquisar Consultas":
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Opções de implantação
+                    # OpÃ§Ãµes de implantaÃ§Ã£o
                     opcao_implantacao = st.radio(
-                        "Escolha a ação:",
-                        ["Implantada", "Implantada (Com Cancelamento de VT)", "Não Implantada"],
+                        "Escolha a aÃ§Ã£o:",
+                        ["Implantada", "Implantada (Com Cancelamento de VT)", "NÃ£o Implantada"],
                         key=f"opcao_implantacao_{id_selecionado}"
                     )
 
-                    # Campo de motivo (apenas para "Não Implantada")
+                    # Campo de motivo (apenas para "NÃ£o Implantada")
                     motivo_nao_implantada = ""
-                    if opcao_implantacao == "Não Implantada":
+                    if opcao_implantacao == "NÃ£o Implantada":
                         motivo_nao_implantada = st.text_area(
-                            "Motivo da remoção da implantação:",
-                            placeholder="Ex: Funcionário solicitou cancelamento, mudança de endereço, etc.",
+                            "Motivo da remoÃ§Ã£o da implantaÃ§Ã£o:",
+                            placeholder="Ex: FuncionÃ¡rio solicitou cancelamento, mudanÃ§a de endereÃ§o, etc.",
                             key=f"motivo_nao_implantada_{id_selecionado}"
                         )
 
@@ -3409,31 +3409,31 @@ elif menu == "🔍 Pesquisar Consultas":
                     col_confirmar, col_cancelar = st.columns([1, 1])
                     
                     with col_confirmar:
-                        if st.button("✅ Confirmar Alteração", type="primary", width="stretch", key=f"confirmar_implantacao_{id_selecionado}"):
-                            # Validação para "Não Implantada"
-                            if opcao_implantacao == "Não Implantada" and not motivo_nao_implantada.strip():
-                                st.error("⚠️ Informe o motivo da remoção da implantação.")
+                        if st.button("âœ… Confirmar AlteraÃ§Ã£o", type="primary", width="stretch", key=f"confirmar_implantacao_{id_selecionado}"):
+                            # ValidaÃ§Ã£o para "NÃ£o Implantada"
+                            if opcao_implantacao == "NÃ£o Implantada" and not motivo_nao_implantada.strip():
+                                st.error("âš ï¸ Informe o motivo da remoÃ§Ã£o da implantaÃ§Ã£o.")
                             else:
-                                # Define o novo status baseado na opção
+                                # Define o novo status baseado na opÃ§Ã£o
                                 if opcao_implantacao == "Implantada":
                                     novo_status = "Implantado"
                                 elif opcao_implantacao == "Implantada (Com Cancelamento de VT)":
-                                    novo_status = "Não Optante"
-                                else:  # Não Implantada
+                                    novo_status = "NÃ£o Optante"
+                                else:  # NÃ£o Implantada
                                     novo_status = "Otimizado"
                                 
                                 # Detectar contexto ativo
                                 modalidade_atual = st.session_state.get('contexto_salvo', 'Trabalho')
                                 contexto_ativo = "Trabalho" if "Trabalho" in modalidade_atual else "Curso"
                                 
-                                # Atualiza no banco usando a função com contexto
+                                # Atualiza no banco usando a funÃ§Ã£o com contexto
                                 atualizar_status_rota(id_selecionado, novo_status, contexto_ativo)
 
-                                # ── Histórico ──
+                                # â”€â”€ HistÃ³rico â”€â”€
                                 try:
                                     registrar_historico(
                                         usuario=st.session_state.get("usuario_dados", {}).get("username", "desconhecido"),
-                                        acao=f"Alteração de status ({opcao_implantacao})",
+                                        acao=f"AlteraÃ§Ã£o de status ({opcao_implantacao})",
                                         tabela="jovens_rotas",
                                         registro_id=id_selecionado,
                                         campo=f"status_{contexto_ativo.lower()}",
@@ -3443,42 +3443,42 @@ elif menu == "🔍 Pesquisar Consultas":
                                 except Exception:
                                     pass
 
-                                st.success(f"✅ Status alterado para: {novo_status} (Contexto: {contexto_ativo})")
+                                st.success(f"âœ… Status alterado para: {novo_status} (Contexto: {contexto_ativo})")
                                 st.session_state.modo_implantacao = False
                                 time.sleep(1)
                                 st.rerun()
 
                     with col_cancelar:
-                        if st.button("❌ Cancelar", width="stretch", key=f"cancelar_implantacao_{id_selecionado}"):
+                        if st.button("âŒ Cancelar", width="stretch", key=f"cancelar_implantacao_{id_selecionado}"):
                             st.session_state.modo_implantacao = False
                             st.rerun()
 
                 st.markdown("<br>", unsafe_allow_html=True)
 
-                # ── Análise da IA ──
+                # â”€â”€ AnÃ¡lise da IA â”€â”€
                 if st.session_state.get('analise_ia'):
                     st.markdown(f"""
                     <div style="background:rgba(124,58,237,0.08);border-left:4px solid #7C3AED;
                                 border-radius:0 12px 12px 0;padding:18px 20px;margin-bottom:20px;
                                 box-shadow:-4px 0 24px rgba(124,58,237,0.2);">
                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                            <span style="font-size:20px;">🤖</span>
+                            <span style="font-size:20px;">ðŸ¤–</span>
                             <p style="margin:0;color:#A78BFA;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;">
-                                Análise do Agente de IA
+                                AnÃ¡lise do Agente de IA
                             </p>
                         </div>
                         <p style="margin:0;color:#CBD5E1;font-size:14px;line-height:1.7;">{st.session_state.analise_ia}</p>
                     </div>
                     """, unsafe_allow_html=True)
 
-                # ══════════════════════════════════════════════════════════════════════════
+                # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                 # MODAL DE ROTA MANUAL
-                # ══════════════════════════════════════════════════════════════════════════
+                # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                 if st.session_state.get('modo_rota_manual', False):
                     st.markdown("""
                     <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);
                                 border-radius:14px;padding:20px;margin-bottom:20px;">
-                        <h3 style="margin:0 0 4px;color:#F59E0B;">✍️ Inserir Rota Manual</h3>
+                        <h3 style="margin:0 0 4px;color:#F59E0B;">âœï¸ Inserir Rota Manual</h3>
                         <p style="color:#94A3B8;font-size:13px;margin:0;">
                             Preencha os campos abaixo para definir a rota manualmente (SPTRANS)
                         </p>
@@ -3496,14 +3496,14 @@ elif menu == "🔍 Pesquisar Consultas":
                         tipo_bilhete_manual = st.selectbox(
                             "Tipo de Bilhete (SPTRANS)",
                             [
-                                "Bilhete Único",
-                                "Integração Ônibus+Metrô",
-                                "Integração Ônibus+CPTM",
+                                "Bilhete Ãšnico",
+                                "IntegraÃ§Ã£o Ã”nibus+MetrÃ´",
+                                "IntegraÃ§Ã£o Ã”nibus+CPTM",
                                 "Vale Transporte"
                             ],
                             index=0 if not tipo_bilhete_salvo else (
-                                ["Bilhete Único", "Integração Ônibus+Metrô", "Integração Ônibus+CPTM", "Vale Transporte"].index(tipo_bilhete_salvo)
-                                if tipo_bilhete_salvo in ["Bilhete Único", "Integração Ônibus+Metrô", "Integração Ônibus+CPTM", "Vale Transporte"]
+                                ["Bilhete Ãšnico", "IntegraÃ§Ã£o Ã”nibus+MetrÃ´", "IntegraÃ§Ã£o Ã”nibus+CPTM", "Vale Transporte"].index(tipo_bilhete_salvo)
+                                if tipo_bilhete_salvo in ["Bilhete Ãšnico", "IntegraÃ§Ã£o Ã”nibus+MetrÃ´", "IntegraÃ§Ã£o Ã”nibus+CPTM", "Vale Transporte"]
                                 else 0
                             ),
                             key=f"tipo_bilhete_{id_selecionado}"
@@ -3521,9 +3521,9 @@ elif menu == "🔍 Pesquisar Consultas":
                         )
 
                     descricao_itinerario_manual = st.text_area(
-                        "Descrição do Itinerário",
+                        "DescriÃ§Ã£o do ItinerÃ¡rio",
                         value=descricao_salva,
-                        placeholder="Ex: Linha 102 -> Terminal Bandeira -> Metrô Linha 3-Vermelha -> Estação Sé",
+                        placeholder="Ex: Linha 102 -> Terminal Bandeira -> MetrÃ´ Linha 3-Vermelha -> EstaÃ§Ã£o SÃ©",
                         height=120,
                         key=f"descricao_itinerario_{id_selecionado}"
                     )
@@ -3533,9 +3533,9 @@ elif menu == "🔍 Pesquisar Consultas":
                     col_salvar_manual, col_cancelar_manual = st.columns([1, 1])
                     
                     with col_salvar_manual:
-                        if st.button("💾 Salvar Rota Manual", type="primary", width="stretch", key=f"salvar_manual_{id_selecionado}"):
+                        if st.button("ðŸ’¾ Salvar Rota Manual", type="primary", width="stretch", key=f"salvar_manual_{id_selecionado}"):
                             if not tipo_bilhete_manual or valor_tarifa_manual < 0.10 or not descricao_itinerario_manual.strip():
-                                st.error("⚠️ Preencha todos os campos antes de salvar.")
+                                st.error("âš ï¸ Preencha todos os campos antes de salvar.")
                             else:
                                 from banco_dados import salvar_rota_manual
                                 
@@ -3547,11 +3547,11 @@ elif menu == "🔍 Pesquisar Consultas":
                                 )
                                 
                                 if sucesso:
-                                    st.success("✅ Rota manual salva com sucesso!")
+                                    st.success("âœ… Rota manual salva com sucesso!")
                                     
                                     # Recarrega os dados
                                     conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                                    df_atualizado = pd.read_sql_query(
+                                    df_atualizado = safe_sql_query(
                                         "SELECT * FROM jovens_rotas WHERE id = ?", 
                                         conexao, 
                                         params=(int(id_selecionado),)
@@ -3565,22 +3565,22 @@ elif menu == "🔍 Pesquisar Consultas":
                                     time.sleep(1)
                                     st.rerun()
                                 else:
-                                    st.error("❌ Erro ao salvar rota manual. Verifique o console.")
+                                    st.error("âŒ Erro ao salvar rota manual. Verifique o console.")
 
                     with col_cancelar_manual:
-                        if st.button("❌ Cancelar", width="stretch", key=f"cancelar_manual_{id_selecionado}"):
+                        if st.button("âŒ Cancelar", width="stretch", key=f"cancelar_manual_{id_selecionado}"):
                             st.session_state.modo_rota_manual = False
                             st.rerun()
 
-                # ══════════════════════════════════════════════════════════════════════════
-                # EXIBIÇÃO DA ROTA E MAPA
-                # ══════════════════════════════════════════════════════════════════════════
+                # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+                # EXIBIÃ‡ÃƒO DA ROTA E MAPA
+                # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                 
-                # Calcula rota se ainda não foi calculada
+                # Calcula rota se ainda nÃ£o foi calculada
                 if not st.session_state.get('rota_gerada'):
-                    # Monta endereços completos para geocoding preciso
-                    endereco_completo_casa = end_casa_dict.get('completo', f"{rua_casa}, São Paulo, SP, Brasil") if isinstance(end_casa_dict, dict) else f"{rua_casa}, São Paulo, SP, Brasil"
-                    endereco_completo_trab = end_trab_dict.get('completo', f"{rua_trab}, São Paulo, SP, Brasil") if isinstance(end_trab_dict, dict) else f"{rua_trab}, São Paulo, SP, Brasil"
+                    # Monta endereÃ§os completos para geocoding preciso
+                    endereco_completo_casa = end_casa_dict.get('completo', f"{rua_casa}, SÃ£o Paulo, SP, Brasil") if isinstance(end_casa_dict, dict) else f"{rua_casa}, SÃ£o Paulo, SP, Brasil"
+                    endereco_completo_trab = end_trab_dict.get('completo', f"{rua_trab}, SÃ£o Paulo, SP, Brasil") if isinstance(end_trab_dict, dict) else f"{rua_trab}, SÃ£o Paulo, SP, Brasil"
                     
                     rota = motor_de_rotas_gratuito(
                         endereco_completo_casa,
@@ -3593,18 +3593,18 @@ elif menu == "🔍 Pesquisar Consultas":
                         from banco_dados import registrar_sla
                         registrar_sla(id_selecionado, rota['sla_segundos'])
                     
-                    # Análise da IA em background (não bloqueia a UI)
+                    # AnÃ¡lise da IA em background (nÃ£o bloqueia a UI)
                     if not st.session_state.get('analise_ia'):
                         st.session_state.analise_ia = analisar_rota_com_ia(
                             rua_casa, rua_trab, rota['distancia_km'],
                             rota['rotas'], rota['info_tarifas']
                         )
 
-                # ── Rotas + Mapa ──
+                # â”€â”€ Rotas + Mapa â”€â”€
                 col_painel, col_mapa = st.columns([1, 2.8])
 
                 with col_painel:
-                    st.markdown("<p style='color:#444c9b;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;'>🗺️ Opções de Trajeto</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#444c9b;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;'>ðŸ—ºï¸ OpÃ§Ãµes de Trajeto</p>", unsafe_allow_html=True)
 
                     if st.session_state.get('rota_gerada') and 'rotas' in st.session_state.rota_gerada:
                         abas = st.tabs([r["modal"] for r in st.session_state.rota_gerada["rotas"]])
@@ -3623,14 +3623,14 @@ elif menu == "🔍 Pesquisar Consultas":
                                         <div>
                                             <p style="margin:0;font-weight:700;color:#FFFFFF;font-size:14px;">{rt['trajeto']}</p>
                                             <p style="margin:4px 0;font-size:12px;color:#FFFFFF;">{rt['bilhete']}</p>
-                                            <p style="margin:4px 0;font-size:12px;color:#FFFFFF;font-weight:600;">⏱ {rt['tempo']}</p>
+                                            <p style="margin:4px 0;font-size:12px;color:#FFFFFF;font-weight:600;">â± {rt['tempo']}</p>
                                         </div>
                                     </div>
                                     <div style="background:#FFFFFF;
                                                 border:1px solid #E5E7EB;border-radius:8px;
                                                 text-align:center;padding:14px;
                                                 box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                                        <p style="margin:0;color:#666666;font-size:13px;text-transform:uppercase;letter-spacing:0.08em;">VT Diário (Ida + Volta)</p>
+                                        <p style="margin:0;color:#666666;font-size:13px;text-transform:uppercase;letter-spacing:0.08em;">VT DiÃ¡rio (Ida + Volta)</p>
                                         <p style="margin:4px 0 0;color:#f8ae28;font-size:26px;font-weight:800;">R$ {rt['valor_diario']:.2f}</p>
                                     </div>
                                 </div>
@@ -3643,22 +3643,22 @@ elif menu == "🔍 Pesquisar Consultas":
                         (lat_c, lon_c), (lat_t, lon_t) = st.session_state.rota_gerada['coords_reais']
                         rota_info = st.session_state.rota_gerada
                         
-                        # Calcula tempo estimado de deslocamento (baseado na distância)
+                        # Calcula tempo estimado de deslocamento (baseado na distÃ¢ncia)
                         distancia_km = rota_info.get('distancia_km', 0)
-                        # Velocidade média em SP: 25 km/h (considerando trânsito)
+                        # Velocidade mÃ©dia em SP: 25 km/h (considerando trÃ¢nsito)
                         tempo_estimado_min = int((distancia_km / 25) * 60)
                         tempo_horas = tempo_estimado_min // 60
                         tempo_minutos = tempo_estimado_min % 60
                         tempo_texto = f"{tempo_horas}h{tempo_minutos}min" if tempo_horas > 0 else f"{tempo_minutos}min"
                         
-                        # ── INFO BOX: Tempo estimado e distância ──
+                        # â”€â”€ INFO BOX: Tempo estimado e distÃ¢ncia â”€â”€
                         st.markdown(f"""
                         <div style="background:linear-gradient(135deg,#444c9b,#5a63b8);border-radius:12px;
                                     padding:16px;margin-bottom:16px;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
                             <div style="display:flex;justify-content:space-around;align-items:center;">
                                 <div style="text-align:center;">
                                     <p style="color:rgba(255,255,255,0.9) !important;font-size:12px;margin:0;text-transform:uppercase;letter-spacing:0.1em;">
-                                        Distância
+                                        DistÃ¢ncia
                                     </p>
                                     <p style="color:#FFFFFF !important;font-size:24px;font-weight:800;margin:4px 0 0;">
                                         {distancia_km:.1f} km
@@ -3670,17 +3670,17 @@ elif menu == "🔍 Pesquisar Consultas":
                                         Tempo Estimado
                                     </p>
                                     <p style="color:#f8ae28 !important;font-size:24px;font-weight:800;margin:4px 0 0;">
-                                        ⏱️ {tempo_texto}
+                                        â±ï¸ {tempo_texto}
                                     </p>
                                 </div>
                             </div>
                             <p style="color:rgba(255,255,255,0.8) !important;font-size:11px;margin:8px 0 0;text-align:center;">
-                                * Tempo calculado com velocidade média de 25 km/h (considerando trânsito de SP)
+                                * Tempo calculado com velocidade mÃ©dia de 25 km/h (considerando trÃ¢nsito de SP)
                             </p>
                         </div>
                         """, unsafe_allow_html=True)
                         
-                        # Cria mapa centralizado no ponto médio entre Casa e Trabalho
+                        # Cria mapa centralizado no ponto mÃ©dio entre Casa e Trabalho
                         m = folium.Map(
                             location=[(lat_c + lat_t) / 2, (lon_c + lon_t) / 2],
                             zoom_start=13,
@@ -3692,22 +3692,22 @@ elif menu == "🔍 Pesquisar Consultas":
                             touchZoom=True  # Zoom em dispositivos touch
                         )
                         
-                        # ── Camada de mapa com estilo OpenStreetMap ──
-                        folium.TileLayer('OpenStreetMap', name='Mapa Padrão').add_to(m)
+                        # â”€â”€ Camada de mapa com estilo OpenStreetMap â”€â”€
+                        folium.TileLayer('OpenStreetMap', name='Mapa PadrÃ£o').add_to(m)
                         
-                        # ── Camada alternativa: Satélite ──
+                        # â”€â”€ Camada alternativa: SatÃ©lite â”€â”€
                         folium.TileLayer(
                             tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                             attr='Esri',
-                            name='Satélite',
+                            name='SatÃ©lite',
                             overlay=False,
                             control=True
                         ).add_to(m)
                         
-                        # ── Adiciona controle de camadas ──
+                        # â”€â”€ Adiciona controle de camadas â”€â”€
                         folium.LayerControl().add_to(m)
 
-                        # ── MARCADOR PERSONALIZADO: CASA (Azul com ícone de casa) ──
+                        # â”€â”€ MARCADOR PERSONALIZADO: CASA (Azul com Ã­cone de casa) â”€â”€
                         folium.Marker(
                             [lat_c, lon_c],
                             icon=folium.DivIcon(html=f"""
@@ -3717,7 +3717,7 @@ elif menu == "🔍 Pesquisar Consultas":
                                             align-items:center;justify-content:center;font-weight:800;
                                             font-size:20px;box-shadow:0 4px 12px rgba(0,212,255,0.6);
                                             position:relative;z-index:1000;">
-                                    🏠
+                                    ðŸ 
                                 </div>
                                 <div style="position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
                                             width:0;height:0;border-left:8px solid transparent;
@@ -3727,22 +3727,22 @@ elif menu == "🔍 Pesquisar Consultas":
                         """, icon_anchor=(22, 44)),
                             popup=folium.Popup(f"""
                                 <div style="font-family:Arial;padding:8px;min-width:200px;">
-                                    <h4 style="margin:0 0 8px;color:#0EA5E9;font-size:14px;">🏠 Residência</h4>
+                                    <h4 style="margin:0 0 8px;color:#0EA5E9;font-size:14px;">ðŸ  ResidÃªncia</h4>
                                     <p style="margin:4px 0;font-size:12px;color:#666;">
-                                        <strong>Endereço:</strong><br>{rua_casa}{linha_num_casa}
+                                        <strong>EndereÃ§o:</strong><br>{rua_casa}{linha_num_casa}
                                     </p>
                                     <p style="margin:4px 0;font-size:12px;color:#666;">
                                         <strong>Bairro:</strong> {bairro_cidade_casa}
                                     </p>
                                     <p style="margin:4px 0;font-size:11px;color:#999;">
-                                        📍 {lat_c:.6f}, {lon_c:.6f}
+                                        ðŸ“ {lat_c:.6f}, {lon_c:.6f}
                                     </p>
                                 </div>
                             """, max_width=300),
-                            tooltip=f"🏠 Residência · {rua_casa}"
+                            tooltip=f"ðŸ  ResidÃªncia Â· {rua_casa}"
                         ).add_to(m)
 
-                        # ── MARCADOR PERSONALIZADO: TRABALHO (Roxo com ícone de prédio) ──
+                        # â”€â”€ MARCADOR PERSONALIZADO: TRABALHO (Roxo com Ã­cone de prÃ©dio) â”€â”€
                         folium.Marker(
                             [lat_t, lon_t],
                             icon=folium.DivIcon(html=f"""
@@ -3752,7 +3752,7 @@ elif menu == "🔍 Pesquisar Consultas":
                                             align-items:center;justify-content:center;font-weight:800;
                                             font-size:20px;box-shadow:0 4px 12px rgba(124,58,237,0.6);
                                             position:relative;z-index:1000;">
-                                    🏢
+                                    ðŸ¢
                                 </div>
                                 <div style="position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
                                             width:0;height:0;border-left:8px solid transparent;
@@ -3762,32 +3762,32 @@ elif menu == "🔍 Pesquisar Consultas":
                         """, icon_anchor=(22, 44)),
                             popup=folium.Popup(f"""
                                 <div style="font-family:Arial;padding:8px;min-width:200px;">
-                                    <h4 style="margin:0 0 8px;color:#A855F7;font-size:14px;">🏢 Local de Trabalho</h4>
+                                    <h4 style="margin:0 0 8px;color:#A855F7;font-size:14px;">ðŸ¢ Local de Trabalho</h4>
                                     <p style="margin:4px 0;font-size:12px;color:#666;">
-                                        <strong>Endereço:</strong><br>{rua_trab}
+                                        <strong>EndereÃ§o:</strong><br>{rua_trab}
                                     </p>
                                     <p style="margin:4px 0;font-size:12px;color:#666;">
                                         <strong>Bairro:</strong> {bairro_cidade_trab}
                                     </p>
                                     <p style="margin:4px 0;font-size:11px;color:#999;">
-                                        📍 {lat_t:.6f}, {lon_t:.6f}
+                                        ðŸ“ {lat_t:.6f}, {lon_t:.6f}
                                     </p>
                                 </div>
                             """, max_width=300),
-                            tooltip=f"🏢 Trabalho · {rua_trab}"
+                            tooltip=f"ðŸ¢ Trabalho Â· {rua_trab}"
                         ).add_to(m)
 
-                        # ── LINHA CONECTANDO CASA E TRABALHO (com animação) ──
+                        # â”€â”€ LINHA CONECTANDO CASA E TRABALHO (com animaÃ§Ã£o) â”€â”€
                         folium.PolyLine(
                             locations=[[lat_c, lon_c], [lat_t, lon_t]],
                             color="#f8ae28",
                             weight=5,
                             opacity=0.8,
                             dash_array="10 5",
-                            popup=f"Distância: {distancia_km:.1f} km · Tempo: {tempo_texto}"
+                            popup=f"DistÃ¢ncia: {distancia_km:.1f} km Â· Tempo: {tempo_texto}"
                         ).add_to(m)
                         
-                        # ── MARCADOR DO PONTO MÉDIO (opcional - mostra distância) ──
+                        # â”€â”€ MARCADOR DO PONTO MÃ‰DIO (opcional - mostra distÃ¢ncia) â”€â”€
                         lat_meio = (lat_c + lat_t) / 2
                         lon_meio = (lon_c + lon_t) / 2
                         folium.Marker(
@@ -3797,80 +3797,80 @@ elif menu == "🔍 Pesquisar Consultas":
                                         border-radius:20px;font-size:12px;font-weight:700;
                                         box-shadow:0 2px 8px rgba(248,174,40,0.4);
                                         border:2px solid #FFFFFF;white-space:nowrap;">
-                                📏 {distancia_km:.1f} km · ⏱️ {tempo_texto}
+                                ðŸ“ {distancia_km:.1f} km Â· â±ï¸ {tempo_texto}
                             </div>
                         """, icon_anchor=(60, 15)),
-                            tooltip=f"Distância total: {distancia_km:.1f} km"
+                            tooltip=f"DistÃ¢ncia total: {distancia_km:.1f} km"
                         ).add_to(m)
                         
-                        # ── Ajusta o zoom para mostrar ambos os pontos ──
+                        # â”€â”€ Ajusta o zoom para mostrar ambos os pontos â”€â”€
                         m.fit_bounds([[lat_c, lon_c], [lat_t, lon_t]], padding=[50, 50])
 
-                        # ── RENDERIZA O MAPA (altura aumentada) ──
+                        # â”€â”€ RENDERIZA O MAPA (altura aumentada) â”€â”€
                         st_folium(m, height=700, width="stretch", returned_objects=[])
 
-        # ── LISTA DE PESQUISA ────────────────────────────────────────────────────
+        # â”€â”€ LISTA DE PESQUISA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         else:
             st.markdown("""
             <h1 style="color:#1E293B;
                     font-size:26px;font-weight:800;margin-bottom:4px;">
                 Pesquisar Consultas
             </h1>
-            <p style="color:#666666;font-size:13px;margin-bottom:20px;">Localize aprendizes por CPF, nome ou matrícula</p>
+            <p style="color:#666666;font-size:13px;margin-bottom:20px;">Localize aprendizes por CPF, nome ou matrÃ­cula</p>
             """, unsafe_allow_html=True)
 
             col_modal_pesq, col_status_pesq = st.columns([2, 1])
             with col_modal_pesq:
                 modalidade_pesquisa = st.radio(
                     "Modalidade:",
-                    ["🏠 Casa × Trabalho", "📚 Casa × Curso"],
+                    ["ðŸ  Casa Ã— Trabalho", "ðŸ“š Casa Ã— Curso"],
                     horizontal=True,
                     key="modalidade_pesquisa_radio"
                 )
             with col_status_pesq:
                 filtro_status_pesq = st.selectbox(
                     "Filtrar por Status",
-                    ["Todos", "Otimizado", "Implantado", "Contestada", "Não Optante", "Aguardando Rota"],
+                    ["Todos", "Otimizado", "Implantado", "Contestada", "NÃ£o Optante", "Aguardando Rota"],
                     key="filtro_status_pesquisa",
                     label_visibility="visible"
                 )
 
             st.markdown("<hr style='border-color:rgba(0,212,255,0.1);'>", unsafe_allow_html=True)
 
-            tab_cpf, tab_nome, tab_mat, tab_status = st.tabs(["🔍 Por CPF", "👤 Por Nome", "🪪 Por Matrícula", "📊 Por Status"])
+            tab_cpf, tab_nome, tab_mat, tab_status = st.tabs(["ðŸ” Por CPF", "ðŸ‘¤ Por Nome", "ðŸªª Por MatrÃ­cula", "ðŸ“Š Por Status"])
 
             with tab_cpf:
                 with st.form(key="form_cpf"):
-                    cpf_busca = st.text_input("CPF", max_chars=11, placeholder="000.000.000-00 ou só números")
+                    cpf_busca = st.text_input("CPF", max_chars=11, placeholder="000.000.000-00 ou sÃ³ nÃºmeros")
                     if st.form_submit_button("Pesquisar", type="primary"):
                         if not cpf_busca.strip():
-                            st.warning("⚠️ Digite um CPF para buscar.")
+                            st.warning("âš ï¸ Digite um CPF para buscar.")
                         else:
                             try:
-                                # Tira pontos e traços do que a pessoa digitou
+                                # Tira pontos e traÃ§os do que a pessoa digitou
                                 cpf_limpo = ''.join(filter(str.isdigit, cpf_busca))
                                 
                                 conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                                 # CORRIGIDO: Busca na coluna CPF
-                                st.session_state.resultado_busca = pd.read_sql_query(
+                                st.session_state.resultado_busca = safe_sql_query(
                                     "SELECT * FROM jovens_rotas WHERE cpf = ?", conexao, params=(cpf_limpo,))
                                 
                                 # Remove flag de busca por status
                                 st.session_state.busca_por_status = False
                                 
                                 if st.session_state.resultado_busca.empty:
-                                    st.warning("❌ Nenhum resultado encontrado para este CPF.")
+                                    st.warning("âŒ Nenhum resultado encontrado para este CPF.")
                                 st.session_state.detalhes_abertos = False
                                 conexao.close()
                                 st.rerun()
                             except Exception as e:
-                                st.error(f"❌ Erro na busca: {str(e)}")
+                                st.error(f"âŒ Erro na busca: {str(e)}")
 
             with tab_nome:
-                # ── AUTOCOMPLETE: Busca todos os nomes do banco ──
+                # â”€â”€ AUTOCOMPLETE: Busca todos os nomes do banco â”€â”€
                 try:
                     conexao_autocomplete = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                    df_nomes = pd.read_sql_query("SELECT DISTINCT nome FROM jovens_rotas ORDER BY nome", conexao_autocomplete)
+                    df_nomes = safe_sql_query("SELECT DISTINCT nome FROM jovens_rotas ORDER BY nome", conexao_autocomplete)
                     conexao_autocomplete.close()
                     lista_nomes = df_nomes['nome'].tolist() if not df_nomes.empty else []
                 except Exception:
@@ -3883,82 +3883,82 @@ elif menu == "🔍 Pesquisar Consultas":
                         options=[""] + lista_nomes,
                         index=0,
                         placeholder="Digite para buscar...",
-                        help="🔍 Comece a digitar para filtrar os nomes"
+                        help="ðŸ” Comece a digitar para filtrar os nomes"
                     )
                     
-                    # Opção de busca parcial
-                    busca_parcial = st.checkbox("Buscar nome parcial (contém)", value=False)
+                    # OpÃ§Ã£o de busca parcial
+                    busca_parcial = st.checkbox("Buscar nome parcial (contÃ©m)", value=False)
                     
                     if st.form_submit_button("Pesquisar", type="primary"):
                         if not nome_busca or nome_busca == "":
-                            st.warning("⚠️ Selecione um nome para buscar.")
+                            st.warning("âš ï¸ Selecione um nome para buscar.")
                         else:
                             try:
                                 conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                                 
                                 if busca_parcial:
-                                    st.session_state.resultado_busca = pd.read_sql_query(
+                                    st.session_state.resultado_busca = safe_sql_query(
                                         "SELECT * FROM jovens_rotas WHERE nome LIKE ?", conexao, params=(f"%{nome_busca}%",))
                                 else:
-                                    st.session_state.resultado_busca = pd.read_sql_query(
+                                    st.session_state.resultado_busca = safe_sql_query(
                                         "SELECT * FROM jovens_rotas WHERE nome = ?", conexao, params=(nome_busca,))
                                 
                                 # Remove flag de busca por status
                                 st.session_state.busca_por_status = False
                                 
                                 if st.session_state.resultado_busca.empty:
-                                    st.warning("❌ Nenhum resultado encontrado para este nome")
+                                    st.warning("âŒ Nenhum resultado encontrado para este nome")
                                 st.session_state.detalhes_abertos = False
                                 conexao.close()
                                 st.rerun()
                             except Exception as e:
-                                st.error(f"❌ Erro na busca: {str(e)}")
+                                st.error(f"âŒ Erro na busca: {str(e)}")
 
             with tab_mat:
                 with st.form(key="form_mat"):
-                    mat_busca = st.text_input("Matrícula", placeholder="Apenas números")
+                    mat_busca = st.text_input("MatrÃ­cula", placeholder="Apenas nÃºmeros")
                     if st.form_submit_button("Pesquisar", type="primary"):
                         try:
                             conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-                            st.session_state.resultado_busca = pd.read_sql_query(
+                            st.session_state.resultado_busca = safe_sql_query(
                                 "SELECT * FROM jovens_rotas WHERE matricula = ?", conexao, params=(mat_busca,))
                             
                             # Remove flag de busca por status
                             st.session_state.busca_por_status = False
                             
                             if st.session_state.resultado_busca.empty:
-                                st.warning("❌ Nenhum resultado encontrado para esta matrícula")
+                                st.warning("âŒ Nenhum resultado encontrado para esta matrÃ­cula")
                             st.session_state.detalhes_abertos = False
                             conexao.close()
                             st.rerun()
                         except Exception as e:
-                            st.error(f"❌ Erro na busca: {str(e)}")
+                            st.error(f"âŒ Erro na busca: {str(e)}")
 
             with tab_status:
-                st.markdown("<p style='color:#64748B;font-size:13px;margin-bottom:12px;'>Lista todos os funcionários com o status selecionado no filtro acima.</p>", unsafe_allow_html=True)
-                if st.button("🔍 Buscar por Status", type="primary", key="btn_busca_status"):
+                st.markdown("<p style='color:#64748B;font-size:13px;margin-bottom:12px;'>Lista todos os funcionÃ¡rios com o status selecionado no filtro acima.</p>", unsafe_allow_html=True)
+                if st.button("ðŸ” Buscar por Status", type="primary", key="btn_busca_status"):
                     try:
                         conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                         if filtro_status_pesq == "Todos":
-                            st.session_state.resultado_busca = pd.read_sql_query(
+                            st.session_state.resultado_busca = safe_sql_query(
                                 "SELECT * FROM jovens_rotas ORDER BY nome", conexao)
                         else:
-                            st.session_state.resultado_busca = pd.read_sql_query(
+                            st.session_state.resultado_busca = safe_sql_query(
                                 "SELECT * FROM jovens_rotas WHERE status_rota = ? ORDER BY nome",
                                 conexao, params=(filtro_status_pesq,))
                         conexao.close()
                         
-                        # Define flag para mostrar controles avançados
+                        # Define flag para mostrar controles avanÃ§ados
                         st.session_state.busca_por_status = True
                         
                         if st.session_state.resultado_busca.empty:
-                            st.warning(f"❌ Nenhum resultado com status '{filtro_status_pesq}'.")
+                            st.warning(f"âŒ Nenhum resultado com status '{filtro_status_pesq}'.")
                         else:
-                            st.success(f"✅ {len(st.session_state.resultado_busca)} resultado(s) encontrado(s).")
+                            st.success(f"âœ… {len(st.session_state.resultado_busca)} resultado(s) encontrado(s).")
                         st.session_state.detalhes_abertos = False
                         st.rerun()
                     except Exception as e:
-                        st.error(f"❌ Erro na busca: {str(e)}")
+                        st.error(f"âŒ Erro na busca: {str(e)}")
 
             if st.session_state.resultado_busca is not None and not st.session_state.resultado_busca.empty:
                 st.markdown("<hr style='border-color:rgba(0,212,255,0.1);margin:20px 0;'>", unsafe_allow_html=True)
@@ -3967,27 +3967,27 @@ elif menu == "🔍 Pesquisar Consultas":
                 mostrar_controles_avancados = st.session_state.get('busca_por_status', False)
                 
                 if mostrar_controles_avancados:
-                    # ══════════════════════════════════════════════════════════════════════════
-                    # CONTROLES DE VISUALIZAÇÃO, ORDENAÇÃO E EXPORTAÇÃO
-                    # ══════════════════════════════════════════════════════════════════════════
+                    # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+                    # CONTROLES DE VISUALIZAÃ‡ÃƒO, ORDENAÃ‡ÃƒO E EXPORTAÃ‡ÃƒO
+                    # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                     
                     col_header1, col_header2, col_header3, col_header4 = st.columns([3, 2, 2, 2])
                     
                     with col_header1:
-                        st.markdown(f"<p style='color:#444c9b;font-size:14px;font-weight:700;margin:8px 0;'>📋 {len(st.session_state.resultado_busca)} Resultado(s)</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='color:#444c9b;font-size:14px;font-weight:700;margin:8px 0;'>ðŸ“‹ {len(st.session_state.resultado_busca)} Resultado(s)</p>", unsafe_allow_html=True)
                     
                     with col_header2:
                         # Toggle Cards/Tabela
                         modo_visualizacao = st.radio(
-                            "Visualização:",
-                            ["🎴 Cards", "📊 Tabela"],
+                            "VisualizaÃ§Ã£o:",
+                            ["ðŸŽ´ Cards", "ðŸ“Š Tabela"],
                             horizontal=True,
                             key="modo_visualizacao",
                             label_visibility="collapsed"
                         )
                     
                     with col_header3:
-                        # Ordenação
+                        # OrdenaÃ§Ã£o
                         ordenar_por = st.selectbox(
                             "Ordenar por:",
                             ["Nome (A-Z)", "Nome (Z-A)", "Data (Mais recente)", "Data (Mais antiga)", 
@@ -3998,7 +3998,7 @@ elif menu == "🔍 Pesquisar Consultas":
                     
                     with col_header4:
                         # Exportar para Excel
-                        if st.button("📥 Exportar Excel", use_container_width=True):
+                        if st.button("ðŸ“¥ Exportar Excel", use_container_width=True):
                             try:
                                 from io import BytesIO
                                 from openpyxl import Workbook
@@ -4008,12 +4008,12 @@ elif menu == "🔍 Pesquisar Consultas":
                                 ws = wb.active
                                 ws.title = "Resultados Pesquisa"
                                 
-                                # Cabeçalho
-                                headers = ['ID', 'Nome', 'CPF', 'Matrícula', 'E-mail', 'Celular', 'Status', 
+                                # CabeÃ§alho
+                                headers = ['ID', 'Nome', 'CPF', 'MatrÃ­cula', 'E-mail', 'Celular', 'Status', 
                                           'CEP Casa', 'CEP Trabalho', 'Valor Tarifa', 'Data Consulta']
                                 ws.append(headers)
                                 
-                                # Estilo do cabeçalho
+                                # Estilo do cabeÃ§alho
                                 for cell in ws[1]:
                                     cell.font = Font(bold=True, color="FFFFFF")
                                     cell.fill = PatternFill(start_color="444c9b", end_color="444c9b", fill_type="solid")
@@ -4054,22 +4054,22 @@ elif menu == "🔍 Pesquisar Consultas":
                                 buffer.seek(0)
                                 
                                 st.download_button(
-                                    label="⬇️ Baixar Excel",
+                                    label="â¬‡ï¸ Baixar Excel",
                                     data=buffer,
                                     file_name=f"pesquisa_consultas_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
                                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                     use_container_width=True
                                 )
                             except Exception as e:
-                                st.error(f"❌ Erro ao exportar: {str(e)}")
+                                st.error(f"âŒ Erro ao exportar: {str(e)}")
                 else:
                     # Modo simples: apenas mostra o contador
-                    st.markdown(f"<p style='color:#444c9b;font-size:14px;font-weight:700;margin:8px 0;'>📋 {len(st.session_state.resultado_busca)} Resultado(s)</p>", unsafe_allow_html=True)
-                    # Define valores padrão para variáveis usadas abaixo
-                    modo_visualizacao = "🎴 Cards"
+                    st.markdown(f"<p style='color:#444c9b;font-size:14px;font-weight:700;margin:8px 0;'>ðŸ“‹ {len(st.session_state.resultado_busca)} Resultado(s)</p>", unsafe_allow_html=True)
+                    # Define valores padrÃ£o para variÃ¡veis usadas abaixo
+                    modo_visualizacao = "ðŸŽ´ Cards"
                     ordenar_por = "Nome (A-Z)"
                 
-                # ── ORDENAÇÃO DOS RESULTADOS ──
+                # â”€â”€ ORDENAÃ‡ÃƒO DOS RESULTADOS â”€â”€
                 df_resultados = st.session_state.resultado_busca.copy()
                 
                 if ordenar_por == "Nome (A-Z)":
@@ -4088,7 +4088,7 @@ elif menu == "🔍 Pesquisar Consultas":
                     df_resultados = df_resultados.sort_values('status_rota', ascending=True, na_position='last')
                 
                 if mostrar_controles_avancados:
-                    # ── PAGINAÇÃO ──
+                    # â”€â”€ PAGINAÃ‡ÃƒO â”€â”€
                     itens_por_pagina = 10
                     total_paginas = (len(df_resultados) - 1) // itens_por_pagina + 1
                     
@@ -4098,28 +4098,28 @@ elif menu == "🔍 Pesquisar Consultas":
                     col_pag1, col_pag2, col_pag3 = st.columns([1, 2, 1])
                     
                     with col_pag1:
-                        if st.button("⬅️ Anterior", disabled=(st.session_state.pagina_atual == 1), use_container_width=True):
+                        if st.button("â¬…ï¸ Anterior", disabled=(st.session_state.pagina_atual == 1), use_container_width=True):
                             st.session_state.pagina_atual -= 1
                             st.rerun()
                     
                     with col_pag2:
-                        st.markdown(f"<p style='text-align:center;color:#64748B;font-size:13px;margin:8px 0;'>Página {st.session_state.pagina_atual} de {total_paginas}</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='text-align:center;color:#64748B;font-size:13px;margin:8px 0;'>PÃ¡gina {st.session_state.pagina_atual} de {total_paginas}</p>", unsafe_allow_html=True)
                     
                     with col_pag3:
-                        if st.button("Próxima ➡️", disabled=(st.session_state.pagina_atual == total_paginas), use_container_width=True):
+                        if st.button("PrÃ³xima âž¡ï¸", disabled=(st.session_state.pagina_atual == total_paginas), use_container_width=True):
                             st.session_state.pagina_atual += 1
                             st.rerun()
                     
-                    # Calcula índices da página atual
+                    # Calcula Ã­ndices da pÃ¡gina atual
                     inicio = (st.session_state.pagina_atual - 1) * itens_por_pagina
                     fim = inicio + itens_por_pagina
                     df_pagina = df_resultados.iloc[inicio:fim]
                     
                     st.markdown("<br>", unsafe_allow_html=True)
                     
-                    # ══════════════════════════════════════════════════════════════════════════
-                    # AÇÕES EM LOTE
-                    # ══════════════════════════════════════════════════════════════════════════
+                    # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+                    # AÃ‡Ã•ES EM LOTE
+                    # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                     
                     if 'selecionados_lote' not in st.session_state:
                         st.session_state.selecionados_lote = []
@@ -4128,7 +4128,7 @@ elif menu == "🔍 Pesquisar Consultas":
                     
                     with col_lote1:
                         selecionar_todos = st.checkbox(
-                            f"Selecionar todos ({len(df_pagina)} itens desta página)",
+                            f"Selecionar todos ({len(df_pagina)} itens desta pÃ¡gina)",
                             key="selecionar_todos_pagina"
                         )
                         
@@ -4137,22 +4137,22 @@ elif menu == "🔍 Pesquisar Consultas":
                     
                     with col_lote2:
                         if len(st.session_state.selecionados_lote) > 0:
-                            if st.button(f"📧 Enviar Cartas ({len(st.session_state.selecionados_lote)})", type="primary", use_container_width=True):
-                                st.info(f"🚀 Preparando envio de {len(st.session_state.selecionados_lote)} cartas...")
-                                # Aqui você pode adicionar a lógica de envio em massa
-                                st.success(f"✅ {len(st.session_state.selecionados_lote)} cartas enviadas com sucesso!")
+                            if st.button(f"ðŸ“§ Enviar Cartas ({len(st.session_state.selecionados_lote)})", type="primary", use_container_width=True):
+                                st.info(f"ðŸš€ Preparando envio de {len(st.session_state.selecionados_lote)} cartas...")
+                                # Aqui vocÃª pode adicionar a lÃ³gica de envio em massa
+                                st.success(f"âœ… {len(st.session_state.selecionados_lote)} cartas enviadas com sucesso!")
                                 st.session_state.selecionados_lote = []
                                 time.sleep(2)
                                 st.rerun()
                     
                     st.markdown("<hr style='border-color:rgba(0,212,255,0.05);margin:12px 0;'>", unsafe_allow_html=True)
                     
-                    # ══════════════════════════════════════════════════════════════════════════
-                    # VISUALIZAÇÃO: CARDS OU TABELA
-                    # ══════════════════════════════════════════════════════════════════════════
+                    # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+                    # VISUALIZAÃ‡ÃƒO: CARDS OU TABELA
+                    # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                     
-                    if modo_visualizacao == "📊 Tabela":
-                        # ── MODO TABELA ──
+                    if modo_visualizacao == "ðŸ“Š Tabela":
+                        # â”€â”€ MODO TABELA â”€â”€
                         st.dataframe(
                             df_pagina[['id', 'nome', 'cpf', 'matricula', 'status_rota', 'email', 'celular', 'data_consulta']],
                             use_container_width=True,
@@ -4161,7 +4161,7 @@ elif menu == "🔍 Pesquisar Consultas":
                                 "id": st.column_config.NumberColumn("ID", width="small"),
                                 "nome": st.column_config.TextColumn("Nome", width="large"),
                                 "cpf": st.column_config.TextColumn("CPF", width="medium"),
-                                "matricula": st.column_config.TextColumn("Matrícula", width="small"),
+                                "matricula": st.column_config.TextColumn("MatrÃ­cula", width="small"),
                                 "status_rota": st.column_config.TextColumn("Status", width="medium"),
                                 "email": st.column_config.TextColumn("E-mail", width="medium"),
                                 "celular": st.column_config.TextColumn("Celular", width="small"),
@@ -4169,10 +4169,10 @@ elif menu == "🔍 Pesquisar Consultas":
                             }
                         )
                     else:
-                        # ── MODO CARDS (código existente) ──
-                        pass  # O código dos cards já existe abaixo
+                        # â”€â”€ MODO CARDS (cÃ³digo existente) â”€â”€
+                        pass  # O cÃ³digo dos cards jÃ¡ existe abaixo
                 else:
-                    # Modo simples: sem paginação, mostra todos os resultados
+                    # Modo simples: sem paginaÃ§Ã£o, mostra todos os resultados
                     df_pagina = df_resultados
 
                 #Auto-Refresh na lista de resultados na aba de pesquisa :)
@@ -4181,7 +4181,7 @@ elif menu == "🔍 Pesquisar Consultas":
                             if ids_lista:
                                 conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                                 placeholders = ','.join('?' for _ in ids_lista)
-                                st.session_state.resultado_busca = pd.read_sql_query(
+                                st.session_state.resultado_busca = safe_sql_query(
                                     f"SELECT * FROM jovens_rotas WHERE id IN ({placeholders})",
                                     conexao, params=ids_lista
                                 )
@@ -4189,19 +4189,19 @@ elif menu == "🔍 Pesquisar Consultas":
             except Exception as e:
                 pass
             
-            # Lógica de separação: Trabalho x Curso
+            # LÃ³gica de separaÃ§Ã£o: Trabalho x Curso
             modalidade_atual = st.session_state.get('modalidade_pesquisa_radio', 'Trabalho')
 
-            # Verifica se resultado_busca existe e não é vazio
+            # Verifica se resultado_busca existe e nÃ£o Ã© vazio
             if st.session_state.get('resultado_busca') is not None and not st.session_state.resultado_busca.empty:
                 # Verifica se deve mostrar em modo cards
                 mostrar_cards = True
-                if mostrar_controles_avancados and modo_visualizacao == "📊 Tabela":
+                if mostrar_controles_avancados and modo_visualizacao == "ðŸ“Š Tabela":
                     mostrar_cards = False
                 
                 if mostrar_cards:
                     for _, row in df_pagina.iterrows():
-                        # --- LÓGICA DE SEPARAÇÃO: TRABALHO x CURSO ---
+                        # --- LÃ“GICA DE SEPARAÃ‡ÃƒO: TRABALHO x CURSO ---
                         if "Trabalho" in modalidade_atual:
                             status_raw = row.get('status_rota', 'Otimizado')
                         else:
@@ -4219,36 +4219,36 @@ elif menu == "🔍 Pesquisar Consultas":
                         else:
                             status_color, status_bg = "#94A3B8", "148,163,184"
 
-                        # ── DESTAQUE VISUAL PARA PENDÊNCIAS ──
+                        # â”€â”€ DESTAQUE VISUAL PARA PENDÃŠNCIAS â”€â”€
                         tem_pendencia = False
                         icone_pendencia = ""
                         texto_pendencia = ""
                         
-                        # Verifica pendências
+                        # Verifica pendÃªncias
                         if not row.get('email') or row.get('email') == '':
                             tem_pendencia = True
-                            icone_pendencia += "📧 "
-                            texto_pendencia += "E-mail ausente · "
+                            icone_pendencia += "ðŸ“§ "
+                            texto_pendencia += "E-mail ausente Â· "
                         
                         if not row.get('celular') or row.get('celular') == '':
                             tem_pendencia = True
-                            icone_pendencia += "📱 "
-                            texto_pendencia += "Celular ausente · "
+                            icone_pendencia += "ðŸ“± "
+                            texto_pendencia += "Celular ausente Â· "
                         
                         if not row.get('matricula') or row.get('matricula') == '':
                             tem_pendencia = True
-                            icone_pendencia += "🪪 "
-                            texto_pendencia += "Matrícula ausente · "
+                            icone_pendencia += "ðŸªª "
+                            texto_pendencia += "MatrÃ­cula ausente Â· "
                         
                         if not row.get('cep_trabalho') or row.get('cep_trabalho') == '':
                             tem_pendencia = True
-                            icone_pendencia += "🏢 "
-                            texto_pendencia += "CEP trabalho ausente · "
+                            icone_pendencia += "ðŸ¢ "
+                            texto_pendencia += "CEP trabalho ausente Â· "
                         
-                        # Remove último separador
-                        texto_pendencia = texto_pendencia.rstrip(" · ")
+                        # Remove Ãºltimo separador
+                        texto_pendencia = texto_pendencia.rstrip(" Â· ")
                         
-                        # Define estilo do card baseado em pendências
+                        # Define estilo do card baseado em pendÃªncias
                         if tem_pendencia:
                             card_border = "border-left:4px solid #F59E0B;"
                             card_bg = "background:rgba(245,158,11,0.05);"
@@ -4261,11 +4261,11 @@ elif menu == "🔍 Pesquisar Consultas":
                         cpf_mask = f"***.***.{cpf_str[6:9]}-{cpf_str[9:11]}"
 
                         if mostrar_controles_avancados:
-                            # Modo avançado: com checkbox
+                            # Modo avanÃ§ado: com checkbox
                             col_check, col_info, col_btn = st.columns([0.5, 9.5, 2])
                             
                             with col_check:
-                                # Checkbox para seleção em lote
+                                # Checkbox para seleÃ§Ã£o em lote
                                 is_selected = st.checkbox(
                                     "",
                                     value=row['id'] in st.session_state.selecionados_lote,
@@ -4282,26 +4282,26 @@ elif menu == "🔍 Pesquisar Consultas":
                             col_info, col_btn = st.columns([10, 2])
                         
                         with col_info:
-                            st.markdown(f"""<div style="{card_bg}{card_border}border:1px solid #E5E7EB;border-radius:8px;padding:12px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;"><p style="margin:0;color:#444c9b;font-weight:700;font-size:16px;">{row['nome']}</p><span style="background:rgba({status_bg},0.15);color:{status_color};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:700;">{status_exib}</span>{f'<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">{icone_pendencia}PENDÊNCIAS</span>' if tem_pendencia else ''}</div><p style="margin:0;color:#666666;font-size:13px;">PRÉ-ADM · CPF: {cpf_mask} · Matrícula: {row.get('matricula', 'N/A')}</p>{f'<p style="margin:4px 0 0;color:#F59E0B;font-size:12px;font-weight:600;">⚠️ {texto_pendencia}</p>' if tem_pendencia else ''}</div>""", unsafe_allow_html=True)
+                            st.markdown(f"""<div style="{card_bg}{card_border}border:1px solid #E5E7EB;border-radius:8px;padding:12px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;"><p style="margin:0;color:#444c9b;font-weight:700;font-size:16px;">{row['nome']}</p><span style="background:rgba({status_bg},0.15);color:{status_color};padding:2px 8px;border-radius:20px;font-size:12px;font-weight:700;">{status_exib}</span>{f'<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">{icone_pendencia}PENDÃŠNCIAS</span>' if tem_pendencia else ''}</div><p style="margin:0;color:#666666;font-size:13px;">PRÃ‰-ADM Â· CPF: {cpf_mask} Â· MatrÃ­cula: {row.get('matricula', 'N/A')}</p>{f'<p style="margin:4px 0 0;color:#F59E0B;font-size:12px;font-weight:600;">âš ï¸ {texto_pendencia}</p>' if tem_pendencia else ''}</div>""", unsafe_allow_html=True)
                         
                         with col_btn:
-                            st.write("") # Espaço para alinhar o botãozin
+                            st.write("") # EspaÃ§o para alinhar o botÃ£ozin
                             
-                            # Botão "Copiar dados" ao lado do "Abrir Consulta"
+                            # BotÃ£o "Copiar dados" ao lado do "Abrir Consulta"
                             col_copiar, col_abrir = st.columns(2)
                             
                             with col_copiar:
                                 # Prepara dados para copiar
                                 dados_copiar = f"""Nome: {row['nome']}
 CPF: {cpf_str}
-Matrícula: {row.get('matricula', 'N/A')}
+MatrÃ­cula: {row.get('matricula', 'N/A')}
 E-mail: {row.get('email', 'N/A')}
 Celular: {row.get('celular', 'N/A')}
 Status: {status_exib}
 CEP Casa: {row.get('cep_casa', 'N/A')}
 CEP Trabalho: {row.get('cep_trabalho', 'N/A')}"""
                                 
-                                if st.button("📋", key=f"btn_copiar_{row['id']}", help="Copiar dados", use_container_width=True):
+                                if st.button("ðŸ“‹", key=f"btn_copiar_{row['id']}", help="Copiar dados", use_container_width=True):
                                     # Usa JavaScript para copiar para clipboard
                                     import streamlit.components.v1 as components
                                     components.html(f"""
@@ -4309,11 +4309,11 @@ CEP Trabalho: {row.get('cep_trabalho', 'N/A')}"""
                                     navigator.clipboard.writeText(`{dados_copiar}`);
                                     </script>
                                     """, height=0)
-                                    st.success("✅ Dados copiados!")
+                                    st.success("âœ… Dados copiados!")
                                     time.sleep(1)
                             
                             with col_abrir:
-                                if st.button("Abrir →", key=f"btn_abrir_{row['id']}", type="primary", use_container_width=True):
+                                if st.button("Abrir â†’", key=f"btn_abrir_{row['id']}", type="primary", use_container_width=True):
                                     st.session_state.resultado_busca = pd.DataFrame([row])
                                     st.session_state.detalhes_abertos = True
                                     st.query_params['id_consulta'] = str(row['id'])
@@ -4321,10 +4321,10 @@ CEP Trabalho: {row.get('cep_trabalho', 'N/A')}"""
                                     st.rerun()
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA 2 — CADASTRAR NOVO JOVEM
-# ══════════════════════════════════════════════════════════════════════════════
-elif menu == "➕ Cadastrar Novo Jovem":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA 2 â€” CADASTRAR NOVO JOVEM
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+elif menu == "âž• Cadastrar Novo Jovem":
 
         st.markdown("""
             <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
@@ -4336,9 +4336,9 @@ elif menu == "➕ Cadastrar Novo Jovem":
             </div>
         """, unsafe_allow_html=True)
 
-        # ══════════════════════════════════════════════════════════════════════════
-        # SELETOR DE MODO: WIZARD OU FORMULÁRIO COMPLETO
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        # SELETOR DE MODO: WIZARD OU FORMULÃRIO COMPLETO
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
         col_modo1, col_modo2 = st.columns([3, 1])
         with col_modo1:
@@ -4346,7 +4346,7 @@ elif menu == "➕ Cadastrar Novo Jovem":
         with col_modo2:
             modo_cadastro = st.radio(
                 "Modo",
-                ["🧙 Wizard (Passo a Passo)", "📝 Formulário Completo"],
+                ["ðŸ§™ Wizard (Passo a Passo)", "ðŸ“ FormulÃ¡rio Completo"],
                 horizontal=False,
                 label_visibility="collapsed",
                 key="modo_cadastro_radio"
@@ -4354,11 +4354,11 @@ elif menu == "➕ Cadastrar Novo Jovem":
         
         st.markdown("<hr style='border-color:#E2E8F0;margin:16px 0;'>", unsafe_allow_html=True)
         
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         # MODO WIZARD (PASSO A PASSO)
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
-        if "🧙" in modo_cadastro:
+        if "ðŸ§™" in modo_cadastro:
             # Inicializa estado do wizard
             if 'wizard_passo' not in st.session_state:
                 st.session_state.wizard_passo = 1
@@ -4371,37 +4371,37 @@ elif menu == "➕ Cadastrar Novo Jovem":
             st.markdown(f"<p style='text-align:center;color:#64748B;font-size:13px;margin:8px 0;'>Passo {st.session_state.wizard_passo} de 5</p>", unsafe_allow_html=True)
             st.markdown("<hr style='border-color:#E2E8F0;margin:16px 0;'>", unsafe_allow_html=True)
             
-            # ── PASSO 1: DADOS PESSOAIS ──
+            # â”€â”€ PASSO 1: DADOS PESSOAIS â”€â”€
             if st.session_state.wizard_passo == 1:
-                st.markdown("### 👤 Dados Pessoais")
-                st.markdown("<p style='color:#94A3B8;font-size:12px;margin:-8px 0 16px;'>Campos marcados com <span style='color:#EF4444;font-weight:700;'>*</span> são obrigatórios</p>", unsafe_allow_html=True)
+                st.markdown("### ðŸ‘¤ Dados Pessoais")
+                st.markdown("<p style='color:#94A3B8;font-size:12px;margin:-8px 0 16px;'>Campos marcados com <span style='color:#EF4444;font-weight:700;'>*</span> sÃ£o obrigatÃ³rios</p>", unsafe_allow_html=True)
                 
                 # Nome
                 nome_wiz = st.text_input(
                     "Nome Completo",
                     value=st.session_state.wizard_dados.get('nome', ''),
-                    placeholder="Ex: João da Silva Santos",
-                    help="Campo obrigatório",
+                    placeholder="Ex: JoÃ£o da Silva Santos",
+                    help="Campo obrigatÃ³rio",
                     key="nome_wiz_input"
                 )
                 if nome_wiz:
-                    st.markdown("<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>✅ Nome preenchido</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>âœ… Nome preenchido</p>", unsafe_allow_html=True)
                 else:
-                    st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>⚠️ Campo obrigatório</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Campo obrigatÃ³rio</p>", unsafe_allow_html=True)
                 
                 col_cpf, col_mat = st.columns(2)
                 with col_cpf:
-                    # CPF com máscara visual
+                    # CPF com mÃ¡scara visual
                     cpf_wiz_raw = st.text_input(
                         "CPF",
                         max_chars=14,
                         value=st.session_state.wizard_dados.get('cpf_formatado', ''),
                         placeholder="000.000.000-00",
-                        help="Campo obrigatório - Digite apenas números",
+                        help="Campo obrigatÃ³rio - Digite apenas nÃºmeros",
                         key="cpf_wiz_input"
                     )
                     
-                    # Aplica máscara e valida
+                    # Aplica mÃ¡scara e valida
                     if cpf_wiz_raw:
                         cpf_limpo = ''.join(filter(str.isdigit, cpf_wiz_raw))
                         cpf_formatado = aplicar_mascara_cpf(cpf_limpo)
@@ -4410,28 +4410,28 @@ elif menu == "➕ Cadastrar Novo Jovem":
                             if validar_cpf_completo(cpf_limpo):
                                 # Verifica duplicidade em tempo real
                                 if cpf_ja_existe(cpf_limpo):
-                                    st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>❌ CPF já cadastrado no sistema</p>", unsafe_allow_html=True)
+                                    st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âŒ CPF jÃ¡ cadastrado no sistema</p>", unsafe_allow_html=True)
                                 else:
-                                    st.markdown(f"<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>✅ CPF válido: {cpf_formatado}</p>", unsafe_allow_html=True)
+                                    st.markdown(f"<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>âœ… CPF vÃ¡lido: {cpf_formatado}</p>", unsafe_allow_html=True)
                             else:
-                                st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>❌ CPF inválido</p>", unsafe_allow_html=True)
+                                st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âŒ CPF invÃ¡lido</p>", unsafe_allow_html=True)
                         elif len(cpf_limpo) > 0:
-                            st.markdown(f"<p style='color:#F59E0B;font-size:12px;margin:-8px 0 8px;'>⚠️ Digite 11 dígitos ({len(cpf_limpo)}/11)</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='color:#F59E0B;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Digite 11 dÃ­gitos ({len(cpf_limpo)}/11)</p>", unsafe_allow_html=True)
                     else:
-                        st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>⚠️ Campo obrigatório</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Campo obrigatÃ³rio</p>", unsafe_allow_html=True)
                 
                 with col_mat:
                     matricula_wiz = st.text_input(
-                        "Matrícula",
+                        "MatrÃ­cula",
                         value=st.session_state.wizard_dados.get('matricula', ''),
                         placeholder="Ex: MAT001",
-                        help="Campo obrigatório",
+                        help="Campo obrigatÃ³rio",
                         key="mat_wiz_input"
                     )
                     if matricula_wiz:
-                        st.markdown("<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>✅ Matrícula preenchida</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>âœ… MatrÃ­cula preenchida</p>", unsafe_allow_html=True)
                     else:
-                        st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>⚠️ Campo obrigatório</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Campo obrigatÃ³rio</p>", unsafe_allow_html=True)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
@@ -4444,12 +4444,12 @@ elif menu == "➕ Cadastrar Novo Jovem":
                         key="email_wiz_input"
                     )
                     
-                    # Validação de e-mail em tempo real
+                    # ValidaÃ§Ã£o de e-mail em tempo real
                     if email_wiz:
                         if validar_email_formato(email_wiz):
-                            st.markdown("<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>✅ E-mail válido</p>", unsafe_allow_html=True)
+                            st.markdown("<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>âœ… E-mail vÃ¡lido</p>", unsafe_allow_html=True)
                         else:
-                            st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>❌ E-mail inválido</p>", unsafe_allow_html=True)
+                            st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âŒ E-mail invÃ¡lido</p>", unsafe_allow_html=True)
                 
                 with col_cel:
                     celular_wiz_raw = st.text_input(
@@ -4460,15 +4460,15 @@ elif menu == "➕ Cadastrar Novo Jovem":
                         key="cel_wiz_input"
                     )
                     
-                    # Aplica máscara e valida celular
+                    # Aplica mÃ¡scara e valida celular
                     if celular_wiz_raw:
                         cel_limpo = ''.join(filter(str.isdigit, celular_wiz_raw))
                         cel_formatado = aplicar_mascara_celular(cel_limpo)
                         
                         if len(cel_limpo) == 11 and cel_limpo[2] == '9':
-                            st.markdown(f"<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>✅ Celular válido: {cel_formatado}</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>âœ… Celular vÃ¡lido: {cel_formatado}</p>", unsafe_allow_html=True)
                         elif len(cel_limpo) > 0:
-                            st.markdown(f"<p style='color:#F59E0B;font-size:12px;margin:-8px 0 8px;'>⚠️ Formato: (11) 98888-7777 ({len(cel_limpo)}/11)</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='color:#F59E0B;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Formato: (11) 98888-7777 ({len(cel_limpo)}/11)</p>", unsafe_allow_html=True)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
@@ -4477,7 +4477,7 @@ elif menu == "➕ Cadastrar Novo Jovem":
                     cpf_limpo_final = ''.join(filter(str.isdigit, cpf_wiz_raw)) if cpf_wiz_raw else ''
                     cel_limpo_final = ''.join(filter(str.isdigit, celular_wiz_raw)) if celular_wiz_raw else ''
                     
-                    # Validações para avançar
+                    # ValidaÃ§Ãµes para avanÃ§ar
                     pode_avancar = all([
                         nome_wiz,
                         len(cpf_limpo_final) == 11,
@@ -4486,7 +4486,7 @@ elif menu == "➕ Cadastrar Novo Jovem":
                         matricula_wiz
                     ])
                     
-                    if st.button("Próximo →", type="primary", use_container_width=True, disabled=not pode_avancar):
+                    if st.button("PrÃ³ximo â†’", type="primary", use_container_width=True, disabled=not pode_avancar):
                         st.session_state.wizard_dados.update({
                             'nome': nome_wiz,
                             'cpf': cpf_limpo_final,
@@ -4500,235 +4500,235 @@ elif menu == "➕ Cadastrar Novo Jovem":
                         st.rerun()
                     
                     if not pode_avancar:
-                        st.markdown("<p style='color:#EF4444;font-size:11px;text-align:center;margin:4px 0;'>⚠️ Preencha todos os campos obrigatórios corretamente</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='color:#EF4444;font-size:11px;text-align:center;margin:4px 0;'>âš ï¸ Preencha todos os campos obrigatÃ³rios corretamente</p>", unsafe_allow_html=True)
             
-            # ── PASSO 2: ENDEREÇO RESIDENCIAL ──
+            # â”€â”€ PASSO 2: ENDEREÃ‡O RESIDENCIAL â”€â”€
             elif st.session_state.wizard_passo == 2:
-                st.markdown("### 🏠 Endereço Residencial")
-                st.markdown("<p style='color:#94A3B8;font-size:12px;margin:-8px 0 16px;'>Digite o CEP para buscar o endereço automaticamente</p>", unsafe_allow_html=True)
+                st.markdown("### ðŸ  EndereÃ§o Residencial")
+                st.markdown("<p style='color:#94A3B8;font-size:12px;margin:-8px 0 16px;'>Digite o CEP para buscar o endereÃ§o automaticamente</p>", unsafe_allow_html=True)
                 
                 cep_casa_wiz_raw = st.text_input(
-                    "CEP da Residência",
+                    "CEP da ResidÃªncia",
                     max_chars=9,
                     value=st.session_state.wizard_dados.get('cep_casa_formatado', ''),
                     placeholder="00000-000",
-                    help="Campo obrigatório",
+                    help="Campo obrigatÃ³rio",
                     key="cep_casa_wiz_input"
                 )
                 
-                # Aplica máscara e busca endereço
+                # Aplica mÃ¡scara e busca endereÃ§o
                 if cep_casa_wiz_raw:
                     cep_limpo = ''.join(filter(str.isdigit, cep_casa_wiz_raw))
                     cep_formatado = aplicar_mascara_cep(cep_limpo)
                     
                     if len(cep_limpo) == 8:
-                        with st.spinner("🔍 Buscando endereço..."):
+                        with st.spinner("ðŸ” Buscando endereÃ§o..."):
                             endereco_casa = buscar_endereco_viacep(cep_limpo)
-                            if "inválido" not in endereco_casa.get('completo', '').lower():
-                                st.markdown(f"<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>✅ CEP válido: {cep_formatado}</p>", unsafe_allow_html=True)
+                            if "invÃ¡lido" not in endereco_casa.get('completo', '').lower():
+                                st.markdown(f"<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>âœ… CEP vÃ¡lido: {cep_formatado}</p>", unsafe_allow_html=True)
                                 st.markdown(f"""
                                 <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:8px;padding:12px;margin:8px 0;">
-                                    <p style="margin:0;color:#166534;font-size:13px;"><strong>📍 Endereço:</strong> {endereco_casa.get('completo', '')}</p>
+                                    <p style="margin:0;color:#166534;font-size:13px;"><strong>ðŸ“ EndereÃ§o:</strong> {endereco_casa.get('completo', '')}</p>
                                 </div>
                                 """, unsafe_allow_html=True)
                                 st.session_state.wizard_dados['endereco_casa_completo'] = endereco_casa.get('completo', '')
                                 
-                                # Sugestão de unidades próximas
-                                st.info("💡 **Unidades próximas:** SPTrans Centro, SPTrans Zona Leste, SPTrans Zona Sul")
+                                # SugestÃ£o de unidades prÃ³ximas
+                                st.info("ðŸ’¡ **Unidades prÃ³ximas:** SPTrans Centro, SPTrans Zona Leste, SPTrans Zona Sul")
                             else:
-                                st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>❌ CEP não encontrado</p>", unsafe_allow_html=True)
+                                st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âŒ CEP nÃ£o encontrado</p>", unsafe_allow_html=True)
                     elif len(cep_limpo) > 0:
-                        st.markdown(f"<p style='color:#F59E0B;font-size:12px;margin:-8px 0 8px;'>⚠️ Digite 8 dígitos ({len(cep_limpo)}/8)</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='color:#F59E0B;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Digite 8 dÃ­gitos ({len(cep_limpo)}/8)</p>", unsafe_allow_html=True)
                 else:
-                    st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>⚠️ Campo obrigatório</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Campo obrigatÃ³rio</p>", unsafe_allow_html=True)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
                 col_btn1, col_btn2 = st.columns([1, 1])
                 with col_btn1:
-                    if st.button("← Voltar", use_container_width=True):
+                    if st.button("â† Voltar", use_container_width=True):
                         st.session_state.wizard_passo = 1
                         st.rerun()
                 with col_btn2:
                     cep_limpo_final = ''.join(filter(str.isdigit, cep_casa_wiz_raw)) if cep_casa_wiz_raw else ''
                     pode_avancar = len(cep_limpo_final) == 8
                     
-                    if st.button("Próximo →", type="primary", use_container_width=True, disabled=not pode_avancar):
+                    if st.button("PrÃ³ximo â†’", type="primary", use_container_width=True, disabled=not pode_avancar):
                         st.session_state.wizard_dados['cep_casa'] = cep_limpo_final
                         st.session_state.wizard_dados['cep_casa_formatado'] = aplicar_mascara_cep(cep_limpo_final)
                         st.session_state.wizard_passo = 3
                         st.rerun()
                     
                     if not pode_avancar:
-                        st.markdown("<p style='color:#EF4444;font-size:11px;text-align:center;margin:4px 0;'>⚠️ Digite um CEP válido</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='color:#EF4444;font-size:11px;text-align:center;margin:4px 0;'>âš ï¸ Digite um CEP vÃ¡lido</p>", unsafe_allow_html=True)
             
-            # ── PASSO 3: ENDEREÇO DE TRABALHO ──
+            # â”€â”€ PASSO 3: ENDEREÃ‡O DE TRABALHO â”€â”€
             elif st.session_state.wizard_passo == 3:
-                st.markdown("### 🏢 Endereço de Trabalho")
-                st.markdown("<p style='color:#94A3B8;font-size:12px;margin:-8px 0 16px;'>Digite o CEP para buscar o endereço automaticamente</p>", unsafe_allow_html=True)
+                st.markdown("### ðŸ¢ EndereÃ§o de Trabalho")
+                st.markdown("<p style='color:#94A3B8;font-size:12px;margin:-8px 0 16px;'>Digite o CEP para buscar o endereÃ§o automaticamente</p>", unsafe_allow_html=True)
                 
                 cep_trab_wiz_raw = st.text_input(
                     "CEP do Trabalho",
                     max_chars=9,
                     value=st.session_state.wizard_dados.get('cep_trabalho_formatado', ''),
                     placeholder="00000-000",
-                    help="Campo obrigatório",
+                    help="Campo obrigatÃ³rio",
                     key="cep_trab_wiz_input"
                 )
                 
-                # Aplica máscara e busca endereço
+                # Aplica mÃ¡scara e busca endereÃ§o
                 if cep_trab_wiz_raw:
                     cep_limpo = ''.join(filter(str.isdigit, cep_trab_wiz_raw))
                     cep_formatado = aplicar_mascara_cep(cep_limpo)
                     
                     if len(cep_limpo) == 8:
-                        with st.spinner("🔍 Buscando endereço..."):
+                        with st.spinner("ðŸ” Buscando endereÃ§o..."):
                             endereco_trab = buscar_endereco_viacep(cep_limpo)
-                            if "inválido" not in endereco_trab.get('completo', '').lower():
-                                st.markdown(f"<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>✅ CEP válido: {cep_formatado}</p>", unsafe_allow_html=True)
+                            if "invÃ¡lido" not in endereco_trab.get('completo', '').lower():
+                                st.markdown(f"<p style='color:#10B981;font-size:12px;margin:-8px 0 8px;'>âœ… CEP vÃ¡lido: {cep_formatado}</p>", unsafe_allow_html=True)
                                 st.markdown(f"""
                                 <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:8px;padding:12px;margin:8px 0;">
-                                    <p style="margin:0;color:#166534;font-size:13px;"><strong>📍 Endereço:</strong> {endereco_trab.get('completo', '')}</p>
+                                    <p style="margin:0;color:#166534;font-size:13px;"><strong>ðŸ“ EndereÃ§o:</strong> {endereco_trab.get('completo', '')}</p>
                                 </div>
                                 """, unsafe_allow_html=True)
                                 st.session_state.wizard_dados['endereco_trab_completo'] = endereco_trab.get('completo', '')
                             else:
-                                st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>❌ CEP não encontrado</p>", unsafe_allow_html=True)
+                                st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âŒ CEP nÃ£o encontrado</p>", unsafe_allow_html=True)
                     elif len(cep_limpo) > 0:
-                        st.markdown(f"<p style='color:#F59E0B;font-size:12px;margin:-8px 0 8px;'>⚠️ Digite 8 dígitos ({len(cep_limpo)}/8)</p>", unsafe_allow_html=True)
+                        st.markdown(f"<p style='color:#F59E0B;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Digite 8 dÃ­gitos ({len(cep_limpo)}/8)</p>", unsafe_allow_html=True)
                 else:
-                    st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>⚠️ Campo obrigatório</p>", unsafe_allow_html=True)
+                    st.markdown("<p style='color:#EF4444;font-size:12px;margin:-8px 0 8px;'>âš ï¸ Campo obrigatÃ³rio</p>", unsafe_allow_html=True)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
                 col_btn1, col_btn2 = st.columns([1, 1])
                 with col_btn1:
-                    if st.button("← Voltar", use_container_width=True):
+                    if st.button("â† Voltar", use_container_width=True):
                         st.session_state.wizard_passo = 2
                         st.rerun()
                 with col_btn2:
                     cep_limpo_final = ''.join(filter(str.isdigit, cep_trab_wiz_raw)) if cep_trab_wiz_raw else ''
                     pode_avancar = len(cep_limpo_final) == 8
                     
-                    if st.button("Próximo →", type="primary", use_container_width=True, disabled=not pode_avancar):
+                    if st.button("PrÃ³ximo â†’", type="primary", use_container_width=True, disabled=not pode_avancar):
                         st.session_state.wizard_dados['cep_trabalho'] = cep_limpo_final
                         st.session_state.wizard_dados['cep_trabalho_formatado'] = aplicar_mascara_cep(cep_limpo_final)
                         st.session_state.wizard_passo = 4
                         st.rerun()
                     
                     if not pode_avancar:
-                        st.markdown("<p style='color:#EF4444;font-size:11px;text-align:center;margin:4px 0;'>⚠️ Digite um CEP válido</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='color:#EF4444;font-size:11px;text-align:center;margin:4px 0;'>âš ï¸ Digite um CEP vÃ¡lido</p>", unsafe_allow_html=True)
             
-            # ── PASSO 4: INFORMAÇÕES ADICIONAIS ──
+            # â”€â”€ PASSO 4: INFORMAÃ‡Ã•ES ADICIONAIS â”€â”€
             elif st.session_state.wizard_passo == 4:
-                st.markdown("### 📝 Informações Adicionais")
+                st.markdown("### ðŸ“ InformaÃ§Ãµes Adicionais")
                 
                 # Upload de foto
-                foto_upload = st.file_uploader("📷 Foto do Funcionário (opcional)", type=["jpg", "jpeg", "png"])
+                foto_upload = st.file_uploader("ðŸ“· Foto do FuncionÃ¡rio (opcional)", type=["jpg", "jpeg", "png"])
                 if foto_upload:
                     st.image(foto_upload, width=150, caption="Preview da foto")
                     st.session_state.wizard_dados['foto'] = foto_upload
                 
-                # Campo de observações
+                # Campo de observaÃ§Ãµes
                 observacoes_wiz = st.text_area(
-                    "📋 Observações/Notas Internas (opcional)",
+                    "ðŸ“‹ ObservaÃ§Ãµes/Notas Internas (opcional)",
                     value=st.session_state.wizard_dados.get('observacoes', ''),
                     height=100,
-                    placeholder="Ex: Funcionário com restrição de horário, necessita acompanhamento especial, etc."
+                    placeholder="Ex: FuncionÃ¡rio com restriÃ§Ã£o de horÃ¡rio, necessita acompanhamento especial, etc."
                 )
                 st.session_state.wizard_dados['observacoes'] = observacoes_wiz
                 
                 col_btn1, col_btn2 = st.columns([1, 1])
                 with col_btn1:
-                    if st.button("← Voltar", use_container_width=True):
+                    if st.button("â† Voltar", use_container_width=True):
                         st.session_state.wizard_passo = 3
                         st.rerun()
                 with col_btn2:
-                    if st.button("Próximo →", type="primary", use_container_width=True):
+                    if st.button("PrÃ³ximo â†’", type="primary", use_container_width=True):
                         st.session_state.wizard_passo = 5
                         st.rerun()
             
-            # ── PASSO 5: PREVIEW E CONFIRMAÇÃO ──
+            # â”€â”€ PASSO 5: PREVIEW E CONFIRMAÃ‡ÃƒO â”€â”€
             elif st.session_state.wizard_passo == 5:
-                st.markdown("### ✅ Revisão e Confirmação")
+                st.markdown("### âœ… RevisÃ£o e ConfirmaÃ§Ã£o")
                 
                 dados = st.session_state.wizard_dados
                 
                 # Card de preview
                 st.markdown(f"""
                 <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin-bottom:16px;">
-                    <h4 style="color:#444c9b;margin:0 0 12px;">👤 {dados.get('nome', '')}</h4>
+                    <h4 style="color:#444c9b;margin:0 0 12px;">ðŸ‘¤ {dados.get('nome', '')}</h4>
                     <p style="margin:4px 0;color:#64748B;font-size:14px;">
-                        <strong>CPF:</strong> {dados.get('cpf', '')} · 
-                        <strong>Matrícula:</strong> {dados.get('matricula', '')}
+                        <strong>CPF:</strong> {dados.get('cpf', '')} Â· 
+                        <strong>MatrÃ­cula:</strong> {dados.get('matricula', '')}
                     </p>
                     <p style="margin:4px 0;color:#64748B;font-size:14px;">
-                        <strong>E-mail:</strong> {dados.get('email', 'Não informado')} · 
-                        <strong>Celular:</strong> {dados.get('celular', 'Não informado')}
+                        <strong>E-mail:</strong> {dados.get('email', 'NÃ£o informado')} Â· 
+                        <strong>Celular:</strong> {dados.get('celular', 'NÃ£o informado')}
                     </p>
                     <hr style="border-color:#E2E8F0;margin:12px 0;">
                     <p style="margin:4px 0;color:#64748B;font-size:14px;">
-                        <strong>🏠 CEP Casa:</strong> {dados.get('cep_casa', '')}
+                        <strong>ðŸ  CEP Casa:</strong> {dados.get('cep_casa', '')}
                     </p>
                     <p style="margin:4px 0;color:#64748B;font-size:13px;">
                         {dados.get('endereco_casa_completo', '')}
                     </p>
                     <p style="margin:8px 0 4px;color:#64748B;font-size:14px;">
-                        <strong>🏢 CEP Trabalho:</strong> {dados.get('cep_trabalho', '')}
+                        <strong>ðŸ¢ CEP Trabalho:</strong> {dados.get('cep_trabalho', '')}
                     </p>
                     <p style="margin:4px 0;color:#64748B;font-size:13px;">
                         {dados.get('endereco_trab_completo', '')}
                     </p>
-                    {f'<hr style="border-color:#E2E8F0;margin:12px 0;"><p style="margin:4px 0;color:#64748B;font-size:13px;"><strong>📋 Observações:</strong> {dados.get("observacoes", "")}</p>' if dados.get('observacoes') else ''}
+                    {f'<hr style="border-color:#E2E8F0;margin:12px 0;"><p style="margin:4px 0;color:#64748B;font-size:13px;"><strong>ðŸ“‹ ObservaÃ§Ãµes:</strong> {dados.get("observacoes", "")}</p>' if dados.get('observacoes') else ''}
                 </div>
                 """, unsafe_allow_html=True)
                 
                 # Preview da rota (mapa simplificado)
-                st.markdown("### 🗺️ Preview da Rota")
+                st.markdown("### ðŸ—ºï¸ Preview da Rota")
                 try:
                     # Cria mapa simples com os dois pontos
                     import folium
                     from streamlit_folium import st_folium
                     
-                    # Coordenadas aproximadas (São Paulo centro como fallback)
+                    # Coordenadas aproximadas (SÃ£o Paulo centro como fallback)
                     mapa_preview = folium.Map(location=[-23.5505, -46.6333], zoom_start=11)
                     
                     folium.Marker(
                         [-23.5505, -46.6333],
-                        popup="🏠 Casa",
+                        popup="ðŸ  Casa",
                         icon=folium.Icon(color='blue', icon='home')
                     ).add_to(mapa_preview)
                     
                     folium.Marker(
                         [-23.5605, -46.6533],
-                        popup="🏢 Trabalho",
+                        popup="ðŸ¢ Trabalho",
                         icon=folium.Icon(color='purple', icon='briefcase')
                     ).add_to(mapa_preview)
                     
                     st_folium(mapa_preview, width=700, height=300)
                     
-                    st.info("💡 **Estimativa:** Distância ~5 km · Tempo ~20 min · Valor mensal ~R$ 220,00")
+                    st.info("ðŸ’¡ **Estimativa:** DistÃ¢ncia ~5 km Â· Tempo ~20 min Â· Valor mensal ~R$ 220,00")
                 except Exception:
-                    st.warning("⚠️ Não foi possível gerar o preview da rota")
+                    st.warning("âš ï¸ NÃ£o foi possÃ­vel gerar o preview da rota")
                 
                 col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
                 with col_btn1:
-                    if st.button("← Voltar", use_container_width=True):
+                    if st.button("â† Voltar", use_container_width=True):
                         st.session_state.wizard_passo = 4
                         st.rerun()
                 with col_btn2:
-                    if st.button("🗑️ Cancelar", use_container_width=True):
+                    if st.button("ðŸ—‘ï¸ Cancelar", use_container_width=True):
                         st.session_state.wizard_passo = 1
                         st.session_state.wizard_dados = {}
                         st.rerun()
                 with col_btn3:
-                    if st.button("💾 Confirmar e Salvar", type="primary", use_container_width=True):
+                    if st.button("ðŸ’¾ Confirmar e Salvar", type="primary", use_container_width=True):
                         # Salva no banco
                         try:
                             cpf_limpo = ''.join(filter(str.isdigit, dados['cpf']))
                             
                             if cpf_ja_existe(cpf_limpo):
-                                st.error(f"❌ CPF {cpf_limpo} já está cadastrado no sistema.")
+                                st.error(f"âŒ CPF {cpf_limpo} jÃ¡ estÃ¡ cadastrado no sistema.")
                             else:
                                 conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                                 cursor = conexao.cursor()
@@ -4760,14 +4760,14 @@ elif menu == "➕ Cadastrar Novo Jovem":
                                 <div style="background:linear-gradient(135deg, #10B981 0%, #059669 100%);
                                             border-radius:16px;padding:32px;margin:24px 0;
                                             box-shadow:0 10px 25px rgba(16,185,129,0.3);text-align:center;">
-                                    <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+                                    <div style="font-size:64px;margin-bottom:16px;">ðŸŽ‰</div>
                                     <h2 style="color:#FFFFFF;margin:0 0 8px;font-size:28px;font-weight:800;">Cadastro Realizado com Sucesso!</h2>
                                     <p style="color:#D1FAE5;font-size:16px;margin:0;">
                                         <strong style="color:#FFFFFF;">{nome}</strong> foi cadastrado no sistema
                                     </p>
                                     <p style="color:#D1FAE5;font-size:14px;margin:8px 0 0;">
-                                        ID: <strong style="color:#FFFFFF;">#{id_cadastro}</strong> · 
-                                        Matrícula: <strong style="color:#FFFFFF;">{matricula}</strong>
+                                        ID: <strong style="color:#FFFFFF;">#{id_cadastro}</strong> Â· 
+                                        MatrÃ­cula: <strong style="color:#FFFFFF;">{matricula}</strong>
                                     </p>
                                 </div>
                                 """.format(
@@ -4776,54 +4776,54 @@ elif menu == "➕ Cadastrar Novo Jovem":
                                     matricula=dados['matricula']
                                 ), unsafe_allow_html=True)
                                 
-                                # Botões de ação
+                                # BotÃµes de aÃ§Ã£o
                                 col_acao1, col_acao2, col_acao3 = st.columns([1, 1, 1])
                                 
                                 with col_acao1:
-                                    if st.button("➕ Cadastrar Outro", type="primary", use_container_width=True):
+                                    if st.button("âž• Cadastrar Outro", type="primary", use_container_width=True):
                                         st.session_state.wizard_passo = 1
                                         st.session_state.wizard_dados = {}
                                         st.rerun()
                                 
                                 with col_acao2:
-                                    if st.button("📋 Ver Cadastro", use_container_width=True):
+                                    if st.button("ðŸ“‹ Ver Cadastro", use_container_width=True):
                                         st.session_state.menu_selecionado = "Pesquisar Consultas"
                                         st.rerun()
                                 
                                 with col_acao3:
-                                    if st.button("🏠 Ir para Dashboard", use_container_width=True):
+                                    if st.button("ðŸ  Ir para Dashboard", use_container_width=True):
                                         st.session_state.menu_selecionado = "Dashboard Principal"
                                         st.rerun()
                                 
-                                st.stop()  # Para a execução aqui para mostrar apenas a mensagem de sucesso
+                                st.stop()  # Para a execuÃ§Ã£o aqui para mostrar apenas a mensagem de sucesso
                                 
                         except Exception as e:
-                            st.error(f"❌ Erro ao salvar: {e}")
+                            st.error(f"âŒ Erro ao salvar: {e}")
         
-        # ══════════════════════════════════════════════════════════════════════════
-        # MODO FORMULÁRIO COMPLETO
-        # ══════════════════════════════════════════════════════════════════════════
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+        # MODO FORMULÃRIO COMPLETO
+        # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         
         else:
-            tab_manual, tab_massa = st.tabs(["✍️ Cadastro Manual", "📂 Importação em Massa"])
+            tab_manual, tab_massa = st.tabs(["âœï¸ Cadastro Manual", "ðŸ“‚ ImportaÃ§Ã£o em Massa"])
 
             with tab_manual:
                 st.markdown("""
                 <div style="background:#FFFFFF;border:1px solid #E5E7EB;
                             border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
                     <p style="color:#666666;font-size:12px;margin:0;">
-                        Preencha todos os campos obrigatórios (*). Validações são feitas em tempo real.
+                        Preencha todos os campos obrigatÃ³rios (*). ValidaÃ§Ãµes sÃ£o feitas em tempo real.
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
 
                 with st.form(key="form_novo_jovem"):
                     # Dados Pessoais
-                    st.markdown("#### 👤 Dados Pessoais")
+                    st.markdown("#### ðŸ‘¤ Dados Pessoais")
                     col_n, col_c, col_m = st.columns([2, 1, 1])
                     nome_input = col_n.text_input("Nome Completo *")
-                    cpf_input = col_c.text_input("CPF (11 dígitos) *", max_chars=11)
-                    matricula_input = col_m.text_input("Matrícula *")
+                    cpf_input = col_c.text_input("CPF (11 dÃ­gitos) *", max_chars=11)
+                    matricula_input = col_m.text_input("MatrÃ­cula *")
 
                     col_email, col_cel = st.columns(2)
                     email_input = col_email.text_input("E-mail", placeholder="exemplo@email.com")
@@ -4831,51 +4831,51 @@ elif menu == "➕ Cadastrar Novo Jovem":
 
                     st.markdown("<br>", unsafe_allow_html=True)
                     
-                    # Endereços
-                    st.markdown("#### 📍 Endereços")
+                    # EndereÃ§os
+                    st.markdown("#### ðŸ“ EndereÃ§os")
                     col_cep1, col_cep2 = st.columns(2)
-                    cep_casa_input = col_cep1.text_input("CEP da Residência *", max_chars=8)
+                    cep_casa_input = col_cep1.text_input("CEP da ResidÃªncia *", max_chars=8)
                     cep_trab_input = col_cep2.text_input("CEP do Trabalho *", max_chars=8)
 
                     st.markdown("<br>", unsafe_allow_html=True)
                     
-                    # Informações Adicionais
-                    st.markdown("#### 📝 Informações Adicionais")
+                    # InformaÃ§Ãµes Adicionais
+                    st.markdown("#### ðŸ“ InformaÃ§Ãµes Adicionais")
                     observacoes_input = st.text_area(
-                        "Observações/Notas Internas",
+                        "ObservaÃ§Ãµes/Notas Internas",
                         height=80,
-                        placeholder="Ex: Funcionário com restrição de horário..."
+                        placeholder="Ex: FuncionÃ¡rio com restriÃ§Ã£o de horÃ¡rio..."
                     )
 
-                    botao_salvar = st.form_submit_button("💾 Salvar na Base de Dados", type="primary")
+                    botao_salvar = st.form_submit_button("ðŸ’¾ Salvar na Base de Dados", type="primary")
 
             if botao_salvar:
-                # Validações
+                # ValidaÃ§Ãµes
                 erros = []
                 
                 if not all([nome_input, cpf_input, cep_casa_input, cep_trab_input, matricula_input]):
-                    erros.append("⚠️ Preencha todos os campos obrigatórios (*)")
+                    erros.append("âš ï¸ Preencha todos os campos obrigatÃ³rios (*)")
                 
                 digitos_cpf = ''.join(filter(str.isdigit, cpf_input))
                 if len(digitos_cpf) != 11:
-                    erros.append("❌ CPF deve conter exatamente 11 dígitos")
+                    erros.append("âŒ CPF deve conter exatamente 11 dÃ­gitos")
                 elif len(set(digitos_cpf)) == 1:
-                    erros.append("❌ CPF inválido: todos os dígitos são iguais")
+                    erros.append("âŒ CPF invÃ¡lido: todos os dÃ­gitos sÃ£o iguais")
                 elif cpf_ja_existe(digitos_cpf):
-                    erros.append(f"❌ CPF {digitos_cpf} já está cadastrado")
+                    erros.append(f"âŒ CPF {digitos_cpf} jÃ¡ estÃ¡ cadastrado")
                 
-                # Validação de e-mail
+                # ValidaÃ§Ã£o de e-mail
                 if email_input:
                     import re
                     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
                     if not re.match(email_regex, email_input):
-                        erros.append("❌ E-mail inválido")
+                        erros.append("âŒ E-mail invÃ¡lido")
                 
-                # Validação de celular
+                # ValidaÃ§Ã£o de celular
                 if celular_input:
                     cel_limpo = ''.join(filter(str.isdigit, celular_input))
                     if len(cel_limpo) != 11 or cel_limpo[2] != '9':
-                        erros.append("❌ Celular inválido (formato: 11988887777)")
+                        erros.append("âŒ Celular invÃ¡lido (formato: 11988887777)")
                 
                 if erros:
                     for erro in erros:
@@ -4885,8 +4885,8 @@ elif menu == "➕ Cadastrar Novo Jovem":
                         v_casa = buscar_endereco_viacep(cep_casa_input)
                         v_trab = buscar_endereco_viacep(cep_trab_input)
                         
-                        if "inválido" in v_casa.get('completo','').lower() or "inválido" in v_trab.get('completo','').lower():
-                            st.error("❌ Um dos CEPs informados é inválido.")
+                        if "invÃ¡lido" in v_casa.get('completo','').lower() or "invÃ¡lido" in v_trab.get('completo','').lower():
+                            st.error("âŒ Um dos CEPs informados Ã© invÃ¡lido.")
                         else:
                             try:
                                 conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
@@ -4914,30 +4914,30 @@ elif menu == "➕ Cadastrar Novo Jovem":
                                 conexao.commit()
                                 conexao.close()
                                 
-                                st.success(f"✅ {nome_input} (Matrícula: {matricula_input}) cadastrado com sucesso! (ID: {novo_id})")
+                                st.success(f"âœ… {nome_input} (MatrÃ­cula: {matricula_input}) cadastrado com sucesso! (ID: {novo_id})")
                                 time.sleep(2)
                                 st.rerun()
                             except Exception as e:
-                                st.error(f"❌ Erro ao salvar: {e}")
+                                st.error(f"âŒ Erro ao salvar: {e}")
 
             with tab_massa:
                 st.markdown("""
                 <div style="background:rgba(248,174,40,0.1);border:1px solid #E5E7EB;
                             border-radius:12px;padding:16px;margin-bottom:16px;">
                     <p style="color:#666666;font-size:13px;margin:0;">
-                        💡 A planilha deve conter as colunas:
+                        ðŸ’¡ A planilha deve conter as colunas:
                         <strong style="color:#f8ae28;">nome, cpf, cep_casa, cep_trabalho, matricula</strong>
                         <br>Colunas opcionais: <strong>email, celular, observacoes</strong>
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Botão para baixar template
+                # BotÃ£o para baixar template
                 col_template, col_upload = st.columns([1, 2])
                 
                 with col_template:
-                    st.markdown("#### 📥 Template")
-                    if st.button("⬇️ Baixar Template Excel", use_container_width=True):
+                    st.markdown("#### ðŸ“¥ Template")
+                    if st.button("â¬‡ï¸ Baixar Template Excel", use_container_width=True):
                         try:
                             from io import BytesIO
                             from openpyxl import Workbook
@@ -4947,11 +4947,11 @@ elif menu == "➕ Cadastrar Novo Jovem":
                             ws = wb.active
                             ws.title = "Template Cadastro"
                             
-                            # Cabeçalho
+                            # CabeÃ§alho
                             headers = ['nome', 'cpf', 'cep_casa', 'cep_trabalho', 'matricula', 'email', 'celular', 'observacoes']
                             ws.append(headers)
                             
-                            # Estilo do cabeçalho
+                            # Estilo do cabeÃ§alho
                             for cell in ws[1]:
                                 cell.font = Font(bold=True, color="FFFFFF")
                                 cell.fill = PatternFill(start_color="444c9b", end_color="444c9b", fill_type="solid")
@@ -4959,14 +4959,14 @@ elif menu == "➕ Cadastrar Novo Jovem":
                             
                             # Linha de exemplo
                             ws.append([
-                                'João da Silva',
+                                'JoÃ£o da Silva',
                                 '12345678901',
                                 '01310100',
                                 '01310200',
                                 'MAT001',
                                 'joao@email.com',
                                 '11988887777',
-                                'Funcionário novo'
+                                'FuncionÃ¡rio novo'
                             ])
                             
                             # Ajusta largura das colunas
@@ -4988,17 +4988,17 @@ elif menu == "➕ Cadastrar Novo Jovem":
                             buffer.seek(0)
                             
                             st.download_button(
-                                label="📄 Template.xlsx",
+                                label="ðŸ“„ Template.xlsx",
                                 data=buffer,
                                 file_name="template_cadastro_funcionarios.xlsx",
                                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                 use_container_width=True
                             )
                         except Exception as e:
-                            st.error(f"❌ Erro ao gerar template: {e}")
+                            st.error(f"âŒ Erro ao gerar template: {e}")
                 
                 with col_upload:
-                    st.markdown("#### 📤 Upload")
+                    st.markdown("#### ðŸ“¤ Upload")
                     arquivo_upload = st.file_uploader("Arraste o arquivo Excel (.xlsx) ou CSV", type=["xlsx","csv"], key="upload_massa")
 
                 if arquivo_upload is not None:
@@ -5010,14 +5010,14 @@ elif menu == "➕ Cadastrar Novo Jovem":
 
                         df_upload.columns = df_upload.columns.str.lower().str.strip()
 
-                        # Validação de colunas obrigatórias
+                        # ValidaÃ§Ã£o de colunas obrigatÃ³rias
                         colunas_obrigatorias = ['nome', 'cpf', 'cep_casa', 'cep_trabalho', 'matricula']
                         colunas_faltando = [col for col in colunas_obrigatorias if col not in df_upload.columns]
                         
                         if colunas_faltando:
-                            st.error(f"❌ Colunas obrigatórias faltando: {', '.join(colunas_faltando)}")
+                            st.error(f"âŒ Colunas obrigatÃ³rias faltando: {', '.join(colunas_faltando)}")
                         else:
-                            # Adiciona colunas opcionais se não existirem
+                            # Adiciona colunas opcionais se nÃ£o existirem
                             if 'email' not in df_upload.columns:
                                 df_upload['email'] = ''
                             if 'celular' not in df_upload.columns:
@@ -5027,62 +5027,62 @@ elif menu == "➕ Cadastrar Novo Jovem":
                             
                             df_upload['status_rota'] = "Otimizado"
                             
-                            # Validações em lote
-                            st.markdown("#### 🔍 Validação dos Dados")
+                            # ValidaÃ§Ãµes em lote
+                            st.markdown("#### ðŸ” ValidaÃ§Ã£o dos Dados")
                             
                             erros_validacao = []
                             avisos_validacao = []
                             
                             for idx, row in df_upload.iterrows():
-                                linha = idx + 2  # +2 porque começa em 1 e tem cabeçalho
+                                linha = idx + 2  # +2 porque comeÃ§a em 1 e tem cabeÃ§alho
                                 
                                 # Valida CPF
                                 cpf_limpo = ''.join(filter(str.isdigit, str(row['cpf'])))
                                 if len(cpf_limpo) != 11:
-                                    erros_validacao.append(f"Linha {linha}: CPF inválido (deve ter 11 dígitos)")
+                                    erros_validacao.append(f"Linha {linha}: CPF invÃ¡lido (deve ter 11 dÃ­gitos)")
                                 elif len(set(cpf_limpo)) == 1:
-                                    erros_validacao.append(f"Linha {linha}: CPF inválido (todos dígitos iguais)")
+                                    erros_validacao.append(f"Linha {linha}: CPF invÃ¡lido (todos dÃ­gitos iguais)")
                                 
                                 # Valida e-mail se preenchido
                                 if row.get('email') and str(row['email']).strip():
                                     import re
                                     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
                                     if not re.match(email_regex, str(row['email'])):
-                                        avisos_validacao.append(f"Linha {linha}: E-mail inválido")
+                                        avisos_validacao.append(f"Linha {linha}: E-mail invÃ¡lido")
                                 
                                 # Valida celular se preenchido
                                 if row.get('celular') and str(row['celular']).strip():
                                     cel_limpo = ''.join(filter(str.isdigit, str(row['celular'])))
                                     if len(cel_limpo) != 11 or cel_limpo[2] != '9':
-                                        avisos_validacao.append(f"Linha {linha}: Celular inválido (formato: 11988887777)")
+                                        avisos_validacao.append(f"Linha {linha}: Celular invÃ¡lido (formato: 11988887777)")
                             
                             # Mostra erros e avisos
                             if erros_validacao:
-                                st.error("❌ **Erros encontrados:**")
-                                for erro in erros_validacao[:10]:  # Mostra no máximo 10
-                                    st.error(f"• {erro}")
+                                st.error("âŒ **Erros encontrados:**")
+                                for erro in erros_validacao[:10]:  # Mostra no mÃ¡ximo 10
+                                    st.error(f"â€¢ {erro}")
                                 if len(erros_validacao) > 10:
                                     st.error(f"... e mais {len(erros_validacao) - 10} erros")
                             
                             if avisos_validacao:
-                                st.warning("⚠️ **Avisos (não impedem importação):**")
+                                st.warning("âš ï¸ **Avisos (nÃ£o impedem importaÃ§Ã£o):**")
                                 for aviso in avisos_validacao[:10]:
-                                    st.warning(f"• {aviso}")
+                                    st.warning(f"â€¢ {aviso}")
                                 if len(avisos_validacao) > 10:
                                     st.warning(f"... e mais {len(avisos_validacao) - 10} avisos")
                             
                             if not erros_validacao:
-                                st.success(f"✅ Validação concluída! {len(df_upload)} registros prontos para importação")
+                                st.success(f"âœ… ValidaÃ§Ã£o concluÃ­da! {len(df_upload)} registros prontos para importaÃ§Ã£o")
                             
                             # Preview
                             st.markdown("<br>", unsafe_allow_html=True)
-                            st.markdown("<p style='color:#94A3B8;font-size:13px;'>📋 Pré-visualização:</p>", unsafe_allow_html=True)
+                            st.markdown("<p style='color:#94A3B8;font-size:13px;'>ðŸ“‹ PrÃ©-visualizaÃ§Ã£o:</p>", unsafe_allow_html=True)
                             st.dataframe(df_upload.head(10), use_container_width=True)
                             
                             if len(df_upload) > 10:
-                                st.info(f"💡 Mostrando 10 de {len(df_upload)} registros")
+                                st.info(f"ðŸ’¡ Mostrando 10 de {len(df_upload)} registros")
 
-                            if not erros_validacao and st.button("🚀 Importar para a Base de Dados", type="primary"):
+                            if not erros_validacao and st.button("ðŸš€ Importar para a Base de Dados", type="primary"):
                                 with st.spinner("Importando..."):
                                     df_limpo = df_upload[['nome','cpf','cep_casa','cep_trabalho','matricula','email','celular','status_rota']].copy()
                                     
@@ -5094,7 +5094,7 @@ elif menu == "➕ Cadastrar Novo Jovem":
                                     
                                     conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
                                     
-                                    # Geração de IDs
+                                    # GeraÃ§Ã£o de IDs
                                     cursor = conexao.cursor()
                                     cursor.execute("SELECT MAX(CAST(id AS INTEGER)) FROM jovens_rotas")
                                     max_id = cursor.fetchone()[0]
@@ -5105,75 +5105,75 @@ elif menu == "➕ Cadastrar Novo Jovem":
                                     df_limpo.to_sql('jovens_rotas', conexao, if_exists='append', index=False)
                                     conexao.close()
                                     
-                                    st.success(f"✅ {len(df_limpo)} funcionários importados com sucesso!")
+                                    st.success(f"âœ… {len(df_limpo)} funcionÃ¡rios importados com sucesso!")
                                     time.sleep(2)
                                     st.rerun()
 
                     except Exception as e:
-                        st.error(f"❌ Erro ao ler o arquivo: {e}")
+                        st.error(f"âŒ Erro ao ler o arquivo: {e}")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA 3 — TRIAGEM DE FICHAS (MELHORADA)
-# ══════════════════════════════════════════════════════════════════════════════
-elif menu == "🗂️ Triagem de Fichas":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA 3 â€” TRIAGEM DE FICHAS (MELHORADA)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+elif menu == "ðŸ—‚ï¸ Triagem de Fichas":
     renderizar_triagem()
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA 4 — BANCO DE DADOS
-# ══════════════════════════════════════════════════════════════════════════════
-elif menu == "💾 Banco de Dados":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA 4 â€” BANCO DE DADOS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+elif menu == "ðŸ’¾ Banco de Dados":
     renderizar_banco_dados()
 
-elif menu == "🌐 Simulação: Portal do Jovem":
+elif menu == "ðŸŒ SimulaÃ§Ã£o: Portal do Jovem":
     renderizar_portal_jovem_avancado()
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA — RELATÓRIOS E ANALYTICS (APENAS ADMIN)
-# ══════════════════════════════════════════════════════════════════════════════
-elif menu == "📊 Relatórios e Analytics":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA â€” RELATÃ“RIOS E ANALYTICS (APENAS ADMIN)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+elif menu == "ðŸ“Š RelatÃ³rios e Analytics":
     if _role_atual == "admin":
         renderizar_relatorios_analytics()
     else:
-        st.error("🚫 Acesso negado. Esta área é restrita ao administrador.")
+        st.error("ðŸš« Acesso negado. Esta Ã¡rea Ã© restrita ao administrador.")
         st.stop()
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA — AUDITORIA E COMPLIANCE (APENAS ADMIN)
-# ══════════════════════════════════════════════════════════════════════════════
-elif menu == "🔍 Auditoria e Compliance":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA â€” AUDITORIA E COMPLIANCE (APENAS ADMIN)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+elif menu == "ðŸ” Auditoria e Compliance":
     if _role_atual == "admin":
         renderizar_auditoria_compliance()
     else:
-        st.error("🚫 Acesso negado. Esta área é restrita ao administrador.")
+        st.error("ðŸš« Acesso negado. Esta Ã¡rea Ã© restrita ao administrador.")
         st.stop()
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA 5 — GERENCIAR UNIDADES
-# ══════════════════════════════════════════════════════════════════════════════
-elif menu == "🏢 Gerenciar Unidades":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA 5 â€” GERENCIAR UNIDADES
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+elif menu == "ðŸ¢ Gerenciar Unidades":
     renderizar_gerenciar_unidades()
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TELA — REGISTRO DE FUNCIONÁRIO (APENAS ADMIN)
-# ══════════════════════════════════════════════════════════════════════════════
-elif menu == "👥 Registro de Funcionário":
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# TELA â€” REGISTRO DE FUNCIONÃRIO (APENAS ADMIN)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+elif menu == "ðŸ‘¥ Registro de FuncionÃ¡rio":
     if _role_atual == "admin":
         renderizar_registro_funcionario_avancado()
     else:
-        st.error("🚫 Acesso negado. Esta área é restrita ao administrador.")
+        st.error("ðŸš« Acesso negado. Esta Ã¡rea Ã© restrita ao administrador.")
         st.stop()
 
-# ══════════════════════════════════════════════════════════════════════════════
-# RODAPÉ INSTITUCIONAL — Aparece em todas as páginas
-# ══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# RODAPÃ‰ INSTITUCIONAL â€” Aparece em todas as pÃ¡ginas
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 st.markdown("<br><br>", unsafe_allow_html=True)
 st.markdown("<hr style='border-color:#E2E8F0;margin:40px 0 20px;'>", unsafe_allow_html=True)
 
-# ── CSS separado do HTML (resolve o bug do Streamlit) ──
+# â”€â”€ CSS separado do HTML (resolve o bug do Streamlit) â”€â”€
 st.markdown("""
 <style>
 .renapsi-social-link svg { fill: #64748B; transition: fill 0.25s ease; }
@@ -5182,7 +5182,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── HTML do rodapé (SEM ESPAÇOS NO INÍCIO PARA NÃO BUGAR O MARKDOWN) ──
+# â”€â”€ HTML do rodapÃ© (SEM ESPAÃ‡OS NO INÃCIO PARA NÃƒO BUGAR O MARKDOWN) â”€â”€
 st.markdown("""
 <div style="text-align:center; padding:20px 0;">
 <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-bottom:24px;">
@@ -5206,7 +5206,7 @@ st.markdown("""
 
 </div>
 <p style="color:#94A3B8; font-size:12px; margin:0; line-height:1.6;">
-Copyright ©️ Renapsi - 2026. Todos os direitos reservados.<br>
+Copyright Â©ï¸ Renapsi - 2026. Todos os direitos reservados.<br>
 CNPJ 37.381.902/0001-25
 </p>
 </div>
