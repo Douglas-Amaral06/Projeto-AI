@@ -1,6 +1,7 @@
 """Configuração da sidebar e navegação."""
 
 import streamlit as st
+import os
 
 
 def renderizar_sidebar():
@@ -14,7 +15,13 @@ def renderizar_sidebar():
     </style>
     """, unsafe_allow_html=True)
 
-    st.sidebar.image("logo_renapsi.png", use_container_width=True)
+    # Caminho absoluto para o logo
+    _logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logo_renapsi.png")
+    if os.path.exists(_logo_path):
+        st.sidebar.image(_logo_path, use_container_width=True)
+    else:
+        st.sidebar.markdown("### 🏢 RENAPSI")
+    
     st.sidebar.markdown(
         "<p style='color:#64748B;font-size:13px;text-align:center;letter-spacing:0.1em;margin-top:-8px;'>SISTEMA DE MOBILIDADE URBANA</p>",
         unsafe_allow_html=True
