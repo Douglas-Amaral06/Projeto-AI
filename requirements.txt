@@ -1,10 +1,23 @@
-﻿streamlit
-pandas
-plotly
-requests
-folium
-streamlit-folium
-python-dotenv
-openpyxl
-fpdf
-google-generativeai
+﻿# Core dependencies
+streamlit>=1.28.0
+pandas>=2.0.0
+
+# Visualization
+plotly>=5.17.0
+folium>=0.14.0
+streamlit-folium>=0.15.0
+
+# HTTP requests
+requests>=2.31.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Excel export
+openpyxl>=3.1.0
+
+# PDF generation (fpdf2 is the modern version)
+fpdf2>=2.7.0
+
+# Google Generative AI
+google-generativeai>=0.3.0

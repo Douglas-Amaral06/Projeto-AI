@@ -42,17 +42,21 @@ EMAIL_SENHA     = os.getenv("EMAIL_PASS")
 SMTP_HOST       = os.getenv("EMAIL_SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT       = int(os.getenv("EMAIL_SMTP_PORT", 587))
 
+# ⚠️ MODO OPCIONAL: Não bloqueia a inicialização se as credenciais não existirem
+# As credenciais serão validadas apenas quando a função de envio for chamada
 if not EMAIL_REMETENTE:
-    raise ValueError(
-        "❌ ERRO CRÍTICO: Variável EMAIL_USER não encontrada no .env!\n"
+    logger.warning(
+        "⚠️ AVISO: Variável EMAIL_USER não encontrada no .env!\n"
         f"Caminho procurado: {dotenv_path}\n"
+        "O envio de e-mails estará desabilitado até que as credenciais sejam configuradas.\n"
         "Adicione ao ficheiro .env: EMAIL_USER=seu_email@gmail.com"
     )
 
 if not EMAIL_SENHA:
-    raise ValueError(
-        "❌ ERRO CRÍTICO: Variável EMAIL_PASS não encontrada no .env!\n"
+    logger.warning(
+        "⚠️ AVISO: Variável EMAIL_PASS não encontrada no .env!\n"
         f"Caminho procurado: {dotenv_path}\n"
+        "O envio de e-mails estará desabilitado até que as credenciais sejam configuradas.\n"
         "Adicione ao ficheiro .env: EMAIL_PASS=sua_senha_de_aplicacao"
     )
 
@@ -68,6 +72,14 @@ def enviar_carta_por_email(
         (True, "")          em caso de sucesso
         (False, mensagem)   em caso de erro
     """
+    # Validação de credenciais antes de tentar enviar
+    if not EMAIL_REMETENTE or not EMAIL_SENHA:
+        return False, (
+            "⚠️ Funcionalidade de envio de e-mail não configurada.\n"
+            "As credenciais de e-mail não foram encontradas nas variáveis de ambiente.\n"
+            "Configure EMAIL_USER e EMAIL_PASS no Streamlit Cloud (Secrets) ou no arquivo .env local."
+        )
+    
     if not destinatario or "@" not in destinatario:
         return False, "E-mail do destinatário inválido."
 
