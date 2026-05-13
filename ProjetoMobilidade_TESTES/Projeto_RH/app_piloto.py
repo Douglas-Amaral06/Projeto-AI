@@ -1235,31 +1235,39 @@ if menu == "🏠 Dashboard Principal":
         # ── Busca dados com filtro de período ──
         conexao_dash = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
         
-        # Query com filtro de data para consultas e SLA
-        query_periodo = f"""
-            SELECT COUNT(DISTINCT id) as total,
-                   AVG(sla_segundos) as sla_medio
-            FROM jovens_rotas
-            WHERE data_consulta >= '{data_inicio.strftime("%Y-%m-%d")}'
-        """
-        df_dash = pd.read_sql_query(query_periodo, conexao_dash)
-        
-        total_consultas = int(df_dash.iloc[0]['total']) if not df_dash.empty else 0
-        sla_medio = float(df_dash.iloc[0]['sla_medio'] or 0) if not df_dash.empty else 0
-        
-        # Total de implantados ATUAL (independente do período de consulta)
-        query_implantados = "SELECT COUNT(*) as total FROM jovens_rotas WHERE status_rota = 'Implantado'"
-        df_implantados = pd.read_sql_query(query_implantados, conexao_dash)
-        total_implantados = int(df_implantados.iloc[0]['total']) if not df_implantados.empty else 0
-        
-        # Contestações no período
-        query_contest = f"""
-            SELECT COUNT(*) as total
-            FROM contestacoes
-            WHERE data_geracao >= '{data_inicio.strftime("%Y-%m-%d")}'
-        """
-        df_contest = pd.read_sql_query(query_contest, conexao_dash)
-        total_contestacoes = int(df_contest.iloc[0]['total']) if not df_contest.empty else 0
+        try:
+            # Query com filtro de data para consultas e SLA
+            query_periodo = f"""
+                SELECT COUNT(DISTINCT id) as total,
+                       AVG(sla_segundos) as sla_medio
+                FROM jovens_rotas
+                WHERE data_consulta >= '{data_inicio.strftime("%Y-%m-%d")}'
+            """
+            df_dash = pd.read_sql_query(query_periodo, conexao_dash)
+            
+            total_consultas = int(df_dash.iloc[0]['total']) if not df_dash.empty else 0
+            sla_medio = float(df_dash.iloc[0]['sla_medio'] or 0) if not df_dash.empty else 0
+            
+            # Total de implantados ATUAL (independente do período de consulta)
+            query_implantados = "SELECT COUNT(*) as total FROM jovens_rotas WHERE status_rota = 'Implantado'"
+            df_implantados = pd.read_sql_query(query_implantados, conexao_dash)
+            total_implantados = int(df_implantados.iloc[0]['total']) if not df_implantados.empty else 0
+            
+            # Contestações no período
+            query_contest = f"""
+                SELECT COUNT(*) as total
+                FROM contestacoes
+                WHERE data_geracao >= '{data_inicio.strftime("%Y-%m-%d")}'
+            """
+            df_contest = pd.read_sql_query(query_contest, conexao_dash)
+            total_contestacoes = int(df_contest.iloc[0]['total']) if not df_contest.empty else 0
+        except (sqlite3.OperationalError, pd.errors.DatabaseError) as e:
+            # Tabela não existe ou está vazia - valores padrão
+            st.info("📊 Banco de dados vazio. Cadastre novos jovens para visualizar estatísticas.")
+            total_consultas = 0
+            sla_medio = 0
+            total_implantados = 0
+            total_contestacoes = 0
         
         conexao_dash.close()
 
@@ -1323,7 +1331,12 @@ if menu == "🏠 Dashboard Principal":
             _total_contest_pendentes = int(_df_contest_pendentes.iloc[0]['total']) if not _df_contest_pendentes.empty else 0
             
             _conn_alertas.close()
+        except (sqlite3.OperationalError, pd.errors.DatabaseError):
+            # Tabelas não existem ainda
+            _total_fichas_pendentes = 0
+            _total_contest_pendentes = 0
             
+        try:
             # Mostra alertas apenas se houver tarefas pendentes
             if _total_fichas_pendentes > 0 or _total_contest_pendentes > 0:
                 col_alert1, col_alert2 = st.columns(2)
