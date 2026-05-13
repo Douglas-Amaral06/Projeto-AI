@@ -315,7 +315,74 @@ def criar_tabela_locais_trabalho():
     except Exception as e:
         logger.exception(f"Erro ao criar tabela de locais de trabalho: {e}")
 
+def criar_tabela_jovens_rotas():
+    """Cria a tabela principal jovens_rotas se não existir."""
+    try:
+        with sqlite3.connect(DATABASE_FILE) as conexao:
+            conexao.execute('''
+                CREATE TABLE IF NOT EXISTS jovens_rotas (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nome TEXT NOT NULL,
+                    cpf TEXT,
+                    cep_casa TEXT,
+                    cep_trabalho TEXT,
+                    matricula TEXT,
+                    status_rota TEXT DEFAULT 'Otimizado',
+                    email TEXT,
+                    celular TEXT,
+                    numero_casa TEXT,
+                    coordenadas TEXT,
+                    modo_rota TEXT DEFAULT 'automatica',
+                    tipo_bilhete_manual TEXT,
+                    valor_tarifa_manual REAL,
+                    descricao_itinerario_manual TEXT,
+                    assinatura_digital TEXT,
+                    assinatura_path TEXT,
+                    assinatura_data TEXT,
+                    assinatura_ip TEXT,
+                    ultima_carta_enviada TEXT,
+                    observacoes TEXT,
+                    data_consulta TEXT,
+                    sla_segundos REAL,
+                    cep_curso TEXT,
+                    status_curso TEXT DEFAULT 'Otimizado',
+                    local_trabalho_id INTEGER
+                )
+            ''')
+            conexao.commit()
+        logger.info("Tabela jovens_rotas criada/verificada com sucesso")
+    except Exception as e:
+        logger.exception(f"Erro ao criar tabela jovens_rotas: {e}")
+
+def criar_tabela_fichas_cadastrais():
+    """Cria a tabela fichas_cadastrais se não existir."""
+    try:
+        with sqlite3.connect(DATABASE_FILE) as conexao:
+            conexao.execute('''
+                CREATE TABLE IF NOT EXISTS fichas_cadastrais (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nome TEXT NOT NULL,
+                    cpf TEXT,
+                    email TEXT,
+                    celular TEXT,
+                    cep_casa TEXT,
+                    numero_casa TEXT,
+                    cep_trabalho TEXT,
+                    cep_curso TEXT,
+                    matricula TEXT,
+                    status_aprovacao TEXT DEFAULT 'Pendente',
+                    data_envio TEXT,
+                    observacoes TEXT
+                )
+            ''')
+            conexao.commit()
+        logger.info("Tabela fichas_cadastrais criada/verificada com sucesso")
+    except Exception as e:
+        logger.exception(f"Erro ao criar tabela fichas_cadastrais: {e}")
+
 def inicializar_banco_completo():
+    criar_tabela_jovens_rotas()
+    criar_tabela_fichas_cadastrais()
     atualizar_esquema_banco()
     atualizar_banco_geral()
     atualizar_banco_para_contestacoes()
