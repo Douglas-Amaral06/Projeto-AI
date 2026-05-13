@@ -380,6 +380,45 @@ def criar_tabela_fichas_cadastrais():
     except Exception as e:
         logger.exception(f"Erro ao criar tabela fichas_cadastrais: {e}")
 
+def carregar_seed_inicial():
+    """
+    Carrega o arquivo seed_dados.sql na primeira execução (quando banco está vazio).
+    Só executa se a tabela jovens_rotas estiver vazia.
+    """
+    try:
+        seed_path = os.path.join(os.path.dirname(__file__), 'seed_dados.sql')
+        if not os.path.exists(seed_path):
+            return  # Sem seed, nada a fazer
+
+        with sqlite3.connect(DATABASE_FILE) as conexao:
+            cursor = conexao.cursor()
+            cursor.execute("SELECT COUNT(*) FROM jovens_rotas")
+            total = cursor.fetchone()[0]
+
+            if total > 0:
+                logger.info(f"Banco já possui {total} registros. Seed ignorado.")
+                return  # Já tem dados, não sobrescreve
+
+            logger.info("Banco vazio detectado. Carregando seed inicial...")
+            with open(seed_path, 'r', encoding='utf-8') as f:
+                sql_content = f.read()
+
+            # Executa cada instrução separadamente
+            statements = [s.strip() for s in sql_content.split(';') if s.strip() and not s.strip().startswith('--')]
+            for stmt in statements:
+                try:
+                    cursor.execute(stmt)
+                except Exception as e:
+                    logger.warning(f"Erro ao executar instrução do seed: {e}")
+
+            conexao.commit()
+            cursor.execute("SELECT COUNT(*) FROM jovens_rotas")
+            total_apos = cursor.fetchone()[0]
+            logger.info(f"✅ Seed carregado com sucesso! {total_apos} registros importados.")
+
+    except Exception as e:
+        logger.exception(f"Erro ao carregar seed inicial: {e}")
+
 def inicializar_banco_completo():
     criar_tabela_jovens_rotas()
     criar_tabela_fichas_cadastrais()
@@ -392,7 +431,8 @@ def inicializar_banco_completo():
     criar_tabela_usuarios()
     seed_admin_padrao()
     criar_tabela_historico()
-    criar_tabela_historico_aprovacoes()  # Nova tabela para histórico de triagem
+    criar_tabela_historico_aprovacoes()
+    carregar_seed_inicial()  # ← Carrega dados históricos na primeira execução
     _colunas_extras = [
         ("ultima_carta_enviada", "TEXT"),
         ("observacoes", "TEXT"),
