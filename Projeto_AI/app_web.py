@@ -105,9 +105,9 @@ if not st.session_state.autenticado:
     tela_login()
 else:
     with st.sidebar:
-        st.title("🏢 Renapsi - Mobilidade")
+        st.title("🏢 Renapsi - IA")
         st.markdown("---")
-        st.markdown("**Bot especialista em Vale-Transporte para Jovens Aprendizes.**")
+        st.markdown("**IA especialista em Vale-Transporte para os Jovens Aprendizes.**")
         st.markdown("---")
         if st.button("🗑️ Limpar Histórico da Conversa", use_container_width=True):
             st.session_state.messages = []
