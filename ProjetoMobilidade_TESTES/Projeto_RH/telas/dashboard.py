@@ -102,7 +102,7 @@ def _renderizar_roi():
             <p style="color:#EF4444;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
                 Custo Manual (Mês)
             </p>
-            <p style="color:#E2E8F0;font-size:36px;font-weight:800;margin:0;">
+            <p style="color:#1E293B;font-size:36px;font-weight:800;margin:0;">
                 R$ {custo_manual_mes:,.2f}
             </p>
             <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
@@ -118,7 +118,7 @@ def _renderizar_roi():
             <p style="color:#10B981;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
                 Custo Otimizado (Mês)
             </p>
-            <p style="color:#E2E8F0;font-size:36px;font-weight:800;margin:0;">
+            <p style="color:#1E293B;font-size:36px;font-weight:800;margin:0;">
                 R$ {custo_otimizado_mes:,.2f}
             </p>
             <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
@@ -131,10 +131,10 @@ def _renderizar_roi():
         st.markdown(f"""
         <div style="background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(124,58,237,0.05));
                     border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:20px;text-align:center;">
-            <p style="color:#A78BFA;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
+            <p style="color:#7C3AED;font-size:15px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em;">
                 Economia Mensal
             </p>
-            <p style="color:#E2E8F0;font-size:36px;font-weight:800;margin:0;">
+            <p style="color:#1E293B;font-size:36px;font-weight:800;margin:0;">
                 R$ {economia_mes:,.2f}
             </p>
             <p style="color:#64748B;font-size:15px;margin:4px 0 0;letter-spacing:0.05em;">
@@ -248,17 +248,17 @@ def _renderizar_envios_massa():
         <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);
                     border-radius:10px;padding:16px;text-align:center;">
             <p style="color:#60A5FA;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Total Pendentes</p>
-            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">{len(df_pendentes)}</p>
+            <p style="color:#1E293B;font-size:32px;font-weight:800;margin:0;">{len(df_pendentes)}</p>
         </div>
         <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);
                     border-radius:10px;padding:16px;text-align:center;">
             <p style="color:#10B981;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Com E-mail</p>
-            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">{len(df_com_email)}</p>
+            <p style="color:#1E293B;font-size:32px;font-weight:800;margin:0;">{len(df_com_email)}</p>
         </div>
         <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
                     border-radius:10px;padding:16px;text-align:center;">
             <p style="color:#EF4444;font-size:15px;margin:0 0 4px;text-transform:uppercase;">Sem E-mail</p>
-            <p style="color:#E2E8F0;font-size:32px;font-weight:800;margin:0;">{len(df_sem_email)}</p>
+            <p style="color:#1E293B;font-size:32px;font-weight:800;margin:0;">{len(df_sem_email)}</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -269,7 +269,7 @@ def _renderizar_envios_massa():
                 st.markdown(f"""
                 <div style="background:rgba(239,68,68,0.05);border-left:3px solid #EF4444;
                             padding:10px 14px;margin-bottom:8px;border-radius:0 6px 6px 0;">
-                    <p style="margin:0;color:#E2E8F0;font-size:16px;">
+                    <p style="margin:0;color:#1E293B;font-size:16px;">
                         <strong>#{row['id']}</strong> - {row['nome']} 
                         <span style="color:#64748B;font-size:16px;">(CPF: {str(row['cpf']).zfill(11)})</span>
                     </p>

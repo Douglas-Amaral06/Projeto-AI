@@ -1025,6 +1025,193 @@ hr { border-color: #E2E8F0 !important; }
 ::-webkit-scrollbar-track { background: #F8FAFC; }
 ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ══ CORREÇÃO GLOBAL DE INPUTS ESCUROS ══ */
+
+/* Inputs de texto */
+.stTextInput > div > div > input,
+.stTextInput input,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"] {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 8px !important;
+}
+.stTextInput > div > div > input:focus,
+.stTextInput input:focus {
+    border-color: #f8ae28 !important;
+    box-shadow: 0 0 0 2px rgba(248,174,40,0.2) !important;
+}
+
+/* Selectbox / Dropdown */
+.stSelectbox > div > div,
+.stSelectbox [data-baseweb="select"] > div,
+[data-baseweb="select"] > div {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 8px !important;
+}
+[data-baseweb="select"] span,
+[data-baseweb="select"] div {
+    color: #1E293B !important;
+    background-color: transparent !important;
+}
+[data-baseweb="popover"] {
+    background-color: #FFFFFF !important;
+}
+[data-baseweb="menu"] {
+    background-color: #FFFFFF !important;
+}
+[data-baseweb="menu"] li {
+    color: #1E293B !important;
+    background-color: #FFFFFF !important;
+}
+[data-baseweb="menu"] li:hover {
+    background-color: #F1F5F9 !important;
+}
+
+/* Date input */
+.stDateInput > div > div > input,
+[data-baseweb="datepicker"] input,
+input[type="date"] {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 8px !important;
+}
+
+/* Number input */
+.stNumberInput > div > div > input,
+[data-baseweb="input"] input {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border: 1px solid #CBD5E1 !important;
+}
+[data-baseweb="input"] {
+    background-color: #FFFFFF !important;
+}
+
+/* Textarea */
+.stTextArea textarea {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 8px !important;
+}
+
+/* Multiselect */
+[data-baseweb="tag"] {
+    background-color: #444c9b !important;
+    color: #FFFFFF !important;
+}
+
+/* Dataframe / Table */
+.stDataFrame,
+[data-testid="stDataFrame"] {
+    background-color: #FFFFFF !important;
+}
+.stDataFrame table {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+    background-color: #F8FAFC !important;
+    color: #1E293B !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+}
+.streamlit-expanderContent {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+}
+
+/* Info/Warning/Error boxes */
+.stAlert {
+    background-color: #F8FAFC !important;
+    color: #1E293B !important;
+}
+
+/* Metric containers */
+[data-testid="metric-container"] {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+}
+[data-testid="stMetricValue"] {
+    color: #1E293B !important;
+}
+[data-testid="stMetricLabel"] {
+    color: #64748B !important;
+}
+
+/* Checkbox */
+.stCheckbox label {
+    color: #1E293B !important;
+}
+
+/* Radio */
+.stRadio label {
+    color: #1E293B !important;
+}
+
+/* Slider */
+.stSlider [data-baseweb="slider"] {
+    background-color: transparent !important;
+}
+
+/* File uploader */
+[data-testid="stFileUploader"] {
+    background-color: #F8FAFC !important;
+    border: 2px dashed #CBD5E1 !important;
+    border-radius: 8px !important;
+    color: #1E293B !important;
+}
+
+/* Tabs */
+[data-baseweb="tab-panel"] {
+    background-color: #FFFFFF !important;
+}
+
+/* Sidebar inputs */
+[data-testid="stSidebar"] .stTextInput input,
+[data-testid="stSidebar"] .stSelectbox > div > div {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border: 1px solid #CBD5E1 !important;
+}
+
+/* Força fundo branco geral */
+.main .block-container {
+    background-color: #FFFFFF !important;
+}
+
+/* Corrige botões com fundo escuro */
+.stButton > button {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border: 1px solid #E2E8F0 !important;
+}
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #f8ae28 0%, #e09a1f 100%) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+}
+.stButton > button[kind="secondary"] {
+    background: linear-gradient(135deg, #444c9b 0%, #363d7f 100%) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+}
+.stButton > button[kind="primary"] *,
+.stButton > button[kind="secondary"] * {
+    color: #FFFFFF !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
