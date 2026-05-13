@@ -6,6 +6,10 @@ Execute localmente: python exportar_seed.py
 import sqlite3
 import os
 import re
+import sys
+
+# Garante UTF-8 no output
+sys.stdout.reconfigure(encoding='utf-8')
 
 db_path = os.path.join(os.path.dirname(__file__), 'mobilidade_renapsi.db')
 output_path = os.path.join(os.path.dirname(__file__), 'Projeto_RH', 'seed_dados.sql')
@@ -48,28 +52,26 @@ conn.row_factory = sqlite3.Row
 linhas_sql = []
 linhas_sql.append("-- Seed de dados exportado automaticamente")
 linhas_sql.append("-- CPFs, e-mails e celulares foram anonimizados")
-linhas_sql.append("-- Execute este arquivo na inicialização do banco\n")
+linhas_sql.append("-- Versao: 2.0\n")
 
 # ── jovens_rotas ──────────────────────────────────────────────────────────────
 cursor = conn.execute("SELECT * FROM jovens_rotas ORDER BY id")
 rows = cursor.fetchall()
 cols = [d[0] for d in cursor.description]
 
-linhas_sql.append("-- ═══ JOVENS ROTAS ═══")
+linhas_sql.append("-- === JOVENS ROTAS ===")
 for row in rows:
     row_dict = dict(row)
-    # Anonimiza dados sensíveis
     row_dict['cpf']     = anonimizar_cpf(row_dict.get('cpf'))
     row_dict['email']   = anonimizar_email(row_dict.get('email'))
     row_dict['celular'] = anonimizar_celular(row_dict.get('celular'))
-    # Remove assinatura digital (pode conter dados binários grandes)
     row_dict['assinatura_digital'] = None
     row_dict['assinatura_path']    = None
 
     valores = ', '.join(escape_sql(row_dict[c]) for c in cols)
     colunas = ', '.join(cols)
     linhas_sql.append(
-        f"INSERT OR IGNORE INTO jovens_rotas ({colunas}) VALUES ({valores});"
+        f"INSERT OR REPLACE INTO jovens_rotas ({colunas}) VALUES ({valores});"
     )
 
 linhas_sql.append("")
@@ -79,13 +81,13 @@ cursor = conn.execute("SELECT * FROM locais_trabalho ORDER BY id")
 rows = cursor.fetchall()
 cols = [d[0] for d in cursor.description]
 
-linhas_sql.append("-- ═══ LOCAIS DE TRABALHO ═══")
+linhas_sql.append("-- === LOCAIS DE TRABALHO ===")
 for row in rows:
     row_dict = dict(row)
     valores = ', '.join(escape_sql(row_dict[c]) for c in cols)
     colunas = ', '.join(cols)
     linhas_sql.append(
-        f"INSERT OR IGNORE INTO locais_trabalho ({colunas}) VALUES ({valores});"
+        f"INSERT OR REPLACE INTO locais_trabalho ({colunas}) VALUES ({valores});"
     )
 
 linhas_sql.append("")
@@ -95,20 +97,21 @@ cursor = conn.execute("SELECT * FROM contestacoes ORDER BY id")
 rows = cursor.fetchall()
 cols = [d[0] for d in cursor.description]
 
-linhas_sql.append("-- ═══ CONTESTAÇÕES ═══")
+linhas_sql.append("-- === CONTESTACOES ===")
 for row in rows:
     row_dict = dict(row)
     valores = ', '.join(escape_sql(row_dict[c]) for c in cols)
     colunas = ', '.join(cols)
     linhas_sql.append(
-        f"INSERT OR IGNORE INTO contestacoes ({colunas}) VALUES ({valores});"
+        f"INSERT OR REPLACE INTO contestacoes ({colunas}) VALUES ({valores});"
     )
 
 conn.close()
 
-# Salva o arquivo SQL
-with open(output_path, 'w', encoding='utf-8') as f:
+# Salva com UTF-8 sem BOM
+with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
     f.write('\n'.join(linhas_sql))
 
-print(f"✅ Seed exportado para: {output_path}")
-print(f"   {len([r for r in linhas_sql if 'INSERT' in r])} registros exportados")
+total_inserts = len([l for l in linhas_sql if l.startswith('INSERT')])
+print(f"Seed exportado: {output_path}")
+print(f"{total_inserts} registros exportados")

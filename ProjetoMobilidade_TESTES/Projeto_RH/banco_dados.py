@@ -382,39 +382,69 @@ def criar_tabela_fichas_cadastrais():
 
 def carregar_seed_inicial():
     """
-    Carrega o arquivo seed_dados.sql na primeira execução (quando banco está vazio).
-    Só executa se a tabela jovens_rotas estiver vazia.
+    Carrega o arquivo seed_dados.sql sempre que o banco tiver menos registros
+    que o seed. Usa INSERT OR IGNORE para não duplicar dados existentes.
     """
+    SEED_VERSION = "2.0"  # Incremente para forçar recarga
+
     try:
         seed_path = os.path.join(os.path.dirname(__file__), 'seed_dados.sql')
         if not os.path.exists(seed_path):
-            return  # Sem seed, nada a fazer
+            logger.warning("seed_dados.sql não encontrado. Pulando seed.")
+            return
+
+        # Conta quantas linhas INSERT o seed tem
+        with open(seed_path, 'r', encoding='utf-8') as f:
+            sql_content = f.read()
+
+        statements = [
+            s.strip() for s in sql_content.split(';')
+            if s.strip() and s.strip().upper().startswith('INSERT')
+        ]
+        total_seed = len(statements)
 
         with sqlite3.connect(DATABASE_FILE) as conexao:
             cursor = conexao.cursor()
-            cursor.execute("SELECT COUNT(*) FROM jovens_rotas")
-            total = cursor.fetchone()[0]
 
-            if total > 0:
-                logger.info(f"Banco já possui {total} registros. Seed ignorado.")
-                return  # Já tem dados, não sobrescreve
+            # Verifica tabela de controle de versão do seed
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS _seed_control (
+                    id INTEGER PRIMARY KEY,
+                    version TEXT,
+                    loaded_at TEXT,
+                    records_loaded INTEGER
+                )
+            """)
 
-            logger.info("Banco vazio detectado. Carregando seed inicial...")
-            with open(seed_path, 'r', encoding='utf-8') as f:
-                sql_content = f.read()
+            # Verifica se esta versão já foi carregada
+            cursor.execute("SELECT version FROM _seed_control WHERE version = ?", (SEED_VERSION,))
+            ja_carregado = cursor.fetchone()
 
-            # Executa cada instrução separadamente
-            statements = [s.strip() for s in sql_content.split(';') if s.strip() and not s.strip().startswith('--')]
+            if ja_carregado:
+                logger.info(f"Seed versão {SEED_VERSION} já foi carregado anteriormente.")
+                return
+
+            logger.info(f"Carregando seed versão {SEED_VERSION} com {total_seed} registros...")
+
+            # Executa todos os INSERTs (OR IGNORE = não duplica)
+            erros = 0
             for stmt in statements:
                 try:
                     cursor.execute(stmt)
                 except Exception as e:
-                    logger.warning(f"Erro ao executar instrução do seed: {e}")
+                    erros += 1
+                    logger.warning(f"Seed INSERT ignorado: {e}")
 
+            # Registra que esta versão foi carregada
+            cursor.execute(
+                "INSERT INTO _seed_control (version, loaded_at, records_loaded) VALUES (?, ?, ?)",
+                (SEED_VERSION, datetime.datetime.now().isoformat(), total_seed - erros)
+            )
             conexao.commit()
+
             cursor.execute("SELECT COUNT(*) FROM jovens_rotas")
-            total_apos = cursor.fetchone()[0]
-            logger.info(f"✅ Seed carregado com sucesso! {total_apos} registros importados.")
+            total_banco = cursor.fetchone()[0]
+            logger.info(f"✅ Seed v{SEED_VERSION} carregado! Banco agora tem {total_banco} registros.")
 
     except Exception as e:
         logger.exception(f"Erro ao carregar seed inicial: {e}")
