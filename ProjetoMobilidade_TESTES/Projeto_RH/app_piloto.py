@@ -51,6 +51,22 @@ st.set_page_config(page_title="RENAPSI — Mobilidade", page_icon="🚇", layout
 # FUNÇÕES AUXILIARES DE MÁSCARA E VALIDAÇÃO
 # ══════════════════════════════════════════════════════════════════════════════
 
+def safe_sql_query(query, conexao, params=None, default_value=None):
+    """
+    Executa query SQL com tratamento de erros robusto.
+    Retorna DataFrame vazio ou valor padrão se a tabela não existir.
+    """
+    try:
+        if params:
+            return pd.read_sql_query(query, conexao, params=params)
+        else:
+            return pd.read_sql_query(query, conexao)
+    except (sqlite3.OperationalError, pd.errors.DatabaseError) as e:
+        # Tabela não existe ou erro de SQL
+        if default_value is not None:
+            return default_value
+        return pd.DataFrame()
+
 def aplicar_mascara_cpf(cpf):
     """Aplica máscara no CPF: 000.000.000-00"""
     cpf_limpo = ''.join(filter(str.isdigit, cpf))
@@ -1444,21 +1460,21 @@ if menu == "🏠 Dashboard Principal":
 
         # Busca total de jovens na base
         conexao = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'mobilidade_renapsi.db'))
-        df_jovens = pd.read_sql_query("SELECT COUNT(*) as total FROM jovens_rotas", conexao)
+        df_jovens = safe_sql_query("SELECT COUNT(*) as total FROM jovens_rotas", conexao)
         total_jovens = df_jovens.iloc[0]['total'] if not df_jovens.empty else 0
 
         # ── Custo real de VT: soma os valores reais do banco ──
         try:
-            df_custo_real = pd.read_sql_query("""
+            df_custo_real = safe_sql_query("""
                 SELECT
                     AVG(CASE WHEN valor_tarifa_manual > 0 THEN valor_tarifa_manual ELSE NULL END) as media_real,
                     SUM(CASE WHEN status_rota = 'Implantado' AND valor_tarifa_manual > 0 THEN valor_tarifa_manual ELSE 0 END) as total_implantados_real,
                     COUNT(CASE WHEN status_rota = 'Implantado' AND valor_tarifa_manual > 0 THEN 1 END) as qtd_com_valor
                 FROM jovens_rotas
             """, conexao)
-            _media_real = float(df_custo_real.iloc[0]['media_real'] or 0)
-            _total_real_dia = float(df_custo_real.iloc[0]['total_implantados_real'] or 0)
-            _qtd_com_valor = int(df_custo_real.iloc[0]['qtd_com_valor'] or 0)
+            _media_real = float(df_custo_real.iloc[0]['media_real'] or 0) if not df_custo_real.empty else 0
+            _total_real_dia = float(df_custo_real.iloc[0]['total_implantados_real'] or 0) if not df_custo_real.empty else 0
+            _qtd_com_valor = int(df_custo_real.iloc[0]['qtd_com_valor'] or 0) if not df_custo_real.empty else 0
             CUSTO_OTIMIZADO_DIARIO = _media_real if _media_real > 0 else 11.32
         except Exception:
             CUSTO_OTIMIZADO_DIARIO = 11.32
