@@ -2406,31 +2406,32 @@ if menu == "🏠 Dashboard Principal":
                             motivo_safe = _html.escape(str(row['motivo'] or ''))
                             nome_safe   = _html.escape(str(row['nome_jovem'] or ''))
                             data_safe   = _html.escape(str(row['data_geracao'] or ''))
-                            st.markdown(f"""
-                            <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #EF4444;
-                                        border-radius:12px;padding:20px;margin-bottom:12px;
-                                        box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <span style="color:#EF4444;font-weight:700;font-size:15px;">Consulta #{row['id']}</span>
-                                    <span style="background:rgba(239,68,68,0.15);color:#EF4444;padding:2px 8px;
-                                                border-radius:20px;font-size:13px;">PENDENTE</span>
-                                </div>
-                                <p style="color:#666666;font-size:13px;margin:0 0 8px;">
-                                    {data_safe} &middot; <strong style="color:#333333;">{nome_safe}</strong>
-                                </p>
-                                <div style="background:rgba(239,68,68,0.05);border-left:3px solid #EF4444;
-                                            padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#333333;">
-                                    {motivo_safe}
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                            
+                            # HTML totalmente encostado na esquerda para evitar o bug de conversão do Markdown
+                            html_pendente = f"""
+<div style="background-color: var(--background-color); border: 1px solid var(--secondary-background-color); border-left: 4px solid #EF4444; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <span style="color: #EF4444; font-weight: 700; font-size: 15px;">Consulta #{row['id']}</span>
+        <span style="background: rgba(239,68,68,0.15); color: #EF4444; padding: 2px 8px; border-radius: 20px; font-size: 13px;">PENDENTE</span>
+    </div>
+    <p style="color: var(--text-color); font-size: 13px; margin: 0 0 8px; opacity: 0.8;">
+        {data_safe} &middot; <strong style="color: var(--text-color); opacity: 1;">{nome_safe}</strong>
+    </p>
+    <div style="background: rgba(239,68,68,0.05); border-left: 3px solid #EF4444; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 13px; color: var(--text-color);">
+        {motivo_safe}
+    </div>
+</div>
+"""
+                            st.markdown(html_pendente, unsafe_allow_html=True)
+                            
                             col_t, col_b = st.columns([3, 1])
                             with col_t:
                                 tratativa_input = st.text_input("Tratativa aplicada:", key=f"input_{row['id']}")
                             with col_b:
                                 st.write("")
                                 st.write("")
-                                if st.button("Resolver", type="primary", key=f"btn_{row['id']}", width="stretch"):
+                                # width="stretch" trocado pelo comando nativo correto
+                                if st.button("Resolver", type="primary", key=f"btn_{row['id']}", use_container_width=True):
                                     if not tratativa_input.strip():
                                         st.error("Descreva a tratativa antes de resolver.")
                                     else:
@@ -2444,31 +2445,32 @@ if menu == "🏠 Dashboard Principal":
                     else:
                         for _, row in df_res.iterrows():
                             import html as _html
-                            motivo_safe   = _html.escape(str(row['motivo'] or ''))
-                            nome_safe     = _html.escape(str(row['nome_jovem'] or ''))
-                            data_safe     = _html.escape(str(row['data_geracao'] or ''))
+                            motivo_safe    = _html.escape(str(row['motivo'] or ''))
+                            nome_safe      = _html.escape(str(row['nome_jovem'] or ''))
+                            data_safe      = _html.escape(str(row['data_geracao'] or ''))
                             tratativa_safe = _html.escape(str(row.get('tratativa', '') or ''))
-                            st.markdown(f"""
-                            <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #10B981;
-                                        border-radius:12px;padding:20px;margin-bottom:12px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <span style="color:#10B981;font-weight:700;font-size:15px;">Consulta #{row['id']}</span>
-                                    <span style="background:rgba(16,185,129,0.15);color:#10B981;padding:2px 8px;
-                                                border-radius:20px;font-size:13px;">RESOLVIDO</span>
-                                </div>
-                                <p style="color:#666666;font-size:13px;margin:0 0 6px;">{data_safe} &middot; <strong style="color:#333333;">{nome_safe}</strong></p>
-                                <p style="color:#666666;font-size:13px;margin:0 0 8px;"><strong>Motivo:</strong> {motivo_safe}</p>
-                                <div style="background:rgba(16,185,129,0.08);border-left:3px solid #10B981;
-                                            padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#333333;">
-                                    <strong>Tratativa:</strong> {tratativa_safe}
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                            
+                            # HTML totalmente encostado na esquerda
+                            html_resolvido = f"""
+<div style="background-color: var(--background-color); border: 1px solid var(--secondary-background-color); border-left: 4px solid #10B981; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <span style="color: #10B981; font-weight: 700; font-size: 15px;">Consulta #{row['id']}</span>
+        <span style="background: rgba(16,185,129,0.15); color: #10B981; padding: 2px 8px; border-radius: 20px; font-size: 13px;">RESOLVIDO</span>
+    </div>
+    <p style="color: var(--text-color); font-size: 13px; margin: 0 0 6px; opacity: 0.8;">{data_safe} &middot; <strong style="color: var(--text-color); opacity: 1;">{nome_safe}</strong></p>
+    <p style="color: var(--text-color); font-size: 13px; margin: 0 0 8px;"><strong>Motivo:</strong> {motivo_safe}</p>
+    <div style="background: rgba(16,185,129,0.08); border-left: 3px solid #10B981; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 13px; color: var(--text-color);">
+        <strong>Tratativa:</strong> {tratativa_safe}
+    </div>
+</div>
+"""
+                            st.markdown(html_resolvido, unsafe_allow_html=True)
 
                 with tab_tab:
                     df_exib = df_contest[['id','data_geracao','nome_jovem','motivo','status','tratativa']].copy()
                     df_exib.columns = ['ID','Data','Funcionário','Motivo','Status','Tratativa']
-                    st.dataframe(df_exib, width="stretch", hide_index=True)
+                    # width="stretch" trocado pelo comando nativo correto
+                    st.dataframe(df_exib, use_container_width=True, hide_index=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
