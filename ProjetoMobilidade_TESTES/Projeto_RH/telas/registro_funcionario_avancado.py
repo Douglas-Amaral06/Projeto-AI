@@ -8,15 +8,12 @@ import datetime
 import hashlib
 import re
 from banco_dados import criar_usuario, listar_usuarios, excluir_usuario
+from telas.auth_guard import exigir_admin
 
 
 def renderizar_registro_funcionario_avancado():
     """Renderiza o painel avançado de gestão de usuários."""
-    
-    usuario_logado = st.session_state.get("usuario_dados", {})
-    if usuario_logado.get("role") != "admin":
-        st.error("🚫 Acesso negado.")
-        st.stop()
+    exigir_admin()  # Apenas admins podem acessar
     
     st.markdown("""
     <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:4px solid #444c9b;

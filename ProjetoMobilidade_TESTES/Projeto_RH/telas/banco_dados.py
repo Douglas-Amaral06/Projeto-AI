@@ -9,6 +9,7 @@ import shutil
 from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
+from telas.auth_guard import exigir_login
 
 # Caminho do banco (dois níveis acima de telas/)
 _DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'mobilidade_renapsi.db')
@@ -19,6 +20,7 @@ _TABELAS_OCULTAS = {"usuarios_sistema"}
 
 def renderizar_banco_dados():
     """Renderiza a tela de visualização avançada do banco de dados."""
+    exigir_login()
 
     st.markdown("""
     <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:4px solid #444c9b;

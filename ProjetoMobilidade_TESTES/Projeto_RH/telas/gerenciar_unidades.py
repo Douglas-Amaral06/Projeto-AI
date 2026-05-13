@@ -11,10 +11,12 @@ import plotly.graph_objects as go
 from datetime import datetime
 from apis import buscar_endereco_viacep, obter_coordenadas_reais
 from banco_dados import inserir_local_trabalho, obter_locais_trabalho
+from telas.auth_guard import exigir_login
 
 
 def renderizar_gerenciar_unidades():
     """Renderiza a tela avançada de gerenciamento de unidades."""
+    exigir_login()
     st.title("🏢 Gerenciar Unidades - Avançado")
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs([

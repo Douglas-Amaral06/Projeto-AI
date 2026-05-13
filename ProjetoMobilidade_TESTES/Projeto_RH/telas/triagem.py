@@ -3,10 +3,12 @@
 import streamlit as st
 import os
 from banco_dados import obter_fichas_cadastrais, aprovar_ficha_e_integrar, reprovar_ficha
+from telas.auth_guard import exigir_login
 
 
 def renderizar_triagem():
     """Renderiza a tela de triagem de fichas com layout visual aprimorado."""
+    exigir_login()
     st.title("🗂️ Triagem de Fichas Cadastrais")
     
     # Filtros

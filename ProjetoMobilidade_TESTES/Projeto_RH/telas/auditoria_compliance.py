@@ -9,10 +9,12 @@ import hashlib
 import json
 import io
 import shutil
+from telas.auth_guard import exigir_login, exigir_admin
 
 
 def renderizar_auditoria_compliance():
     """Renderiza tela de auditoria e compliance."""
+    exigir_admin()
     
     st.title("🔍 Auditoria e Compliance")
     

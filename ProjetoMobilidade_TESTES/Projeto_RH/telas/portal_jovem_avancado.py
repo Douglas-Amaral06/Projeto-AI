@@ -17,12 +17,12 @@ except ImportError:
 
 from apis import buscar_endereco_viacep, motor_de_rotas_gratuito
 from banco_dados import registrar_sla, registrar_contestacao, atualizar_status_rota
+from telas.auth_guard import exigir_login
 
 
 def renderizar_portal_jovem_avancado():
     """Renderiza o portal do jovem com todas as melhorias."""
-    
-    # Verifica se é primeiro acesso
+    exigir_login()
     if st.session_state.get('primeiro_acesso_portal', True):
         _renderizar_tutorial()
         return

@@ -8,6 +8,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import io
+from telas.auth_guard import exigir_login
 
 try:
     from reportlab.lib.pagesizes import letter, A4
@@ -22,6 +23,7 @@ except ImportError:
 
 def renderizar_relatorios_analytics():
     """Renderiza tela de relatórios e analytics."""
+    exigir_login()
     
     st.title("📊 Relatórios e Analytics")
     
