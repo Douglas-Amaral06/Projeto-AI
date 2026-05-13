@@ -957,9 +957,20 @@ if menu == "🏠 Dashboard Principal":
             FROM contestacoes
             WHERE data_geracao >= '{data_inicio.strftime("%Y-%m-%d")}'
         """
-        df_contest = safe_sql(query_contest, conexao_dash)
-        total_contestacoes = int(df_contest.iloc[0]['total']) if not df_contest.empty else 0
-        
+        df_contest_kpi = safe_sql(query_contest, conexao_dash)
+        total_contestacoes = int(df_contest_kpi.iloc[0]['total']) if not df_contest_kpi.empty else 0
+
+        # Total de contestações PENDENTES (sem filtro de período — para o KPI real)
+        df_contest_pendentes_kpi = safe_sql(
+            "SELECT COUNT(*) as total FROM contestacoes WHERE status = 'Pendente'",
+            conexao_dash
+        )
+        total_contestacoes_pendentes = int(df_contest_pendentes_kpi.iloc[0]['total']) if not df_contest_pendentes_kpi.empty else 0
+
+        # Total geral de contestações (sem filtro) para o KPI
+        df_contest_total = safe_sql("SELECT COUNT(*) as total FROM contestacoes", conexao_dash)
+        total_contestacoes_geral = int(df_contest_total.iloc[0]['total']) if not df_contest_total.empty else 0
+
         conexao_dash.close()
 
         # ── KPI Cards CLICÁVEIS ──
@@ -1036,9 +1047,9 @@ if menu == "🏠 Dashboard Principal":
             st.markdown(f"""
             <div class="kpi-card">
                 <div class="kpi-icon">⚠️</div>
-                <div class="kpi-value">{total_contestacoes}</div>
+                <div class="kpi-value">{total_contestacoes_geral}</div>
                 <div class="kpi-label">Contestações</div>
-                <div class="kpi-sub">Total no período</div>
+                <div class="kpi-sub">{total_contestacoes_pendentes} pendente(s)</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -2307,10 +2318,10 @@ if menu == "🏠 Dashboard Principal":
         with col_g2:
             st.markdown(f"""
             <p style="color:#94A3B8;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">
-                Contestações ({qtd_resolvidas}/{total_contestacoes})
+                Contestações ({qtd_resolvidas}/{total_contestacoes_geral})
             </p>
             """, unsafe_allow_html=True)
-            if total_contestacoes == 0:
+            if total_contestacoes_geral == 0:
                 st.markdown("""
                 <div style="background:#FFFFFF;border:1px solid #E5E7EB;
                             border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
@@ -2391,6 +2402,10 @@ if menu == "🏠 Dashboard Principal":
                         st.success("Tudo limpo! Nenhuma contestação pendente.")
                     else:
                         for _, row in df_pend.iterrows():
+                            import html as _html
+                            motivo_safe = _html.escape(str(row['motivo'] or ''))
+                            nome_safe   = _html.escape(str(row['nome_jovem'] or ''))
+                            data_safe   = _html.escape(str(row['data_geracao'] or ''))
                             st.markdown(f"""
                             <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #EF4444;
                                         border-radius:12px;padding:20px;margin-bottom:12px;
@@ -2401,11 +2416,11 @@ if menu == "🏠 Dashboard Principal":
                                                 border-radius:20px;font-size:13px;">PENDENTE</span>
                                 </div>
                                 <p style="color:#666666;font-size:13px;margin:0 0 8px;">
-                                    {row['data_geracao']} · <strong style="color:#333333;">{row['nome_jovem']}</strong>
+                                    {data_safe} &middot; <strong style="color:#333333;">{nome_safe}</strong>
                                 </p>
                                 <div style="background:rgba(239,68,68,0.05);border-left:3px solid #EF4444;
                                             padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#333333;">
-                                    {row['motivo']}
+                                    {motivo_safe}
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
@@ -2428,6 +2443,11 @@ if menu == "🏠 Dashboard Principal":
                         st.info("Nenhuma contestação resolvida ainda.")
                     else:
                         for _, row in df_res.iterrows():
+                            import html as _html
+                            motivo_safe   = _html.escape(str(row['motivo'] or ''))
+                            nome_safe     = _html.escape(str(row['nome_jovem'] or ''))
+                            data_safe     = _html.escape(str(row['data_geracao'] or ''))
+                            tratativa_safe = _html.escape(str(row.get('tratativa', '') or ''))
                             st.markdown(f"""
                             <div style="background:#FFFFFF;border:1px solid #E5E7EB;border-left:4px solid #10B981;
                                         border-radius:12px;padding:20px;margin-bottom:12px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
@@ -2436,11 +2456,11 @@ if menu == "🏠 Dashboard Principal":
                                     <span style="background:rgba(16,185,129,0.15);color:#10B981;padding:2px 8px;
                                                 border-radius:20px;font-size:13px;">RESOLVIDO</span>
                                 </div>
-                                <p style="color:#666666;font-size:13px;margin:0 0 6px;">{row['data_geracao']} · <strong style="color:#333333;">{row['nome_jovem']}</strong></p>
-                                <p style="color:#666666;font-size:13px;margin:0 0 8px;"><strong>Motivo:</strong> {row['motivo']}</p>
+                                <p style="color:#666666;font-size:13px;margin:0 0 6px;">{data_safe} &middot; <strong style="color:#333333;">{nome_safe}</strong></p>
+                                <p style="color:#666666;font-size:13px;margin:0 0 8px;"><strong>Motivo:</strong> {motivo_safe}</p>
                                 <div style="background:rgba(16,185,129,0.08);border-left:3px solid #10B981;
                                             padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:#333333;">
-                                    <strong>Tratativa:</strong> {row.get('tratativa','')}
+                                    <strong>Tratativa:</strong> {tratativa_safe}
                                 </div>
                             </div>
                             """, unsafe_allow_html=True)
