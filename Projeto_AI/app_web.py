@@ -10,7 +10,7 @@ from datetime import datetime
 import streamlit as st
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -77,8 +77,15 @@ def efeito_digitacao(texto):
 @st.cache_resource(show_spinner="🔄 Carregando Base de Conhecimento...")
 def inicializar_rag():
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    caminho_pdf = os.path.join(base_dir, "conhecimento_rh.pdf")
     caminho_txt = os.path.join(base_dir, "conhecimento_rh.txt")
-    loader = TextLoader(caminho_txt, encoding="utf-8")
+    
+    # Lógica de fallback: PDF primeiro, TXT como plano B
+    if os.path.exists(caminho_pdf):
+        loader = PyPDFLoader(caminho_pdf)
+    else:
+        loader = TextLoader(caminho_txt, encoding="utf-8")
+    
     documentos = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=150, length_function=len)
     chunks = text_splitter.split_documents(documentos)
