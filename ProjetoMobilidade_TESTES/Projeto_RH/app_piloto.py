@@ -2411,44 +2411,93 @@ if menu == "🏠 Dashboard Principal":
         st.markdown("<hr style='border-color:rgba(0,212,255,0.1);'>", unsafe_allow_html=True)
 
 # ── Contestações ──
-        # CSS Definitivo para o Cabeçalho do Expander
+  # ── Contestações ──
+        # CSS Definitivo que age no Streamlit sem quebrar o HTML interno
         st.markdown("""
             <style>
-            /* Força o fundo da barra do expander a ser sempre branco */
+            /* Cabeçalho do Expander (Barra) */
             div[data-testid="stExpander"] details summary {
                 background-color: #FFFFFF !important;
                 color: #333333 !important;
                 border-radius: 8px !important;
             }
-            /* Força o texto "⚡ Ver Detalhes..." a ficar sempre escuro */
             div[data-testid="stExpander"] details summary p {
                 color: #333333 !important;
                 font-weight: 600 !important;
             }
-            /* Garante que a setinha do expander fique visível (escura) */
             div[data-testid="stExpander"] details summary svg {
                 color: #333333 !important;
                 fill: #333333 !important;
             }
-            /* Mantém o comportamento normal quando passa o mouse (um leve cinza para dar feedback) */
             div[data-testid="stExpander"] details summary:hover {
                 background-color: #F9FAFB !important;
+            }
+            /* Corpo interno do Expander (Onde ficam as abas e botões) */
+            div[data-testid="stExpander"] details div[data-testid="stExpanderDetails"] {
+                background-color: #FFFFFF !important;
+                border-radius: 0 0 8px 8px;
             }
             </style>
         """, unsafe_allow_html=True)
 
         with st.expander("⚡ Ver Detalhes das Contestações"):
-            # O container interno para limpar o fundo do conteúdo
-            st.markdown('<div style="background-color:#FFFFFF; padding:10px; border-radius:10px;">', unsafe_allow_html=True)
+            # REMOVIDO o container <div> que estava escondendo os itens
             
             if df_contest.empty:
                 st.info("Nenhuma contestação registada.")
             else:
                 tab_pend, tab_resol, tab_tab = st.tabs(["🔴 Pendentes", "✅ Resolvidas", "📋 Tabela"])
-                
-                # ... (todo o seu código das abas continua aqui) ...
-                
-            st.markdown('</div>', unsafe_allow_html=True)
+
+                with tab_pend:
+                    df_pend = df_contest[df_contest['status'] == 'Pendente']
+                    if df_pend.empty:
+                        st.success("Tudo limpo! Nenhuma contestação pendente.")
+                    else:
+                        for _, row in df_pend.iterrows():
+                            import html as _html
+                            motivo_safe = _html.escape(str(row['motivo'] or ''))
+                            nome_safe   = _html.escape(str(row['nome_jovem'] or ''))
+                            data_safe   = _html.escape(str(row['data_geracao'] or ''))
+                            
+                            # HTML minificado para evitar o vazamento do </div>
+                            html_pendente = f"""<div style="background-color:#FFFFFF; border:1px solid #E5E7EB; border-left:4px solid #EF4444; border-radius:12px; padding:20px; margin-bottom:12px; box-shadow:0 2px 4px rgba(0,0,0,0.05);"><div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><span style="color:#EF4444; font-weight:700; font-size:15px;">Consulta #{row['id']}</span><span style="background:rgba(239,68,68,0.15); color:#EF4444; padding:2px 8px; border-radius:20px; font-size:13px;">PENDENTE</span></div><p style="color:#333333; font-size:13px; margin:0 0 8px;">{data_safe} &middot; <strong style="color:#111111;">{nome_safe}</strong></p><div style="background:rgba(239,68,68,0.05); border-left:3px solid #EF4444; padding:10px 14px; border-radius:0 6px 6px 0; font-size:13px; color:#333333;">{motivo_safe}</div></div>"""
+                            
+                            st.markdown(html_pendente, unsafe_allow_html=True)
+                            
+                            col_t, col_b = st.columns([3, 1])
+                            with col_t:
+                                tratativa_input = st.text_input("Tratativa aplicada:", key=f"input_{row['id']}")
+                            with col_b:
+                                st.write("")
+                                st.write("")
+                                if st.button("Resolver", type="primary", key=f"btn_{row['id']}", use_container_width=True):
+                                    if not tratativa_input.strip():
+                                        st.error("Descreva a tratativa antes de resolver.")
+                                    else:
+                                        resolver_contestacao(row['id'], tratativa_input)
+                                        st.rerun()
+
+                with tab_resol:
+                    df_res = df_contest[df_contest['status'] == 'Resolvido']
+                    if df_res.empty:
+                        st.info("Nenhuma contestação resolvida ainda.")
+                    else:
+                        for _, row in df_res.iterrows():
+                            import html as _html
+                            motivo_safe    = _html.escape(str(row['motivo'] or ''))
+                            nome_safe      = _html.escape(str(row['nome_jovem'] or ''))
+                            data_safe      = _html.escape(str(row['data_geracao'] or ''))
+                            tratativa_safe = _html.escape(str(row.get('tratativa', '') or ''))
+                            
+                            # HTML minificado
+                            html_resolvido = f"""<div style="background-color:#FFFFFF; border:1px solid #E5E7EB; border-left:4px solid #10B981; border-radius:12px; padding:20px; margin-bottom:12px; box-shadow:0 2px 4px rgba(0,0,0,0.05);"><div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><span style="color:#10B981; font-weight:700; font-size:15px;">Consulta #{row['id']}</span><span style="background:rgba(16,185,129,0.15); color:#10B981; padding:2px 8px; border-radius:20px; font-size:13px;">RESOLVIDO</span></div><p style="color:#333333; font-size:13px; margin:0 0 6px;">{data_safe} &middot; <strong style="color:#111111;">{nome_safe}</strong></p><p style="color:#333333; font-size:13px; margin:0 0 8px;"><strong>Motivo:</strong> {motivo_safe}</p><div style="background:rgba(16,185,129,0.08); border-left:3px solid #10B981; padding:10px 14px; border-radius:0 6px 6px 0; font-size:13px; color:#333333;"><strong>Tratativa:</strong> {tratativa_safe}</div></div>"""
+                            
+                            st.markdown(html_resolvido, unsafe_allow_html=True)
+
+                with tab_tab:
+                    df_exib = df_contest[['id','data_geracao','nome_jovem','motivo','status','tratativa']].copy()
+                    df_exib.columns = ['ID','Data','Funcionário','Motivo','Status','Tratativa']
+                    st.dataframe(df_exib, use_container_width=True, hide_index=True)
 # ══════════════════════════════════════════════════════════════════════════════
 # TELA 1 — PESQUISAR CONSULTAS
 # ══════════════════════════════════════════════════════════════════════════════
