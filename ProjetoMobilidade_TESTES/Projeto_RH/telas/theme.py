@@ -178,22 +178,25 @@ def aplicar_tema():
     }
 
     [data-testid="stExpander"] details summary {
-        background-color: #444c9b !important;
+        background-color: var(--background-color, #FFFFFF) !important;
+        color: var(--text-color, #1E293B) !important;
+        border: 1px solid #E2E8F0 !important;
         border-radius: 8px !important;
-        border: none !important;
+        padding: 12px 16px !important;
     }
 
     [data-testid="stExpander"] details summary:hover,
     [data-testid="stExpander"] details summary:focus,
     [data-testid="stExpander"] details summary:active {
-        background-color: #363d7f !important;
+        background-color: #F8FAFC !important;
         outline: none !important;
     }
 
     [data-testid="stExpander"] details summary p,
+    [data-testid="stExpander"] details summary span,
     [data-testid="stExpander"] details summary svg {
-        color: #FFFFFF !important;
-        fill: #FFFFFF !important;
+        color: #1E293B !important;
+        fill: #1E293B !important;
         font-weight: 600 !important;
         font-size: 18px !important;
     }

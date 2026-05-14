@@ -646,12 +646,33 @@ p,span,div,label,h1,h2,h3,h4,h5,h6{color:#1E293B;}
 .stDataFrame,[data-testid="stDataFrame"]{background:#FFFFFF !important;}
 .stDataFrame table{background:#FFFFFF !important;color:#1E293B !important;}
 
-/* ── Expander ── */
-.streamlit-expanderHeader{
-    background:#F8FAFC !important;color:#1E293B !important;
-    border:1px solid #E2E8F0 !important;border-radius:8px !important;
+/* ── Expander — Tema Claro Forçado ── */
+[data-testid="stExpander"] details summary,
+.streamlit-expanderHeader {
+    background: var(--background-color, #FFFFFF) !important;
+    color: var(--text-color, #1E293B) !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
 }
-.streamlit-expanderContent{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;}
+
+[data-testid="stExpander"] details summary:hover {
+    background: #F8FAFC !important;
+}
+
+[data-testid="stExpander"] details summary p,
+[data-testid="stExpander"] details summary span,
+[data-testid="stExpander"] details summary svg {
+    color: #1E293B !important;
+    fill: #1E293B !important;
+}
+
+[data-testid="stExpander"] .streamlit-expanderContent,
+.streamlit-expanderContent {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-top: none !important;
+}
 
 /* ── Tabs ── */
 [data-baseweb="tab-list"]{background:#F8FAFC;border-radius:10px;padding:4px;border:1px solid #E2E8F0;}
