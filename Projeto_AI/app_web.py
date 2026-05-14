@@ -20,8 +20,8 @@ from langchain_core.output_parsers import StrOutputParser
 load_dotenv()
 
 st.set_page_config(
-    page_title="Portal do Jovem Aprendiz - Renapsi",
-    page_icon="🚌",
+    page_title="Demà - Assistente Renapsi",
+    page_icon="🏢",
     layout="centered",
     initial_sidebar_state="expanded"
 )
