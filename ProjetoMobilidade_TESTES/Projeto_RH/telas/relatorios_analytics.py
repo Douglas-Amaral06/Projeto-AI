@@ -300,19 +300,88 @@ def _dashboard_executivo():
     # KPIs principais
     st.markdown("### 🎯 KPIs Principais")
     
+    # Buscar dados dinâmicos do banco
+    try:
+        db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'mobilidade_renapsi.db')
+        
+        # Inicializar variáveis com valores padrão
+        funcionarios_ativos = 0
+        contestacoes_pendentes = 0
+        sla_medio = "N/A"
+        taxa_aceite = "0%"
+        
+        if os.path.exists(db_path):
+            conexao = sqlite3.connect(db_path)
+            
+            # 1. Funcionários Ativos (status_rota = 'Implantado')
+            try:
+                df_funcionarios = pd.read_sql_query(
+                    "SELECT COUNT(*) as total FROM jovens_rotas WHERE status_rota = 'Implantado'",
+                    conexao
+                )
+                if not df_funcionarios.empty:
+                    funcionarios_ativos = df_funcionarios.iloc[0]['total']
+            except Exception as e:
+                print(f"[ERRO] Ao buscar funcionários ativos: {e}")
+            
+            # 2. Contestações Pendentes
+            try:
+                df_contestacoes = pd.read_sql_query(
+                    "SELECT COUNT(*) as total FROM contestacoes WHERE status = 'Pendente'",
+                    conexao
+                )
+                if not df_contestacoes.empty:
+                    contestacoes_pendentes = df_contestacoes.iloc[0]['total']
+            except Exception as e:
+                print(f"[ERRO] Ao buscar contestações: {e}")
+            
+            # 3. SLA Médio de Resolução (em dias)
+            try:
+                df_sla = pd.read_sql_query(
+                    """SELECT 
+                        AVG(JULIANDAY(data_resolucao) - JULIANDAY(data_contestacao)) as sla_dias
+                       FROM contestacoes 
+                       WHERE status = 'Resolvida' 
+                       AND data_resolucao IS NOT NULL 
+                       AND data_contestacao IS NOT NULL""",
+                    conexao
+                )
+                if not df_sla.empty and df_sla.iloc[0]['sla_dias'] is not None:
+                    sla_medio = f"{df_sla.iloc[0]['sla_dias']:.1f} dias"
+            except Exception as e:
+                print(f"[ERRO] Ao calcular SLA: {e}")
+            
+            # 4. Taxa de Aceite (funcionários implantados / total de funcionários)
+            try:
+                df_total = pd.read_sql_query("SELECT COUNT(*) as total FROM jovens_rotas", conexao)
+                if not df_total.empty and df_total.iloc[0]['total'] > 0:
+                    total_funcionarios = df_total.iloc[0]['total']
+                    if total_funcionarios > 0:
+                        taxa_aceite_valor = (funcionarios_ativos / total_funcionarios) * 100
+                        taxa_aceite = f"{taxa_aceite_valor:.1f}%"
+            except Exception as e:
+                print(f"[ERRO] Ao calcular taxa de aceite: {e}")
+            
+            conexao.close()
+    
+    except Exception as e:
+        print(f"[ERRO CRÍTICO] Dashboard Executivo: {e}")
+        # Mantém valores padrão em caso de erro
+    
+    # Renderizar métricas com dados dinâmicos
     col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
     
     with col_kpi1:
         st.metric("💰 Economia Mensal", "R$ 125.450,00", "+12%")
     
     with col_kpi2:
-        st.metric("👥 Funcionários Ativos", "1.234", "+5%")
+        st.metric("👥 Funcionários Ativos", f"{funcionarios_ativos:,}", "+5%")
     
     with col_kpi3:
-        st.metric("✅ Taxa de Aceite", "94.5%", "+2%")
+        st.metric("✅ Taxa de Aceite", taxa_aceite, "+2%")
     
     with col_kpi4:
-        st.metric("⚠️ Contestações", "23", "-8%")
+        st.metric("⚠️ Contestações", f"{contestacoes_pendentes}", "-8%")
     
     st.markdown("---")
     

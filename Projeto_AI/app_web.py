@@ -231,7 +231,7 @@ else:
 
     st.title("Assistente Virtual - Demà")
     st.caption("Tire suas dúvidas sobre Vale-Transporte, Folha Ponto, Férias e outros assuntos de RH.")
-    st.info("💡 Experimente perguntar: Como gerar minha folha ponto?, Preciso da 2ª via do meu cartão Guarupass, ou Como enviar meu atestado?")
+    st.info("💡 Experimente perguntar: Como gerar minha folha ponto?, Preciso da 2ª via do meu bilhete de transporte, ou Como enviar meu atestado?")
     st.markdown("---")
 
     try:
