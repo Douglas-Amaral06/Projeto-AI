@@ -2389,33 +2389,45 @@ if menu == "🏠 Dashboard Principal":
 
         st.markdown("<hr style='border-color:rgba(0,212,255,0.1);'>", unsafe_allow_html=True)
 
-       # ── Contestações ──
-        # CSS de Reset Local: Garante que dentro do expander tudo seja legível
+# ── Contestações ──
+        # CSS Definitivo para o Cabeçalho do Expander
         st.markdown("""
             <style>
-            .stExpander div[data- some-attr] { /* Seletor genérico para garantir contraste */
+            /* Força o fundo da barra do expander a ser sempre branco */
+            div[data-testid="stExpander"] details summary {
+                background-color: #FFFFFF !important;
                 color: #333333 !important;
+                border-radius: 8px !important;
             }
-            /* Força o conteúdo interno do expander a ter fundo claro e texto escuro */
-            .st-emotion-cache-p4m61c, .st-emotion-cache-1vt4y6f { 
+            /* Força o texto "⚡ Ver Detalhes..." a ficar sempre escuro */
+            div[data-testid="stExpander"] details summary p {
                 color: #333333 !important;
+                font-weight: 600 !important;
+            }
+            /* Garante que a setinha do expander fique visível (escura) */
+            div[data-testid="stExpander"] details summary svg {
+                color: #333333 !important;
+                fill: #333333 !important;
+            }
+            /* Mantém o comportamento normal quando passa o mouse (um leve cinza para dar feedback) */
+            div[data-testid="stExpander"] details summary:hover {
+                background-color: #F9FAFB !important;
             }
             </style>
         """, unsafe_allow_html=True)
 
         with st.expander("⚡ Ver Detalhes das Contestações"):
-            # Forçamos um container branco logo no início do expander para 'limpar' o fundo
+            # O container interno para limpar o fundo do conteúdo
             st.markdown('<div style="background-color:#FFFFFF; padding:10px; border-radius:10px;">', unsafe_allow_html=True)
             
             if df_contest.empty:
                 st.info("Nenhuma contestação registada.")
             else:
-                # O restante do seu código das TABS continua aqui dentro...
                 tab_pend, tab_resol, tab_tab = st.tabs(["🔴 Pendentes", "✅ Resolvidas", "📋 Tabela"])
                 
-                # ... (todo o código das abas que já ajustamos antes) ...
+                # ... (todo o seu código das abas continua aqui) ...
                 
-            st.markdown('</div>', unsafe_allow_html=True) # Fecha o container de limpeza
+            st.markdown('</div>', unsafe_allow_html=True)
 # ══════════════════════════════════════════════════════════════════════════════
 # TELA 1 — PESQUISAR CONSULTAS
 # ══════════════════════════════════════════════════════════════════════════════
