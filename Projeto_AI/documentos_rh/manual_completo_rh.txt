@@ -1,0 +1,49 @@
+# MANUAL DE DIRETRIZES DO RH - RENAPSI E DEMÀ
+
+## 1. O PORTAL CONECTA (SISTEMA PRINCIPAL)
+Todas as ações administrativas contratuais e financeiras do Jovem Aprendiz devem ser realizadas no [Portal Conecta](https://conectajovem.dema.org.br/accounts/login/?next=/).
+- Login: Número do CPF do aprendiz.
+- Senha: Ano de nascimento do aprendiz.
+
+Ações realizadas EXCLUSIVAMENTE no [Portal Conecta](https://conectajovem.dema.org.br/accounts/login/?next=/):
+1. Gerar ou Receber Folha Ponto: Fazer o download do documento em branco do mês para preenchimento.
+2. Enviar Folha Ponto Assinada: Fazer o upload do documento mensal já preenchido e com todas as assinaturas exigidas.
+3. Buscar Calendário: Consultar as datas estipuladas para capacitação teórica (curso) e prática (empresa).
+4. Contracheque e Holerite: Visualizar ou baixar os recibos e demonstrativos de pagamento de salário.
+5. Atualização Cadastral: Alterar e atualizar dados pessoais, principalmente em casos de mudança de número de telefone, e-mail ou endereço residencial.
+
+Suporte Técnico do Portal:
+Caso o jovem enfrente problemas sistêmicos para acessar o portal, gerar ou enviar a folha ponto, deve contatar o canal de suporte de frequência:
+- WhatsApp: (11) 97080-6028
+
+---
+
+## 2. REGRAS DA FOLHA PONTO
+A Folha Ponto é o documento oficial que registra a frequência mensal nas atividades práticas e teóricas.
+- Prazo de Envio: O envio (feito via Portal Conecta) deve ocorrer impreterivelmente até o segundo dia útil do mês seguinte.
+- Penalidades: O não envio ou envio fora do prazo gera bloqueio da entrada no curso/empresa, advertências e o não recebimento do salário e benefícios.
+- Regras de Preenchimento: Deve ser preenchida todos os dias, com caneta azul ou preta. Não usar corretivos, não rasurar e não deixar em branco. Os horários de entrada e saída devem ser corretos (não usar horário britânico). Faltas sem atestado recebem "O" e faltas justificadas com documento recebem "Falta Justificada".
+- Dias de Curso: Devem ser preenchidos com a palavra "CURSO" conforme o calendário educacional. Se o jovem faltar no dia do curso, AINDA ASSIM deve preencher "CURSO" para não sofrer desconto duplicado na folha.
+- Assinaturas e Validade: O documento só é válido se contiver a assinatura do Aprendiz, a assinatura e o carimbo do Gestor/Mentor responsável e a data correta. Não é permitido assinar em branco ou por terceiros.
+
+---
+
+## 3. REGRAS PARA FALTAS E ATESTADOS
+Em casos de ausência (doença, óbito, consultas, etc.), o envio de atestados médicos ou comprovantes de justificativa de falta possui uma ordem de prioridade estrita:
+
+PASSO 1 (Canal Oficial):
+O atestado deve ser enviado primeiramente através do [Portal Conecta](https://conectajovem.dema.org.br/accounts/login/?next=/).
+
+PASSO 2 (Canais Alternativos):
+Se o jovem enfrentar algum problema que impeça o envio pelo Portal Conecta, aí sim o atestado deve ser enviado para os canais específicos, dependendo do tipo da gestão ou do local da falta:
+- Cenário A - Falta na Empresa (Jovem Gestão Completa): Enviar o atestado médico ou comprovante para o e-mail frequencia.sp@renapsi.org.br.
+- Cenário B - Falta na Empresa (Jovem Gestão Educacional): Falar diretamente com o seu Gestor na empresa parceira e entregar o atestado diretamente para ele.
+- Cenário C - Falta no Curso (Capacitação Teórica): Falar diretamente com o Instrutor do curso e entregar no prazo máximo de até 72 horas após a falta.
+
+---
+
+## [INSTRUÇÕES INTERNAS DE COMPORTAMENTO PARA A IA DEMÀ]
+- FORMATO DE LINKS (OBRIGATÓRIO): SEMPRE que for mencionar o Portal Conecta e fornecer o link, você DEVE formatá-lo como um hiperlink clicável em Markdown exatamente assim: [Portal Conecta](https://conectajovem.dema.org.br/accounts/login/?next=/). NUNCA envie o link solto no texto.
+- REGRA DE ACESSO GERAL: Sempre que o usuário perguntar como gerar, baixar ou receber a folha ponto, ou como ver calendário, contracheque, holerite e atualizar dados, direcione-o para o [Portal Conecta](https://conectajovem.dema.org.br/accounts/login/?next=/), informando que o Login é o CPF e a Senha é o Ano de nascimento.
+- REGRA CONDICIONAL DOS ATESTADOS (MUITO IMPORTANTE): Quando o usuário perguntar como enviar um atestado, explique primeiro que o envio oficial é no Portal Conecta. SE O USUÁRIO NÃO ESPECIFICAR o tipo de gestão dele, VOCÊ DEVE explicar EXATAMENTE a regra e os contatos dos 3 cenários do Passo 2 (ex: e-mail para Gestão Completa, Gestor para Educacional e Instrutor para Curso). Você POSSUI SIM esses dados no Passo 2 acima, portanto, nunca diga que não sabe os detalhes específicos.
+- REGRA DE SUPORTE: Apenas indique o WhatsApp (11) 97080-6028 ou o e-mail frequencia.sp@renapsi.org.br se o jovem relatar problemas técnicos de acesso ao portal, erros de envio sistêmico, ou para o cenário específico de Falta na Empresa (Gestão Completa).

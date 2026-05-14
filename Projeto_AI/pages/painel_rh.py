@@ -81,6 +81,14 @@ def carregar_dados():
         df = pd.DataFrame(dados)
         # Converter timestamp para datetime
         df['timestamp'] = pd.to_datetime(df['timestamp'])
+        
+        # Garantir que a coluna 'avaliacao' existe (compatibilidade com logs antigos)
+        if 'avaliacao' not in df.columns:
+            df['avaliacao'] = 'Sem avaliação'
+        else:
+            # Preencher valores nulos com 'Sem avaliação'
+            df['avaliacao'] = df['avaliacao'].fillna('Sem avaliação')
+        
         return df
     else:
         return pd.DataFrame()
@@ -382,6 +390,104 @@ def dashboard_principal():
             label="📏 Pergunta Mais Longa",
             value=f"{pergunta_mais_longa} caracteres"
         )
+    
+    st.markdown("---")
+    
+    # === TERMÔMETRO DE QUALIDADE (FEEDBACK) ===
+    st.subheader("⭐ Termômetro de Qualidade (Feedback)")
+    
+    # Filtrar apenas avaliações válidas (positivo/negativo)
+    df_com_feedback = df_filtrado[df_filtrado['avaliacao'].isin(['positivo', 'negativo'])]
+    
+    if not df_com_feedback.empty:
+        col_feedback1, col_feedback2, col_feedback3 = st.columns(3)
+        
+        # Contar avaliações
+        total_avaliacoes = len(df_com_feedback)
+        avaliacoes_positivas = len(df_com_feedback[df_com_feedback['avaliacao'] == 'positivo'])
+        avaliacoes_negativas = len(df_com_feedback[df_com_feedback['avaliacao'] == 'negativo'])
+        taxa_satisfacao = (avaliacoes_positivas / total_avaliacoes * 100) if total_avaliacoes > 0 else 0
+        
+        with col_feedback1:
+            st.metric(
+                label="👍 Avaliações Positivas",
+                value=avaliacoes_positivas,
+                delta=f"{(avaliacoes_positivas/total_avaliacoes*100):.1f}% do total" if total_avaliacoes > 0 else None
+            )
+        
+        with col_feedback2:
+            st.metric(
+                label="👎 Avaliações Negativas",
+                value=avaliacoes_negativas,
+                delta=f"{(avaliacoes_negativas/total_avaliacoes*100):.1f}% do total" if total_avaliacoes > 0 else None,
+                delta_color="inverse"
+            )
+        
+        with col_feedback3:
+            st.metric(
+                label="📊 Taxa de Satisfação",
+                value=f"{taxa_satisfacao:.1f}%",
+                delta="Objetivo: >80%" if taxa_satisfacao >= 80 else "Abaixo do objetivo"
+            )
+        
+        # Gráfico de feedback
+        col_grafico_feedback1, col_grafico_feedback2 = st.columns(2)
+        
+        with col_grafico_feedback1:
+            # Gráfico de pizza
+            df_feedback_count = df_com_feedback['avaliacao'].value_counts().reset_index()
+            df_feedback_count.columns = ['Avaliação', 'Quantidade']
+            
+            # Mapear para labels mais amigáveis
+            df_feedback_count['Avaliação'] = df_feedback_count['Avaliação'].map({
+                'positivo': '👍 Útil',
+                'negativo': '👎 Não Ajudou'
+            })
+            
+            fig_feedback_pizza = px.pie(
+                df_feedback_count,
+                values='Quantidade',
+                names='Avaliação',
+                title='Distribuição de Feedback',
+                color='Avaliação',
+                color_discrete_map={'👍 Útil': '#10B981', '👎 Não Ajudou': '#EF4444'},
+                hole=0.4  # Donut chart
+            )
+            
+            fig_feedback_pizza.update_traces(textposition='inside', textinfo='percent+label')
+            fig_feedback_pizza.update_layout(
+                showlegend=True,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)'
+            )
+            
+            st.plotly_chart(fig_feedback_pizza, use_container_width=True)
+        
+        with col_grafico_feedback2:
+            # Gráfico de barras comparativo
+            fig_feedback_barras = go.Figure()
+            
+            fig_feedback_barras.add_trace(go.Bar(
+                x=['Positivas', 'Negativas'],
+                y=[avaliacoes_positivas, avaliacoes_negativas],
+                marker_color=['#10B981', '#EF4444'],
+                text=[avaliacoes_positivas, avaliacoes_negativas],
+                textposition='auto',
+            ))
+            
+            fig_feedback_barras.update_layout(
+                title='Comparativo de Avaliações',
+                xaxis_title='Tipo de Avaliação',
+                yaxis_title='Quantidade',
+                showlegend=False,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                height=400
+            )
+            
+            st.plotly_chart(fig_feedback_barras, use_container_width=True)
+    else:
+        st.info("📭 Ainda não há avaliações de feedback registradas. Os usuários podem avaliar as respostas do assistente com 👍 ou 👎.")
     
     st.markdown("---")
     

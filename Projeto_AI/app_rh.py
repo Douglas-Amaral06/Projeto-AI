@@ -7,16 +7,16 @@ from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 
-# 1. Carregar variáveis de ambiente
+# 1. Carrega as variáveis de ambiente / 
 load_dotenv()
 
 def iniciar_bot():
-    # 2. Carregar o arquivo de conhecimento
+    # 2. Carrega os arquivo de conhecimento da IA (conhecimentos dentro do .txt)
     loader = TextLoader("conhecimento_rh.txt", encoding="utf-8")
     documentos = loader.load()
 
-    # 3. Chunking (Divisão do texto em partes menores)
-    # Cria blocos de 500 caracteres com uma sobreposição para não perder contexto
+    # 3. Chunking (Divisão do texto em partes menores) chunks = renderização (igualno mine )
+    # Cria uns blocos de 500 caracteres com uma sobreposição para não perder contexto --
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = text_splitter.split_documents(documentos)
 
@@ -24,10 +24,10 @@ def iniciar_bot():
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     vector_store = FAISS.from_documents(chunks, embeddings)
 
-    # 5. Configuração do Modelo (Gemini)
+    # 5. Configuração do Modelo (Gemini) - API gratuita 2.5 flash
     llm = GoogleGenerativeAI(model="gemini-pro", temperature=0) # Temp 0 = Menos alucinação
 
-    # 6. Criação do Prompt Customizado (O "Cercadinho" da IA)
+    # 6. Criação do Prompt Customizado 
     template = """Você é um assistente virtual especializado em RH da Renapsi.
     Use os seguintes pedaços de contexto para responder à pergunta do jovem aprendiz.
     Se você não sabe a resposta com base no contexto abaixo, diga apenas que não tem essa informação e peça para ele falar com o supervisor. 
