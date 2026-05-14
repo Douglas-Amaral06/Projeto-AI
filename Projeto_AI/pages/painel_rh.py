@@ -173,6 +173,9 @@ def dashboard_principal():
     df['tamanho_pergunta'] = df['pergunta_usuario'].str.len()
     df['tamanho_resposta'] = df['resposta_bot'].str.len()
     
+    # Inicializar df_filtrado com cópia completa dos dados
+    df_filtrado = df.copy()
+    
     # === BARRA LATERAL DE FILTROS ===
     with st.sidebar:
         st.markdown("### 🔍 Filtros de Análise")
@@ -209,7 +212,12 @@ def dashboard_principal():
             )
         
         st.markdown("---")
-        
+    
+    # === APLICAR FILTROS (ANTES DA EXPORTAÇÃO) ===
+    df_filtrado = aplicar_filtros(df, palavra_chave, data_inicio, data_fim)
+    
+    # === BOTÃO DE EXPORTAÇÃO (APÓS APLICAR FILTROS) ===
+    with st.sidebar:
         # Botão de exportação
         if not df_filtrado.empty:
             st.sidebar.divider()
@@ -234,9 +242,6 @@ def dashboard_principal():
         if st.button("🚪 Sair", use_container_width=True):
             st.session_state.admin_autenticado = False
             st.rerun()
-    
-    # === APLICAR FILTROS ===
-    df_filtrado = aplicar_filtros(df, palavra_chave, data_inicio, data_fim)
     
     # Verificar se há dados após filtros
     if df_filtrado.empty:
