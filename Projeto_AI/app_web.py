@@ -5,6 +5,7 @@ Interface Web com Streamlit para o Bot RAG de Vale-Transporte
 
 import os
 import json
+import time
 from datetime import datetime
 import streamlit as st
 from dotenv import load_dotenv
@@ -61,6 +62,18 @@ def salvar_log(pergunta, resposta):
     except Exception as e:
         print(f"[ERRO AO SALVAR LOG] {e}")
 
+def efeito_digitacao(texto):
+    """Exibe texto com efeito de digitação (streaming)."""
+    placeholder = st.empty()
+    texto_acumulado = ""
+    
+    for char in texto:
+        texto_acumulado += char
+        placeholder.markdown(texto_acumulado)
+        time.sleep(0.01)
+    
+    return texto_acumulado
+
 @st.cache_resource(show_spinner="🔄 Carregando Base de Conhecimento...")
 def inicializar_rag():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -114,6 +127,8 @@ else:
             st.rerun()
         st.markdown("---")
         st.caption("💡 Seja específico em suas perguntas.")
+        st.markdown("---")
+        st.caption("v1.2.0-stable | Build 2026")
 
     st.title("Assistente Virtual - Demà")
     st.caption("Tire suas dúvidas sobre saldo, recarga e bloqueio do seu cartão de transporte.")
@@ -146,7 +161,7 @@ else:
                             role = "Jovem Aprendiz" if msg["role"] == "user" else "Demà"
                             historico_formatado += f"{role}: {msg['content']}\n"
                     resposta = rag_chain.invoke({"question": prompt, "chat_history": historico_formatado})
-                    st.markdown(resposta)
+                    efeito_digitacao(resposta)
                     st.session_state.messages.append({"role": "assistant", "content": resposta})
                     salvar_log(prompt, resposta)
                 except Exception as e:
