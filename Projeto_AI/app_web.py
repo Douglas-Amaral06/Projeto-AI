@@ -17,13 +17,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_community.cache import SQLiteCache
-import langchain
 
 load_dotenv()
-
-# Ativar cache SQLite global do LangChain para otimizar uso da API
-langchain.llm_cache = SQLiteCache(database_path=".langchain_cache.db")
 
 st.set_page_config(
     page_title="Demà - Assistente Renapsi",
