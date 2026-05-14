@@ -210,6 +210,20 @@ def dashboard_principal():
         
         st.markdown("---")
         
+        # Botão de exportação
+        if not df_filtrado.empty:
+            st.sidebar.divider()
+            csv_data = df_filtrado.to_csv(index=False).encode('utf-8')
+            st.sidebar.download_button(
+                label='📥 Baixar Relatório (CSV)',
+                data=csv_data,
+                file_name='relatorio_dema.csv',
+                mime='text/csv',
+                use_container_width=True
+            )
+        
+        st.markdown("---")
+        
         # Botão para limpar filtros
         if st.button("🔄 Limpar Filtros", use_container_width=True):
             st.rerun()
