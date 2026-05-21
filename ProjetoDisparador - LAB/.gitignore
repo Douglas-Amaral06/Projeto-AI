@@ -1,0 +1,97 @@
+# ============================================
+# DADOS SENSÍVEIS - NUNCA COMMITAR
+# ============================================
+
+# Arquivos com dados pessoais (números de telefone, nomes, etc)
+contatos.txt
+contatos_reais.txt
+contatos_reais2.txt
+contatos2.txt
+contatos*.txt
+contatos*.csv
+contatos*.xlsx
+
+# Históricos de envio (contém números e timestamps)
+historico_envios.txt
+historico_contatos_reais.txt
+historico*.txt
+historico*.csv
+historico*.xlsx
+
+# Arquivos de erro com dados sensíveis
+erros.txt
+debug.log
+atividades_rh.log
+*.log
+
+# Banco de dados do PyWhatKit
+PyWhatKit_DB.txt
+PyWhatKit_DB*.txt
+PyWhatKit_DB*.csv
+PyWhatKit_DB*.xlsx
+
+# Arquivos de configuração com API Keys
+.env
+config.json
+
+# Perfil do Chrome (contém sessão do WhatsApp)
+*_Profile/
+DisparadorRH_Profile/
+
+# ============================================
+# ARQUIVOS DE BUILD E COMPILAÇÃO
+# ============================================
+
+# PyInstaller
+build/
+dist/
+*.spec
+*.exe
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ============================================
+# ARQUIVOS GRANDES (GitHub limit 100MB)
+# ============================================
+
+# Arquivos de mapas e grafos
+*.osm.pbf
+*.obj
+*.jar
+graph.obj
+*.pbf
+
+# Projetos de mobilidade
+ProjetoMobilidade_LAB/
+
+# ============================================
+# IDEs E EDITORES
+# ============================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================
+# SISTEMA OPERACIONAL
+# ============================================
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
